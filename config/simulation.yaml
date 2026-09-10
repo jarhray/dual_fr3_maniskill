@@ -1,0 +1,16 @@
+dual_fr3_maniskill:
+  ros__parameters:
+    control_freq: 100
+    sim_freq: 500
+    publish_freq: 50
+    realtime_factor: 1.0
+    path_position_tolerance: 0.2
+    goal_position_tolerance: 0.005
+    goal_velocity_tolerance: 0.02
+    goal_time_tolerance: 3.0
+    # Per-finger speed; full opening width moves at twice this speed.
+    gripper_speed: 0.04
+    gripper_force: 40.0
+    gripper_goal_tolerance: 0.001
+    gripper_stall_timeout: 0.5
+    gripper_timeout: 5.0
