@@ -90,13 +90,7 @@ class ManiSkillBridge(Node):
 
         self.cache = tempfile.TemporaryDirectory(prefix="dual_fr3_maniskill_")
         self.assets = prepare_assets(c["robot_description"], c["robot_description_semantic"], Path(self.cache.name))
-        # Import here so missing venv dependencies produce an actionable message.
-        try:
-            from .simulation import Simulation
-        except ImportError as exc:
-            raise RuntimeError("Use maniskill_python pointing to the ManiSkill2 / SAPIEN 2 venv; source ROS Humble first") from exc
-        self.sim = Simulation(self.assets, control_freq=c["control_freq"],
-                              sim_freq=c["sim_freq"], viewer=c["viewer"])
+        self.sim = self.create_simulation(self.assets)
         self.dt = 1.0 / c["control_freq"]
         self.arm_names = {side: [f"{side}_fr3_joint{i}" for i in range(1, 8)] for side in SIDES}
         self.arm_indices = {side: [self.sim.indices[name] for name in names]
@@ -137,6 +131,15 @@ class ManiSkillBridge(Node):
         self.get_logger().info(
             f"ManiSkill2 ready: {len(self.sim.names)} joints, CPU physics {c['sim_freq']} Hz, "
             f"control {c['control_freq']} Hz; measured state → /joint_states")
+
+    def create_simulation(self, assets):
+        """Allow isolated experiments to reuse measured-state ROS execution."""
+        try:
+            from .simulation import Simulation
+        except ImportError as exc:
+            raise RuntimeError("Use maniskill_python pointing to the ManiSkill2 / SAPIEN 2 venv; source ROS Humble first") from exc
+        return Simulation(assets, control_freq=self.config["control_freq"],
+                          sim_freq=self.config["sim_freq"], viewer=self.config["viewer"])
 
     def validate_arm(self, side, goal):
         if (goal.multi_dof_trajectory.points or goal.component_path_tolerance
@@ -341,12 +344,12 @@ class ManiSkillBridge(Node):
             self.cache.cleanup()
 
 
-def main():
+def main(node_factory=ManiSkillBridge):
     rclpy.init()
     node = None
     executor = SingleThreadedExecutor()
     try:
-        node = ManiSkillBridge()
+        node = node_factory()
         executor.add_node(node)
         period = node.dt / node.config["realtime_factor"]
         next_tick = time.monotonic()

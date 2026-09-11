@@ -1,0 +1,43 @@
+# MTC scene: 2 mm cable fits the existing research-finger bore at closed TCP.
+# All dimensions, including USB1.stl coordinates, are metres.
+usb:
+  mesh_scale: 1.0
+  attachment: [0.0, -0.02, 0.0]
+  grip_center: [0.0, 0.0, 0.0]
+  mass: 0.015
+  # Fixed mount is intentional: gripper slip is excluded from this experiment.
+  # Per finger: 2 * 0.0037 = 7.4 mm opening for the 7.6 mm USB width.
+  finger_position: 0.0037
+cable:
+  initial_layout: table_spiral
+  length: 1.5
+  diameter: 0.002
+  particle_spacing: 0.001
+  pin_length: 0.007
+  density: 1200.0
+  young_modulus: 300000.0
+  # Axial fiber reinforcement prevents a sub-grid cable from numerically tearing.
+  axial_young_modulus: 30000000.0
+  axial_iterations: 6
+  poisson_ratio: 0.3
+  yield_stress: 1000000000.0
+  friction: 0.5
+  # Finite-radius contact after each axial iteration, independent of grid size.
+  contact_margin: 0.00002
+  contact_iterations: 2
+  # Pause the demo if the measured tube/rigid overlap exceeds 0.1 mm.
+  penetration_tolerance: 0.0001
+# Used only by the deferred MTC scene (trunking_cable).
+guide:
+  half_length: 0.012     # straight guided length on each side of the right TCP [m]
+mpm:
+  frequency: 5000
+  # A coarse exploratory grid, NOT a calibrated cable material model.
+  # Particle volume/mass and the displayed diameter use the dimensions above.
+  grid_spacing: 0.006
+  max_grid_cells: 16000000
+  adaptive_resolution: true
+  max_grid_spacing: 0.015
+  grid_padding: 12
+  # Preserve every section in RViz: decimation can draw chords through walls.
+  marker_stride: 1

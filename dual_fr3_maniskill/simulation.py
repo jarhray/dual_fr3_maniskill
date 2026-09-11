@@ -65,7 +65,7 @@ class DualFR3Env(BaseEnv):
     SUPPORTED_REWARD_MODES = ("none",)
 
     def __init__(self, assets: SceneAssets, *, control_freq=100, sim_freq=500,
-                 viewer=False):
+                 viewer=False, shader_dir="ibl"):
         if control_freq <= 0 or sim_freq <= 0 or sim_freq % control_freq:
             raise ValueError("Positive sim_freq must be divisible by control_freq")
         self.assets = assets
@@ -74,6 +74,7 @@ class DualFR3Env(BaseEnv):
             control_freq=control_freq, sim_freq=sim_freq,
             render_mode="human" if viewer else "rgb_array",
             renderer_kwargs={"offscreen_only": not viewer},
+            shader_dir=shader_dir,
         )
 
     def _configure_agent(self):
@@ -157,8 +158,9 @@ class DualFR3Env(BaseEnv):
 
 
 class Simulation:
-    def __init__(self, assets, *, control_freq=100, sim_freq=500, viewer=False):
-        self.env = DualFR3Env(assets, control_freq=control_freq, sim_freq=sim_freq, viewer=viewer)
+    def __init__(self, assets, *, control_freq=100, sim_freq=500, viewer=False,
+                 env_factory=DualFR3Env):
+        self.env = env_factory(assets, control_freq=control_freq, sim_freq=sim_freq, viewer=viewer)
         self.env.reset(seed=0)
         self.names = list(self.env.agent.joints)
         self.indices = {name: i for i, name in enumerate(self.names)}
