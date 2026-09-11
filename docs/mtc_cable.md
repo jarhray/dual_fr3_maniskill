@@ -1,12 +1,11 @@
 # MTC 准备阶段的线缆
 
-在工作区根目录构建并启动：
+先按[环境安装与验证](setup.md)安装依赖并构建任务包。加载 ROS 和工作区后，在工作区根目录启动：
 
 ```bash
-colcon build --packages-select dual_fr3_maniskill dual_fr3_moveit_config dual_fr3_trunking_mtc --symlink-install
-source install/setup.bash
 ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
-  simulation_backend:=maniskill execute:=true
+  simulation_backend:=maniskill execute:=true \
+  maniskill_python:="$PWD/.venv/bin/python"
 ```
 
 MTC 仍先预检准备阶段和正式任务的完整规划。`execute:=false` 只做规划，
@@ -55,15 +54,8 @@ MTC 默认配置是 `dual_fr3_maniskill/config/trunking_cable.yaml`，线长 1.5
 材料和力并未标定，MPM 运行速度可能显著慢于墙上时间。数值异常会暂停仿真并使
 正在执行的动作失败，不会继续执行后面的下降或走线。
 
-## 验证记录
+## 验证入口
 
-本次三个包构建通过；相关 Python 测试合计 245 项通过，另有 8 项 CUDA
-接触回归通过。GPU 验证使用默认准备 TCP 位姿，检查延迟生成并执行朝向下方
-5 cm 目标的 30 个控制步（3000 个 MPM 子步），连续性和穿透检查均未超限。
-这不是完整 MTC 走线执行验收。
+离线检查重点是 `test_threading.py`、`test_simulation_cable.py` 和场景启动测试；GPU 接触及完整 MTC 运行方法见[环境安装与验证](setup.md)。`validate_integration.sh --mode mtc` 会自动执行当前任务并检查完成日志。
 
-MTC 套件中两项已有断言在本次改动前后的源码上均失败：
-`test_create_motion_planners_configures_move_group_ompl` 的跳变阈值旧期望，
-以及 `test_fr3_continuous_line_passes_without_disabling_jump_or_tcp_checks`
-中固定的截断比例。上述 245 项不包含这两项。运行 pytest 时使用
-`PYTEST_DISABLE_PLUGIN_AUTOLOAD=1`，避免 ROS launch 测试插件影响普通日志捕获。
+单独生成线缆或下降若干物理步只能验证局部行为，不能替代完整走线执行。材料、接触和滑孔参数仍需按实际任务验证。
