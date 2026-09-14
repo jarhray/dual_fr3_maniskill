@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "max_absolute_difference": {
+    "positions": 0.0,
+    "velocities": 0.0,
+    "affine": 0.0,
+    "impulse": 0.0,
+    "accepted": 0.0,
+    "hits": 0.0
+  },
+  "clearance_initial": {
+    "mesh_point_queries": 3,
+    "clearance_skips": 3,
+    "exact_query_cache_hits": 0,
+    "velocity_projections": 0,
+    "skipped_pass_pair_tests": 0
+  },
+  "clearance_after_motion": {
+    "mesh_point_queries": 3,
+    "clearance_skips": 51,
+    "exact_query_cache_hits": 0,
+    "velocity_projections": 0,
+    "skipped_pass_pair_tests": 48
+  },
+  "reference": "/home/jhr/ws_franka/src/dual_fr3_maniskill/test/reference/contacts_before_clearance.py"
+}

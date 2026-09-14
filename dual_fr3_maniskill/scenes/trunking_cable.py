@@ -2,10 +2,11 @@
 from functools import partial
 from pathlib import Path
 
+from ..sapien_compat import sapien
+
 from ament_index_python.packages import get_package_share_directory
 import mani_skill2
 import numpy as np
-import sapien.core as sapien
 from transforms3d.quaternions import mat2quat, quat2mat
 
 from ..simulation import DualFR3Env, Simulation
@@ -13,11 +14,14 @@ from ..assets import convert_stl_to_glb
 from ..cable.model import USB_LINK
 from ..cable.threading import LEFT_TCP, RIGHT_TCP, TOUCH_LINKS, task_usb_mount, threaded_positions
 from ..cable.guide import SlidingGuide
+from ..cable.mpm_cable import initialize_warp
 from .usb_cable import UsbCableEnv, UsbCableSimulation
 
 
 class TrunkingCableEnv(UsbCableEnv):
     def __init__(self, assets, *, cable_config, **kwargs):
+        # Fail before publishing arm actions; insertion happens after preparation.
+        initialize_warp()
         self.cable = None
         self.plug = self.mount_drive = None
         self.cable_config = cable_config

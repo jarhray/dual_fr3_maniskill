@@ -78,6 +78,7 @@ def test_spiral_preserves_material_length_and_rigid_collar(configured_length):
     ('cable','length',-1), ('cable','diameter',0), ('cable','friction',-1),
     ('usb','attachment',[0,0]), ('usb','finger_position',.1),
     ('mpm','frequency',12.5), ('mpm','grid_padding',1),
+    ('mpm','cuda_graph','false'), ('mpm','gpu_grid_check',1),
     ('cable','contact_margin',0), ('cable','contact_iterations',0),
     ('cable','penetration_tolerance',.0035)])
 def test_invalid_config(tmp_path, section, key, value):

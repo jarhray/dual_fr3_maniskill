@@ -2,13 +2,15 @@
 from functools import partial
 from pathlib import Path
 
+# Initialize SAPIEN compatibility before ManiSkill imports its renderer.
+from ..simulation import DualFR3Env, Simulation
+
 import mani_skill2
 import numpy as np
 from mani_skill2.sensors.camera import CameraConfig
 from mani_skill2.utils import sapien_utils
 from transforms3d.euler import quat2euler
 
-from dual_fr3_maniskill.simulation import DualFR3Env, Simulation
 from ..cable.mpm_cable import MPMCable
 
 
@@ -32,6 +34,11 @@ class UsbCableEnv(DualFR3Env):
         if self.cable is not None:
             self.cable.update_render()
         super().update_render()
+
+    def close(self):
+        if self.cable is not None and hasattr(self.cable, 'constraint_graphs'):
+            self.cable.constraint_graphs.clear()
+        super().close()
 
     def _register_render_cameras(self):
         pose = self._view_pose()

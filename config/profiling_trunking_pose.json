@@ -1,0 +1,16 @@
+{
+  "left_fr3_joint1": 0.1912,
+  "left_fr3_joint2": 0.4371,
+  "left_fr3_joint3": 0.0267,
+  "left_fr3_joint4": -1.9556,
+  "left_fr3_joint5": -0.0161,
+  "left_fr3_joint6": 2.3929,
+  "left_fr3_joint7": 1.0124,
+  "right_fr3_joint1": 0.4273,
+  "right_fr3_joint2": 0.4474,
+  "right_fr3_joint3": -0.2214,
+  "right_fr3_joint4": -1.9536,
+  "right_fr3_joint5": 0.1393,
+  "right_fr3_joint6": 2.3868,
+  "right_fr3_joint7": 2.4814
+}

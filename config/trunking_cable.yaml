@@ -31,6 +31,9 @@ cable:
 guide:
   half_length: 0.012     # straight guided length on each side of the right TCP [m]
 mpm:
+  # Disable individually when comparing another machine or debugging kernels.
+  cuda_graph: true
+  gpu_grid_check: true
   frequency: 5000
   # A coarse exploratory grid, NOT a calibrated cable material model.
   # Particle volume/mass and the displayed diameter use the dimensions above.

@@ -1,0 +1,15 @@
+# Python caches and local build products
+__pycache__/
+*.py[cod]
+.pytest_cache/
+*.egg-info/
+.coverage
+htmlcov/
+
+# Recreated by setup/colcon; keep machine-specific binaries out of source.
+/.venv*/
+/.deps/
+/build/
+/install/
+/log/
+/artifacts/

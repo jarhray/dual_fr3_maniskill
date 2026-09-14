@@ -1,0 +1,14 @@
+{
+  "contacts_before_clearance.py": {
+    "source": "artifacts/contact_acceleration_20260912/contacts_reference.py",
+    "sha256": "df749a076bbc6ad261b4ff19969f30bb18d8fdabd94d6013706b0b9388abc99c"
+  },
+  "mpm_before_clearance.py": {
+    "source": "artifacts/contact_acceleration_20260912/mpm_cable_reference.py",
+    "sha256": "7d686fb3fbee660bf2ee0d458b920d941a9459862eab2d20698dd20d71e4a0fc"
+  },
+  "guide_numpy.py": {
+    "source": "src/dual_fr3_maniskill/test/guide_numpy_reference.py",
+    "sha256": "ac213c9cf23aa1d3a1236da93e4f58441156f6a65782fc2b7a951c11162ae89c"
+  }
+}

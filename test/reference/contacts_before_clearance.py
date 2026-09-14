@@ -128,39 +128,10 @@ def cached_surface(p: wp.vec3, kind: int, mesh: wp.uint64, scale: wp.vec3,
 
 
 @wp.func
-def certified_clear(start: wp.vec3, target: wp.vec3, radius: float, margin: float,
-    kind: int, section: int, shape: int, cache_point: wp.array2d(dtype=wp.vec3),
-    cache_value: wp.array2d(dtype=wp.vec4), cache_valid: wp.array2d(dtype=int)):
-    result = int(0)
-    if kind == 3 and cache_valid[section, shape] != 0:
-        anchor = cache_point[section, shape]
-        distance = cache_value[section, shape][3]
-        # Never treat a failed nearest-point query's sentinel as measured clearance.
-        if distance > 0.0 and distance < 1.e6:
-            motion = wp.length(start - anchor)
-            travel = wp.length(target - start)
-            # A distance field is 1-Lipschitz. Keep the measured anchor fixed;
-            # extrapolated lower bounds must never become new measurements.
-            # Account conservatively for float32 transforms/norms/subtraction.
-            roundoff = 2.e-6 * (1.0 + wp.length(anchor) + wp.length(start)
-                                + wp.length(target) + distance + radius)
-            clearance = distance - motion - radius - roundoff
-            # Stronger than merely certifying the segment: the original sweep
-            # must finish in ONE iteration, without any position/velocity/APIC
-            # correction. Thus its 48-iteration exhaustion behavior is retained.
-            if clearance > margin + travel + roundoff:
-                result = 1
-    return result
-
-
-@wp.func
 def sweep(start: wp.vec3, target: wp.vec3, radius: float, margin: float,
     kind: int, mesh: wp.uint64, scale: wp.vec3, lower: wp.vec3, upper: wp.vec3,
     section: int, shape: int, cache_point: wp.array2d(dtype=wp.vec3),
     cache_value: wp.array2d(dtype=wp.vec4), cache_valid: wp.array2d(dtype=int)):
-    if certified_clear(start, target, radius, margin, kind, section, shape,
-                       cache_point, cache_value, cache_valid) != 0:
-        return target, wp.vec3(0.0), int(0), int(0), int(0), int(0), int(0), int(1)
     x = start
     goal = target
     normal = wp.vec3(0.0)
@@ -192,7 +163,7 @@ def sweep(start: wp.vec3, target: wp.vec3, radius: float, margin: float,
             active = 0
         else:
             x = x + delta * (0.9 * gap / wp.max(length, 1.e-12))
-    return x, normal, iteration, ray_queries, active, point_queries, cache_hits, int(0)
+    return x, normal, iteration, ray_queries, active, point_queries, cache_hits
 
 
 @wp.kernel
@@ -231,72 +202,62 @@ def project_sections(q: wp.array(dtype=wp.vec3), v: wp.array(dtype=wp.vec3),
         gap = wp.max(gap, wp.length(c - centers[i+1]))
     guard = wp.sqrt(radius*radius + 0.25*gap*gap)
     if i >= pin_sections:
-        certified_pass = int(0)
         for repeat in range(passes):
-            if certified_pass == 0:
-                all_clear = int(1)
-                for s in range(shape_count):
+            for s in range(shape_count):
+                if profile != 0:
+                    counters[i, s, 0] = counters[i, s, 0] + 1
+                b = shape_body[s]
+                transform = wp.transform_multiply(body[b], shape_pose[s])
+                inverse = wp.transform_inverse(transform)
+                old_transform = transform
+                if repeat == 0:
+                    old_transform = wp.transform_multiply(old_body[b], shape_pose[s])
+                a = wp.transform_point(wp.transform_inverse(old_transform), previous)
+                end = wp.transform_point(inverse, c)
+                if overlaps(a, end, guard+margin, lower[s], upper[s]) != 0:
+                    corrected, normal, iterations, rays, exhausted, point_queries, cache_hits = sweep(
+                        a, end, guard, margin, kind[s], mesh[s], scale[s], lower[s], upper[s],
+                        i, s, cache_point, cache_value, cache_valid)
                     if profile != 0:
-                        counters[i, s, 0] = counters[i, s, 0] + 1
-                    b = shape_body[s]
-                    transform = wp.transform_multiply(body[b], shape_pose[s])
-                    inverse = wp.transform_inverse(transform)
-                    old_transform = transform
-                    if repeat == 0:
-                        old_transform = wp.transform_multiply(old_body[b], shape_pose[s])
-                    a = wp.transform_point(wp.transform_inverse(old_transform), previous)
-                    end = wp.transform_point(inverse, c)
-                    if overlaps(a, end, guard+margin, lower[s], upper[s]) != 0:
-                        corrected, normal, iterations, rays, exhausted, point_queries, cache_hits, clear = sweep(
-                            a, end, guard, margin, kind[s], mesh[s], scale[s], lower[s], upper[s],
-                            i, s, cache_point, cache_value, cache_valid)
-                        if clear == 0:
-                            all_clear = 0
+                        # Each section owns its row: no profiling atomics or
+                        # device-to-host copies inside the solve loop.
+                        counters[i, s, 1] = counters[i, s, 1] + 1
+                        counters[i, s, 2] = counters[i, s, 2] + iterations
+                        counters[i, s, 3] = counters[i, s, 3] + point_queries
+                        counters[i, s, 4] = counters[i, s, 4] + rays
+                        counters[i, s, 5] = counters[i, s, 5] + exhausted
+                        counters[i, s, 6] = wp.max(counters[i, s, 6], iterations)
+                        counters[i, s, 8] = counters[i, s, 8] + cache_hits
+                    if wp.length(corrected-end) > 0.0:
+                        c = wp.transform_point(transform, corrected)
+                    if wp.length(normal) > 0.0:
                         if profile != 0:
-                            # Each section owns its row: no profiling atomics or
-                            # device-to-host copies inside the solve loop.
-                            counters[i, s, 1] = counters[i, s, 1] + 1
-                            counters[i, s, 2] = counters[i, s, 2] + iterations
-                            counters[i, s, 3] = counters[i, s, 3] + point_queries
-                            counters[i, s, 4] = counters[i, s, 4] + rays
-                            counters[i, s, 5] = counters[i, s, 5] + exhausted
-                            counters[i, s, 6] = wp.max(counters[i, s, 6], iterations)
-                            counters[i, s, 8] = counters[i, s, 8] + cache_hits
-                            counters[i, s, 9] = counters[i, s, 9] + clear
-                        if wp.length(corrected-end) > 0.0:
-                            c = wp.transform_point(transform, corrected)
-                        if wp.length(normal) > 0.0:
-                            if profile != 0:
-                                counters[i, s, 7] = counters[i, s, 7] + 1
-                            wp.atomic_add(hits, s, 1)
-                            normal = wp.transform_vector(transform, normal)
-                            com = wp.transform_point(body[b], body_com[b])
-                            w = wp.spatial_top(body_v[b])
-                            spin = wp.mat33(0.0, -w[2], w[1], w[2], 0.0, -w[0], -w[1], w[0], 0.0)
-                            identity = wp.mat33(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
-                            projection = identity - wp.outer(normal, normal)
-                            for j in range(7):
-                                p = i*7+j
-                                point = q[p] + c-origin
-                                bv = wp.spatial_bottom(body_v[b]) + wp.cross(w, point-com)
-                                relative = v[p] - bv
-                                vn = wp.dot(relative, normal)
-                                tangent = relative - normal*vn
-                                speed = wp.length(tangent)
-                                tangent = tangent * wp.max(1.0 + friction[s]*wp.min(vn, 0.0)/wp.max(speed, 1.e-12), 0.0)
-                                new_v = bv + tangent
-                                reaction = (v[p]-new_v) * mass[p]
-                                wp.atomic_add(impulse, b, wp.spatial_vector(wp.cross(point-com, reaction), reaction))
-                                v[p] = new_v
-                                # APIC stores a local velocity field as well as v.
-                                # Project that field too; otherwise the next P2G
-                                # immediately restores momentum into the wall.
-                                affine[p] = projection * (affine[p]-spin) + spin
-                previous = c
-                certified_pass = all_clear
-            elif profile != 0:
-                for s in range(shape_count):
-                    counters[i, s, 10] = counters[i, s, 10] + 1
+                            counters[i, s, 7] = counters[i, s, 7] + 1
+                        wp.atomic_add(hits, s, 1)
+                        normal = wp.transform_vector(transform, normal)
+                        com = wp.transform_point(body[b], body_com[b])
+                        w = wp.spatial_top(body_v[b])
+                        spin = wp.mat33(0.0, -w[2], w[1], w[2], 0.0, -w[0], -w[1], w[0], 0.0)
+                        identity = wp.mat33(1.0, 0.0, 0.0, 0.0, 1.0, 0.0, 0.0, 0.0, 1.0)
+                        projection = identity - wp.outer(normal, normal)
+                        for j in range(7):
+                            p = i*7+j
+                            point = q[p] + c-origin
+                            bv = wp.spatial_bottom(body_v[b]) + wp.cross(w, point-com)
+                            relative = v[p] - bv
+                            vn = wp.dot(relative, normal)
+                            tangent = relative - normal*vn
+                            speed = wp.length(tangent)
+                            tangent = tangent * wp.max(1.0 + friction[s]*wp.min(vn, 0.0)/wp.max(speed, 1.e-12), 0.0)
+                            new_v = bv + tangent
+                            reaction = (v[p]-new_v) * mass[p]
+                            wp.atomic_add(impulse, b, wp.spatial_vector(wp.cross(point-com, reaction), reaction))
+                            v[p] = new_v
+                            # APIC stores a local velocity field as well as v.
+                            # Project that field too; otherwise the next P2G
+                            # immediately restores momentum into the wall.
+                            affine[p] = projection * (affine[p]-spin) + spin
+            previous = c
         for j in range(7):
             q[i*7+j] = q[i*7+j] + c-origin
     accepted[i] = c
@@ -376,12 +337,12 @@ class CableContacts:
         self.cache_valid = wp.zeros((sections, model.shape_count), dtype=int, device=device)
 
     def invalidate_query_cache(self):
-        """Invalidate measured local-space geometry after reset or geometry changes."""
+        """Invalidate exact local-space mesh results after body/geometry updates."""
         self.cache_valid.zero_()
 
     def enable_profiling(self):
         """Optional counters for a separate diagnostic run, disabled normally."""
-        self.profile_counts = wp.zeros((self.sections, self.model.shape_count, 11),
+        self.profile_counts = wp.zeros((self.sections, self.model.shape_count, 9),
                                        dtype=int, device=self.device)
         self.profile_enabled = True
         self.profile_calls = 0
@@ -394,7 +355,7 @@ class CableContacts:
         totals[:, 6] = values[:, :, 6].max(axis=0)
         names = ('pair_tests', 'candidate_sweeps', 'surface_queries', 'mesh_point_queries',
                  'mesh_ray_queries', 'exhausted_sweeps', 'max_sweep_iterations', 'velocity_projections',
-                 'exact_query_cache_hits', 'clearance_skips', 'skipped_pass_pair_tests')
+                 'exact_query_cache_hits')
         bodies, kinds = self.model.shape_body.numpy(), self.model.shape_geo_type.numpy()
         return dict(calls=self.profile_calls, sections=self.sections,
             free_sections=self.sections-self.pin_sections, shape_count=self.model.shape_count,

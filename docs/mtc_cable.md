@@ -38,6 +38,10 @@ MTC 默认配置是 `dual_fr3_maniskill/config/trunking_cable.yaml`，线长 1.5
 独立演示用的 3.5 mm 线径不适用。可用 `cable_config:=/绝对路径/config.yaml`
 同时传入 MTC 和仿真。线长不足或初始线缆穿入刚体时，创建会返回失败。
 
+当前只有 MPM 求解器，Graph 和 GPU 网格检查默认开启，轴向迭代保留 6 次。
+MPM 已整理为后续对照基线；细杆模型及求解器选择参数尚未接入，见[后端交接说明](cable_backends.md)。
+性能和已知数值边界见[归档结果](benchmarks/mpm_20260912/README.md)。
+
 ## 接口和行为边界
 
 - `/maniskill/cable/spawn`：`std_srvs/Trigger`，必须两次闭合动作成功且没有活动动作。

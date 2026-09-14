@@ -16,6 +16,10 @@ def load_config(path):
         if not isinstance(config.get(section), dict):
             raise ValueError(f"Missing {section} configuration")
     c, m = config["cable"], config["mpm"]
+    for key in ('cuda_graph', 'gpu_grid_check'):
+        m.setdefault(key, True)
+        if not isinstance(m[key], bool):
+            raise ValueError(f'mpm.{key} must be boolean')
     c.setdefault("contact_margin", 0.00002)
     c.setdefault("contact_iterations", 2)
     c.setdefault("penetration_tolerance", 0.0001)

@@ -1,0 +1,8 @@
+Starting >>> dual_fr3_maniskill
+Finished <<< dual_fr3_maniskill [1.34s]
+Starting >>> dual_fr3_moveit_config
+Finished <<< dual_fr3_moveit_config [0.56s]
+Starting >>> dual_fr3_trunking_mtc
+Finished <<< dual_fr3_trunking_mtc [2.27s]
+
+Summary: 3 packages finished [4.32s]

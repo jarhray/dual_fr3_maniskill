@@ -13,7 +13,7 @@ import warp as wp
 def solve_fibers(position: wp.array(dtype=wp.vec3), velocity: wp.array(dtype=wp.vec3),
     mass: wp.array(dtype=float), rest: wp.array(dtype=float), multipliers: wp.array(dtype=float),
     pin_count: int, edge_count: int, color: int, area: float, young: float, dt: float,
-    com: wp.vec3, impulse: wp.array(dtype=wp.spatial_vector)):
+    com: wp.array(dtype=wp.vec3), impulse: wp.array(dtype=wp.spatial_vector)):
     index = wp.tid()
     # Two-color Gauss-Seidel: neighboring edges never write the same point.
     edge = (index / 7 * 2 + color) * 7 + index % 7
@@ -41,7 +41,7 @@ def solve_fibers(position: wp.array(dtype=wp.vec3), velocity: wp.array(dtype=wp.
             velocity[b] = velocity[b] + db / dt
             if a < pin_count:
                 reaction = normal * (-dl / dt)
-                wp.atomic_add(impulse, 0, wp.spatial_vector(wp.cross(position[a]-com, reaction), reaction))
+                wp.atomic_add(impulse, 0, wp.spatial_vector(wp.cross(position[a]-com[0], reaction), reaction))
 
 
 class AxialFibers:
@@ -50,8 +50,14 @@ class AxialFibers:
         self.edge_count = len(initial) - 7
         self.rest = wp.array(np.linalg.norm(initial[7:] - initial[:-7], axis=1).astype(np.float32), device=device)
         self.multipliers = wp.zeros(self.edge_count, dtype=float, device=device)
+        self._legacy_com = wp.zeros(1, dtype=wp.vec3, device=device)
 
     def solve(self, state, mass, dt, com, impulse, contact):
+        if not isinstance(com, wp.array):
+            # Preserve standalone callers; the cable supplies a persistent
+            # device COM updated once per rigid step, including graph replay.
+            self._legacy_com.assign(np.asarray(list(com), dtype=np.float32).reshape(1, 3))
+            com = self._legacy_com
         self.multipliers.zero_()
         area = np.pi * (self.config['diameter']/2)**2 / 7
         for _ in range(self.config['axial_iterations']):

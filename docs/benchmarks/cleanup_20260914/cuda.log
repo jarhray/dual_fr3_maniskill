@@ -1,0 +1,140 @@
+Warp initialized:
+   Version: 0.3.1
+   CUDA device: NVIDIA GeForce RTX 3090
+   Kernel cache: /home/jhr/.cache/warp/0.3.1
+Module dual_fr3_maniskill.cable.contacts load took 2964.65 ms
+Module dual_fr3_maniskill.cable._contact_reference load took 2.77 ms
+{
+  "cases": 24,
+  "max_absolute_difference": {
+    "positions": 0.0,
+    "velocities": 0.0,
+    "affine": 0.0,
+    "impulse": 0.0,
+    "accepted": 0.0,
+    "hits": 0.0
+  },
+  "absolute_tolerances": {
+    "positions": 2e-06,
+    "accepted": 2e-06,
+    "velocities": 0.0001,
+    "affine": 0.0001,
+    "impulse": 2e-08,
+    "hits": 0.0
+  },
+  "failures": [],
+  "contact_details": {
+    "calls": 24,
+    "sections": 3,
+    "free_sections": 3,
+    "shape_count": 1,
+    "per_shape": [
+      {
+        "shape": 0,
+        "body": 0,
+        "kind": 3,
+        "pair_tests": 144,
+        "candidate_sweeps": 113,
+        "surface_queries": 1625,
+        "mesh_point_queries": 1625,
+        "mesh_ray_queries": 4875,
+        "exhausted_sweeps": 24,
+        "max_sweep_iterations": 48,
+        "velocity_projections": 72,
+        "exact_query_cache_hits": 0,
+        "clearance_skips": 0,
+        "skipped_pass_pair_tests": 0
+      }
+    ]
+  },
+  "cache_hit_case": {
+    "shape": 0,
+    "body": 0,
+    "kind": 3,
+    "pair_tests": 12,
+    "candidate_sweeps": 12,
+    "surface_queries": 3,
+    "mesh_point_queries": 3,
+    "mesh_ray_queries": 9,
+    "exhausted_sweeps": 0,
+    "max_sweep_iterations": 1,
+    "velocity_projections": 0,
+    "exact_query_cache_hits": 0,
+    "clearance_skips": 9,
+    "skipped_pass_pair_tests": 6
+  },
+  "cache_invalidation_checked": true,
+  "reference": "/home/jhr/ws_franka/src/dual_fr3_maniskill/test/reference/contacts_before_clearance.py"
+}
+PASS: translated/rotated shapes, particle sweeps, moving/rotating bodies, query caching
+Warp initialized:
+   Version: 0.3.1
+   CUDA device: NVIDIA GeForce RTX 3090
+   Kernel cache: /home/jhr/.cache/warp/0.3.1
+Module dual_fr3_maniskill.cable._acceleration_reference load took 3.13 ms
+Module dual_fr3_maniskill.cable.contacts load took 2.81 ms
+PASS: moving particles reuse measured clearance without copying or replacing the anchor
+PASS: crossing a thin wall invalidates clearance and performs exact swept contact
+PASS: second-pass endpoint correction is retained
+PASS: initial mesh-interior overlap follows the exact solver
+PASS: changed covering radius cannot reuse an insufficient clearance
+PASS: moving-body sweep and explicit invalidation
+PASS: warm local-space clearance survives rigid translations and rotations
+PASS: one contact activates another shape during ordered projection
+PASS: 40 collision shapes, including contact beyond index 32
+PASS: 1/3/4 projection passes preserve ordered contact behavior
+{
+  "passed": true,
+  "max_absolute_difference": {
+    "positions": 0.0,
+    "velocities": 0.0,
+    "affine": 0.0,
+    "impulse": 0.0,
+    "accepted": 0.0,
+    "hits": 0.0
+  },
+  "clearance_initial": {
+    "mesh_point_queries": 3,
+    "clearance_skips": 3,
+    "exact_query_cache_hits": 0,
+    "velocity_projections": 0,
+    "skipped_pass_pair_tests": 0
+  },
+  "clearance_after_motion": {
+    "mesh_point_queries": 3,
+    "clearance_skips": 51,
+    "exact_query_cache_hits": 0,
+    "velocity_projections": 0,
+    "skipped_pass_pair_tests": 48
+  },
+  "reference": "/home/jhr/ws_franka/src/dual_fr3_maniskill/test/reference/contacts_before_clearance.py"
+}
+Warp initialized:
+   Version: 0.3.1
+   CUDA device: NVIDIA GeForce RTX 3090
+   Kernel cache: /home/jhr/.cache/warp/0.3.1
+Module dual_fr3_maniskill.cable.guide_cuda load took 278.35 ms
+{'sections': 201, 'rotated': False, 'moving': False, 'dt': 0.0002, 'position_max_abs_m': 8.440110832452774e-10, 'velocity_max_abs_m_s': 2.8014183044433594e-06, 'impulse_max_abs': 1.1204974725842476e-09, 'coordinate_abs': 1.5591297142236726e-09}
+{'sections': 201, 'rotated': False, 'moving': False, 'dt': 0.002, 'position_max_abs_m': 8.731149137020111e-10, 'velocity_max_abs_m_s': 6.034970283508301e-07, 'impulse_max_abs': 1.318767317570746e-10, 'coordinate_abs': 1.5591297142236726e-09}
+{'sections': 201, 'rotated': False, 'moving': True, 'dt': 0.0002, 'position_max_abs_m': 9.89530235528946e-10, 'velocity_max_abs_m_s': 3.0994415283203125e-06, 'impulse_max_abs': 5.20230969414115e-10, 'coordinate_abs': 0.0}
+{'sections': 201, 'rotated': False, 'moving': True, 'dt': 0.002, 'position_max_abs_m': 6.402842700481415e-10, 'velocity_max_abs_m_s': 3.725290298461914e-07, 'impulse_max_abs': 2.59660737356171e-10, 'coordinate_abs': 0.0}
+{'sections': 201, 'rotated': True, 'moving': False, 'dt': 0.0002, 'position_max_abs_m': 1.1920928955078125e-07, 'velocity_max_abs_m_s': 0.00011897087097167969, 'impulse_max_abs': 5.3560142987407744e-08, 'coordinate_abs': 1.8003447380010584e-05}
+{'sections': 201, 'rotated': True, 'moving': False, 'dt': 0.002, 'position_max_abs_m': 1.7881393432617188e-07, 'velocity_max_abs_m_s': 1.84476375579834e-05, 'impulse_max_abs': 7.97626853454858e-09, 'coordinate_abs': 0.00020506272655040902}
+{'sections': 201, 'rotated': True, 'moving': True, 'dt': 0.0002, 'position_max_abs_m': 1.1920928955078125e-07, 'velocity_max_abs_m_s': 0.00015023350715637207, 'impulse_max_abs': 4.3975887820124626e-08, 'coordinate_abs': 3.807331084715315e-05}
+{'sections': 201, 'rotated': True, 'moving': True, 'dt': 0.002, 'position_max_abs_m': 1.1920928955078125e-07, 'velocity_max_abs_m_s': 2.3558735847473145e-05, 'impulse_max_abs': 6.168647814774886e-09, 'coordinate_abs': 0.00020506123365748863}
+{'sections': 1501, 'rotated': False, 'moving': False, 'dt': 0.0002, 'position_max_abs_m': 3.4924596548080444e-09, 'velocity_max_abs_m_s': 9.238719940185547e-06, 'impulse_max_abs': 4.5838532969355583e-10, 'coordinate_abs': 1.0394387572887354e-09}
+{'sections': 1501, 'rotated': False, 'moving': False, 'dt': 0.002, 'position_max_abs_m': 3.4924596548080444e-09, 'velocity_max_abs_m_s': 1.607462763786316e-06, 'impulse_max_abs': 3.483364707790315e-10, 'coordinate_abs': 5.196625352255069e-10}
+{'sections': 1501, 'rotated': False, 'moving': True, 'dt': 0.0002, 'position_max_abs_m': 3.259629011154175e-09, 'velocity_max_abs_m_s': 9.328126907348633e-06, 'impulse_max_abs': 2.1827872842550278e-10, 'coordinate_abs': 1.5591012925142422e-09}
+{'sections': 1501, 'rotated': False, 'moving': True, 'dt': 0.002, 'position_max_abs_m': 3.25508153764531e-09, 'velocity_max_abs_m_s': 1.8104910850524902e-06, 'impulse_max_abs': 5.884430720470846e-10, 'coordinate_abs': 2.0788775145774707e-09}
+{'sections': 1501, 'rotated': True, 'moving': False, 'dt': 0.0002, 'position_max_abs_m': 2.384185791015625e-07, 'velocity_max_abs_m_s': 0.00015616416931152344, 'impulse_max_abs': 4.171943146502599e-08, 'coordinate_abs': 1.7114338447754562e-05}
+{'sections': 1501, 'rotated': True, 'moving': False, 'dt': 0.002, 'position_max_abs_m': 2.384185791015625e-07, 'velocity_max_abs_m_s': 1.5661120414733887e-05, 'impulse_max_abs': 5.716060513805132e-09, 'coordinate_abs': 0.00010495828303191956}
+{'sections': 1501, 'rotated': True, 'moving': True, 'dt': 0.0002, 'position_max_abs_m': 2.384185791015625e-07, 'velocity_max_abs_m_s': 0.00011593103408813477, 'impulse_max_abs': 5.098172550788149e-08, 'coordinate_abs': 6.880818716581416e-05}
+{'sections': 1501, 'rotated': True, 'moving': True, 'dt': 0.002, 'position_max_abs_m': 3.5762786865234375e-07, 'velocity_max_abs_m_s': 2.6866793632507324e-05, 'impulse_max_abs': 3.3878677641041577e-09, 'coordinate_abs': 6.110828746841435e-05}
+PASS: axial sliding, transverse velocity, moving pose and MPM buffer swap
+PASS: five chunk boundaries and nearest/first crossing selection
+PASS: lost, sticky failure, reset recovery
+PASS: fixed, sticky failure, reset recovery
+PASS: free, sticky failure, reset recovery
+PASS: nan, sticky failure, reset recovery
+PASS: coordinate, sticky failure, reset recovery
+PASS: 16 NumPy/GPU comparisons and guide behavior/error regressions

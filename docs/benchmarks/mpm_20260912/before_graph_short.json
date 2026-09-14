@@ -1,0 +1,1109 @@
+{
+  "versions": {
+    "mani-skill2": "0.5.3",
+    "sapien": "2.2.2",
+    "numpy": "1.23.5"
+  },
+  "python": "3.10.12",
+  "gpu_before": "name, driver_version, utilization.gpu [%], memory.used [MiB]\nNVIDIA GeForce RTX 3090, 580.126.09, 0 %, 1379 MiB",
+  "cpu": "x86_64",
+  "initial_positions": {
+    "left_fr3_joint1": 0.1912,
+    "left_fr3_joint2": 0.4371,
+    "left_fr3_joint3": 0.0267,
+    "left_fr3_joint4": -1.9556,
+    "left_fr3_joint5": -0.0161,
+    "left_fr3_joint6": 2.3929,
+    "left_fr3_joint7": 1.0124,
+    "right_fr3_joint1": 0.4273,
+    "right_fr3_joint2": 0.4474,
+    "right_fr3_joint3": -0.2214,
+    "right_fr3_joint4": -1.9536,
+    "right_fr3_joint5": 0.1393,
+    "right_fr3_joint6": 2.3868,
+    "right_fr3_joint7": 2.4814,
+    "left_fr3_finger_joint1": 0.0037,
+    "left_fr3_finger_joint2": 0.0037,
+    "right_fr3_finger_joint1": 0.0,
+    "right_fr3_finger_joint2": 0.0
+  },
+  "cable_config": {
+    "usb": {
+      "mesh_scale": 1.0,
+      "attachment": [
+        0.0,
+        -0.02,
+        0.0
+      ],
+      "grip_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mass": 0.015,
+      "finger_position": 0.0037
+    },
+    "cable": {
+      "initial_layout": "table_spiral",
+      "length": 1.5,
+      "diameter": 0.002,
+      "particle_spacing": 0.001,
+      "pin_length": 0.007,
+      "density": 1200.0,
+      "young_modulus": 300000.0,
+      "axial_young_modulus": 30000000.0,
+      "axial_iterations": 6,
+      "poisson_ratio": 0.3,
+      "yield_stress": 1000000000.0,
+      "friction": 0.5,
+      "contact_margin": 2e-05,
+      "contact_iterations": 2,
+      "penetration_tolerance": 0.0001
+    },
+    "guide": {
+      "half_length": 0.012
+    },
+    "mpm": {
+      "frequency": 5000,
+      "grid_spacing": 0.006,
+      "max_grid_cells": 16000000,
+      "adaptive_resolution": true,
+      "max_grid_spacing": 0.015,
+      "grid_padding": 12,
+      "marker_stride": 1
+    }
+  },
+  "simulation_config": {
+    "control_freq": 50,
+    "sim_freq": 500,
+    "publish_freq": 25,
+    "realtime_factor": 1.0,
+    "path_position_tolerance": 0.2,
+    "goal_position_tolerance": 0.005,
+    "goal_velocity_tolerance": 0.02,
+    "goal_time_tolerance": 3.0,
+    "gripper_speed": 0.04,
+    "gripper_force": 40.0,
+    "gripper_goal_tolerance": 0.001,
+    "gripper_stall_timeout": 0.5,
+    "gripper_timeout": 5.0
+  },
+  "inputs": {
+    "/home/jhr/ws_franka/src/dual_fr3_maniskill/config/trunking_cable.yaml": "5185dd56789d3a9c046f22e3476c1ad5aacfb038804d6aeeee1803aff2ddc8d5",
+    "/home/jhr/ws_franka/src/dual_fr3_maniskill/config/simulation_usb_cable.yaml": "9514385a73faaf7435945fbcc64f02158b1bd8a2a06ec3fc2f21f6ee313306f6",
+    "/home/jhr/ws_franka/src/dual_fr3_maniskill/config/profiling_trunking_pose.json": "e3997ec71d32d8f675a3e67bcdbf9d0a7f0b5fe3b334b18e55a42cd5c26acb56"
+  },
+  "robot_description_sha256": "7f48d1014886d6824b310ef2084c0c009a9161d98f77037127752c1525962d1e",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": null,
+    "CUDA_LAUNCH_BLOCKING": null,
+    "OMP_NUM_THREADS": null,
+    "OPENBLAS_NUM_THREADS": null,
+    "MKL_NUM_THREADS": null
+  },
+  "steps": 3,
+  "warmup_steps": 1,
+  "physics_source_sha256": {
+    "contacts": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+    "mpm_cable": "864c75b80fe9c855e92d15e4b0b763285f29fda58d4998946d601da94ea85a6a",
+    "guide": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+    "guide_cuda": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+    "fibers": "881a33069985120187d47de640ac9614f463a6bee56c5e599469883d8a888073",
+    "solver": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408"
+  },
+  "baseline": {
+    "step_wall_seconds": [
+      0.18738365918397903,
+      0.18772393930703402,
+      0.18733826372772455
+    ],
+    "wall_seconds": 0.5624458622187376,
+    "simulation_seconds": 0.06,
+    "realtime_factor": 0.10667693378223439,
+    "diagnostics_before": {
+      "guide_material_coordinate": 645.3451538085938,
+      "guide_radial_error_m": 1.592930658489422e-07,
+      "particles": 10507,
+      "rest_length_m": 1.5,
+      "diameter_m": 0.002,
+      "current_centerline_length_m": 1.5001945495605469,
+      "max_section_gap_m": 0.0010021990165114403,
+      "collar_next_section_gap_m": 0.0009993130806833506,
+      "attachment_error_m": 3.122830079817752e-08,
+      "attachment_force_N": [
+        -0.00028451811522245407,
+        3.0442708521150053e-05,
+        -0.0009063509060069919
+      ],
+      "max_rigid_penetration_m": 0.0,
+      "contact_margin_m": 2e-05,
+      "contact_model": "swept_section_spheres_after_fibers",
+      "contacted_bodies": [],
+      "grid_spacing_m": 0.006,
+      "grid_dimensions": [
+        48,
+        272,
+        32
+      ],
+      "grid_memory_MiB": 22.3125,
+      "grid_resolution_changes": 0,
+      "mpm_steps": 100,
+      "particle_bounds": [
+        [
+          0.6977797150611877,
+          0.482322633266449,
+          0.09732173383235931
+        ],
+        [
+          0.7796764969825745,
+          1.9376661777496338,
+          0.10061019659042358
+        ]
+      ]
+    },
+    "diagnostics_after": {
+      "guide_material_coordinate": 645.2891235351562,
+      "guide_radial_error_m": 2.059407790966361e-07,
+      "particles": 10507,
+      "rest_length_m": 1.5,
+      "diameter_m": 0.002,
+      "current_centerline_length_m": 1.5090055465698242,
+      "max_section_gap_m": 0.0010302549926564097,
+      "collar_next_section_gap_m": 0.0009980371687561274,
+      "attachment_error_m": 3.2215297924020605e-08,
+      "attachment_force_N": [
+        -0.00426635192707181,
+        0.0030932826921343803,
+        -0.0054029300808906555
+      ],
+      "max_rigid_penetration_m": 0.0,
+      "contact_margin_m": 2e-05,
+      "contact_model": "swept_section_spheres_after_fibers",
+      "contacted_bodies": [],
+      "grid_spacing_m": 0.006,
+      "grid_dimensions": [
+        48,
+        272,
+        32
+      ],
+      "grid_memory_MiB": 22.3125,
+      "grid_resolution_changes": 0,
+      "mpm_steps": 400,
+      "particle_bounds": [
+        [
+          0.6994355320930481,
+          0.4823209345340729,
+          0.06737323850393295
+        ],
+        [
+          0.7796750068664551,
+          1.9363945722579956,
+          0.10061512142419815
+        ]
+      ]
+    },
+    "offscreen_render_wall_seconds": [
+      0.028589624911546707,
+      0.028774774633347988,
+      0.028700070455670357
+    ]
+  },
+  "instrumented": {
+    "step_wall_seconds": [
+      0.2866672333329916,
+      0.2867260677739978,
+      0.28634480480104685
+    ],
+    "wall_seconds": 0.8597381059080362,
+    "simulation_seconds": 0.06,
+    "realtime_factor": 0.06978869447298644,
+    "diagnostics_before": {
+      "guide_material_coordinate": 645.34521484375,
+      "guide_radial_error_m": 1.592930658489422e-07,
+      "particles": 10507,
+      "rest_length_m": 1.5,
+      "diameter_m": 0.002,
+      "current_centerline_length_m": 1.5001946687698364,
+      "max_section_gap_m": 0.0010020565241575241,
+      "collar_next_section_gap_m": 0.0009992723353207111,
+      "attachment_error_m": 3.122826668985969e-08,
+      "attachment_force_N": [
+        -0.0002819168730638921,
+        3.059724986087531e-05,
+        -0.0009059148724190891
+      ],
+      "max_rigid_penetration_m": 0.0,
+      "contact_margin_m": 2e-05,
+      "contact_model": "swept_section_spheres_after_fibers",
+      "contacted_bodies": [],
+      "grid_spacing_m": 0.006,
+      "grid_dimensions": [
+        48,
+        272,
+        32
+      ],
+      "grid_memory_MiB": 22.3125,
+      "grid_resolution_changes": 0,
+      "mpm_steps": 100,
+      "particle_bounds": [
+        [
+          0.6977797150611877,
+          0.482322633266449,
+          0.09732162952423096
+        ],
+        [
+          0.7796764969825745,
+          1.9376661777496338,
+          0.1006101667881012
+        ]
+      ]
+    },
+    "diagnostics_after": {
+      "guide_material_coordinate": 645.2891235351562,
+      "guide_radial_error_m": 1.0491582003169242e-07,
+      "particles": 10507,
+      "rest_length_m": 1.5,
+      "diameter_m": 0.002,
+      "current_centerline_length_m": 1.5090059041976929,
+      "max_section_gap_m": 0.0010304407915100455,
+      "collar_next_section_gap_m": 0.000998008414171636,
+      "attachment_error_m": 3.221525579454088e-08,
+      "attachment_force_N": [
+        -0.004271316807717085,
+        0.00309463357552886,
+        -0.005406276322901249
+      ],
+      "max_rigid_penetration_m": 0.0,
+      "contact_margin_m": 2e-05,
+      "contact_model": "swept_section_spheres_after_fibers",
+      "contacted_bodies": [],
+      "grid_spacing_m": 0.006,
+      "grid_dimensions": [
+        48,
+        272,
+        32
+      ],
+      "grid_memory_MiB": 22.3125,
+      "grid_resolution_changes": 0,
+      "mpm_steps": 400,
+      "particle_bounds": [
+        [
+          0.6994358897209167,
+          0.4823209345340729,
+          0.06737353652715683
+        ],
+        [
+          0.7796754240989685,
+          1.9363951683044434,
+          0.10061512142419815
+        ]
+      ]
+    },
+    "timings": {
+      "component_seconds": {
+        "anchor and rigid body state": 0.032734380569308996,
+        "right guide pose upload": 0.002911314368247986,
+        "cable orchestration": 0.042288586497306824,
+        "right guide accumulation": 0.0018421821296215057,
+        "particle pinning": 0.030428387690335512,
+        "contact history": 0.004899413790553808,
+        "grid size checks": 0.1114708362147212,
+        "MPM": 0.06888348376378417,
+        "axial fibers": 0.11767957778647542,
+        "right guide": 0.2591620027087629,
+        "contact projection": 0.17314281407743692,
+        "right guide reaction": 0.0026173689402639866,
+        "PhysX rigid step": 0.0031818230636417866,
+        "rigid/cable coupling": 0.0032630162313580513,
+        "contact audit": 0.003886955790221691,
+        "other stepping and validation": 0.0013359114527702332
+      },
+      "operations": {
+        "copy/cpu->cuda": {
+          "calls": 420,
+          "inclusive_seconds": 0.003227843903005123,
+          "exclusive_seconds": 0.003227843903005123
+        },
+        "array/assign": {
+          "calls": 420,
+          "inclusive_seconds": 0.010934750083833933,
+          "exclusive_seconds": 0.00770690618082881
+        },
+        "right guide pose upload": {
+          "calls": 60,
+          "inclusive_seconds": 0.002911314368247986,
+          "exclusive_seconds": 0.001431729644536972
+        },
+        "anchor and rigid body state": {
+          "calls": 120,
+          "inclusive_seconds": 0.03564569493755698,
+          "exclusive_seconds": 0.023279215209186077
+        },
+        "array/zero_": {
+          "calls": 390,
+          "inclusive_seconds": 0.0034087402746081352,
+          "exclusive_seconds": 0.0034087402746081352
+        },
+        "kernel/clear_reaction": {
+          "calls": 90,
+          "inclusive_seconds": 0.0016172723844647408,
+          "exclusive_seconds": 0.0016172723844647408
+        },
+        "right guide accumulation": {
+          "calls": 90,
+          "inclusive_seconds": 0.0018421821296215057,
+          "exclusive_seconds": 0.00022490974515676498
+        },
+        "kernel/pin_particles": {
+          "calls": 630,
+          "inclusive_seconds": 0.028731543105095625,
+          "exclusive_seconds": 0.028731543105095625
+        },
+        "particle pinning": {
+          "calls": 630,
+          "inclusive_seconds": 0.030428387690335512,
+          "exclusive_seconds": 0.0016968445852398872
+        },
+        "kernel/section_centers": {
+          "calls": 2133,
+          "inclusive_seconds": 0.029346379451453686,
+          "exclusive_seconds": 0.029346379451453686
+        },
+        "contact history": {
+          "calls": 300,
+          "inclusive_seconds": 0.004899413790553808,
+          "exclusive_seconds": 0.0006066672503948212
+        },
+        "copy/cuda->cpu": {
+          "calls": 1056,
+          "inclusive_seconds": 0.012854328844696283,
+          "exclusive_seconds": 0.012854328844696283
+        },
+        "array/numpy": {
+          "calls": 1056,
+          "inclusive_seconds": 0.034320076927542686,
+          "exclusive_seconds": 0.021465748082846403
+        },
+        "grid size checks": {
+          "calls": 300,
+          "inclusive_seconds": 0.1114708362147212,
+          "exclusive_seconds": 0.1114708362147212
+        },
+        "kernel/zero_everything": {
+          "calls": 300,
+          "inclusive_seconds": 0.008108985144644976,
+          "exclusive_seconds": 0.008108985144644976
+        },
+        "kernel/padded_bounds": {
+          "calls": 300,
+          "inclusive_seconds": 0.004199889488518238,
+          "exclusive_seconds": 0.004199889488518238
+        },
+        "kernel/p2g": {
+          "calls": 300,
+          "inclusive_seconds": 0.021358715370297432,
+          "exclusive_seconds": 0.021358715370297432
+        },
+        "kernel/grid_op_with_contact": {
+          "calls": 300,
+          "inclusive_seconds": 0.009921116754412651,
+          "exclusive_seconds": 0.009921116754412651
+        },
+        "kernel/anchor_grid_kernel": {
+          "calls": 300,
+          "inclusive_seconds": 0.01513509126380086,
+          "exclusive_seconds": 0.01513509126380086
+        },
+        "kernel/g2p": {
+          "calls": 300,
+          "inclusive_seconds": 0.0057057226076722145,
+          "exclusive_seconds": 0.0057057226076722145
+        },
+        "MPM": {
+          "calls": 300,
+          "inclusive_seconds": 0.06888348376378417,
+          "exclusive_seconds": 0.0044539631344377995
+        },
+        "kernel/solve_fibers": {
+          "calls": 3600,
+          "inclusive_seconds": 0.10162178985774517,
+          "exclusive_seconds": 0.10162178985774517
+        },
+        "kernel/guide_centers": {
+          "calls": 1830,
+          "inclusive_seconds": 0.02573677059262991,
+          "exclusive_seconds": 0.02573677059262991
+        },
+        "kernel/scan_sections": {
+          "calls": 1830,
+          "inclusive_seconds": 0.060970657505095005,
+          "exclusive_seconds": 0.060970657505095005
+        },
+        "kernel/select_crossing": {
+          "calls": 1830,
+          "inclusive_seconds": 0.044164576567709446,
+          "exclusive_seconds": 0.044164576567709446
+        },
+        "kernel/project_guide": {
+          "calls": 1830,
+          "inclusive_seconds": 0.07302978076040745,
+          "exclusive_seconds": 0.07302978076040745
+        },
+        "kernel/sum_reactions": {
+          "calls": 1830,
+          "inclusive_seconds": 0.038131038192659616,
+          "exclusive_seconds": 0.038131038192659616
+        },
+        "right guide": {
+          "calls": 1830,
+          "inclusive_seconds": 0.2591620027087629,
+          "exclusive_seconds": 0.01712917909026146
+        },
+        "kernel/project_sections": {
+          "calls": 1830,
+          "inclusive_seconds": 0.14059959584847093,
+          "exclusive_seconds": 0.14059959584847093
+        },
+        "contact projection": {
+          "calls": 1830,
+          "inclusive_seconds": 0.17314281407743692,
+          "exclusive_seconds": 0.00754136499017477
+        },
+        "axial fibers": {
+          "calls": 300,
+          "inclusive_seconds": 0.5420344178564847,
+          "exclusive_seconds": 0.01348225399851799
+        },
+        "right guide reaction": {
+          "calls": 60,
+          "inclusive_seconds": 0.003835969604551792,
+          "exclusive_seconds": 0.0009656506590545177
+        },
+        "copy/cuda->cuda": {
+          "calls": 30,
+          "inclusive_seconds": 0.00030371034517884254,
+          "exclusive_seconds": 0.00030371034517884254
+        },
+        "cable orchestration": {
+          "calls": 30,
+          "inclusive_seconds": 0.8178260903805494,
+          "exclusive_seconds": 0.010095170233398676
+        },
+        "PhysX rigid step": {
+          "calls": 30,
+          "inclusive_seconds": 0.0031818230636417866,
+          "exclusive_seconds": 0.0031818230636417866
+        },
+        "rigid/cable coupling": {
+          "calls": 30,
+          "inclusive_seconds": 0.03349727438762784,
+          "exclusive_seconds": 0.0020602201111614704
+        },
+        "kernel/measure_clearance": {
+          "calls": 3,
+          "inclusive_seconds": 0.0031508468091487885,
+          "exclusive_seconds": 0.0031508468091487885
+        },
+        "contact audit": {
+          "calls": 3,
+          "inclusive_seconds": 0.003886955790221691,
+          "exclusive_seconds": 0.0004069809801876545
+        },
+        "other stepping and validation": {
+          "calls": 3,
+          "inclusive_seconds": 0.859728055074811,
+          "exclusive_seconds": 0.0012041968293488026
+        }
+      },
+      "transfers": {
+        "anchor and rigid body state/cpu->cuda": {
+          "calls": 360,
+          "bytes": 242880
+        },
+        "right guide pose upload/cpu->cuda": {
+          "calls": 60,
+          "bytes": 4320
+        },
+        "cable orchestration/cuda->cpu": {
+          "calls": 960,
+          "bytes": 37847040
+        },
+        "right guide reaction/cuda->cpu": {
+          "calls": 60,
+          "bytes": 1920
+        },
+        "cable orchestration/cuda->cuda": {
+          "calls": 30,
+          "bytes": 21840
+        },
+        "rigid/cable coupling/cuda->cpu": {
+          "calls": 30,
+          "bytes": 18720
+        },
+        "contact audit/cuda->cpu": {
+          "calls": 3,
+          "bytes": 1873248
+        },
+        "other stepping and validation/cuda->cpu": {
+          "calls": 3,
+          "bytes": 378252
+        }
+      }
+    }
+  },
+  "instrumentation_wall_ratio": 1.52857041656692,
+  "state_max_absolute_difference": {
+    "particles": 3.814697265625e-06,
+    "velocities": 0.008962668478488922,
+    "deformation": 0.00015262514352798462,
+    "joints": 3.5127456499139953e-13
+  },
+  "contact_details": {
+    "step_wall_seconds": [
+      0.1885902788490057,
+      0.18912470480427146,
+      0.18843122525140643
+    ],
+    "wall_seconds": 0.5661462089046836,
+    "simulation_seconds": 0.06,
+    "realtime_factor": 0.10597969050447462,
+    "diagnostics_before": {
+      "guide_material_coordinate": 645.3451538085938,
+      "guide_radial_error_m": 1.586351459081925e-07,
+      "particles": 10507,
+      "rest_length_m": 1.5,
+      "diameter_m": 0.002,
+      "current_centerline_length_m": 1.5001945495605469,
+      "max_section_gap_m": 0.001002126606181264,
+      "collar_next_section_gap_m": 0.0009992956183850765,
+      "attachment_error_m": 3.122830079817752e-08,
+      "attachment_force_N": [
+        -0.0002856216742657125,
+        3.0468909244518727e-05,
+        -0.0009064581245183945
+      ],
+      "max_rigid_penetration_m": 0.0,
+      "contact_margin_m": 2e-05,
+      "contact_model": "swept_section_spheres_after_fibers",
+      "contacted_bodies": [],
+      "grid_spacing_m": 0.006,
+      "grid_dimensions": [
+        48,
+        272,
+        32
+      ],
+      "grid_memory_MiB": 22.3125,
+      "grid_resolution_changes": 0,
+      "mpm_steps": 100,
+      "particle_bounds": [
+        [
+          0.6977797150611877,
+          0.482322633266449,
+          0.09732162952423096
+        ],
+        [
+          0.7796764969825745,
+          1.9376661777496338,
+          0.10061010718345642
+        ]
+      ]
+    },
+    "diagnostics_after": {
+      "guide_material_coordinate": 645.2887573242188,
+      "guide_radial_error_m": 1.3511662189102935e-07,
+      "particles": 10507,
+      "rest_length_m": 1.5,
+      "diameter_m": 0.002,
+      "current_centerline_length_m": 1.5090051889419556,
+      "max_section_gap_m": 0.0010303560411557555,
+      "collar_next_section_gap_m": 0.0009980244794860482,
+      "attachment_error_m": 3.221521707676487e-08,
+      "attachment_force_N": [
+        -0.004274383652955294,
+        0.0030963164754211903,
+        -0.005409009754657745
+      ],
+      "max_rigid_penetration_m": 0.0,
+      "contact_margin_m": 2e-05,
+      "contact_model": "swept_section_spheres_after_fibers",
+      "contacted_bodies": [],
+      "grid_spacing_m": 0.006,
+      "grid_dimensions": [
+        48,
+        272,
+        32
+      ],
+      "grid_memory_MiB": 22.3125,
+      "grid_resolution_changes": 0,
+      "mpm_steps": 400,
+      "particle_bounds": [
+        [
+          0.6994357109069824,
+          0.4823209345340729,
+          0.0673733726143837
+        ],
+        [
+          0.7796761393547058,
+          1.9363948106765747,
+          0.10061516612768173
+        ]
+      ]
+    },
+    "contact_details": {
+      "calls": 1830,
+      "sections": 1501,
+      "free_sections": 1493,
+      "shape_count": 26,
+      "per_shape": [
+        {
+          "shape": 0,
+          "body": 0,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link0"
+        },
+        {
+          "shape": 1,
+          "body": 1,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link1"
+        },
+        {
+          "shape": 2,
+          "body": 2,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link2"
+        },
+        {
+          "shape": 3,
+          "body": 3,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link3"
+        },
+        {
+          "shape": 4,
+          "body": 4,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link4"
+        },
+        {
+          "shape": 5,
+          "body": 5,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link5"
+        },
+        {
+          "shape": 6,
+          "body": 6,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link6"
+        },
+        {
+          "shape": 7,
+          "body": 7,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_link7"
+        },
+        {
+          "shape": 8,
+          "body": 8,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_hand"
+        },
+        {
+          "shape": 9,
+          "body": 9,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_leftfinger"
+        },
+        {
+          "shape": 10,
+          "body": 10,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "left_fr3_rightfinger"
+        },
+        {
+          "shape": 11,
+          "body": 11,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link0"
+        },
+        {
+          "shape": 12,
+          "body": 12,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link1"
+        },
+        {
+          "shape": 13,
+          "body": 13,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link2"
+        },
+        {
+          "shape": 14,
+          "body": 14,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link3"
+        },
+        {
+          "shape": 15,
+          "body": 15,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link4"
+        },
+        {
+          "shape": 16,
+          "body": 16,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link5"
+        },
+        {
+          "shape": 17,
+          "body": 17,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link6"
+        },
+        {
+          "shape": 18,
+          "body": 18,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_link7"
+        },
+        {
+          "shape": 19,
+          "body": 19,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_hand"
+        },
+        {
+          "shape": 20,
+          "body": 20,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 42090,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 42090,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_leftfinger"
+        },
+        {
+          "shape": 21,
+          "body": 21,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 42090,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 42090,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "right_fr3_rightfinger"
+        },
+        {
+          "shape": 22,
+          "body": 22,
+          "kind": 1,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "worktable"
+        },
+        {
+          "shape": 23,
+          "body": 23,
+          "kind": 1,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "plate"
+        },
+        {
+          "shape": 24,
+          "body": 24,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "trunking"
+        },
+        {
+          "shape": 25,
+          "body": 25,
+          "kind": 3,
+          "pair_tests": 2732190,
+          "candidate_sweeps": 0,
+          "surface_queries": 0,
+          "mesh_point_queries": 0,
+          "mesh_ray_queries": 0,
+          "exhausted_sweeps": 0,
+          "max_sweep_iterations": 0,
+          "velocity_projections": 0,
+          "exact_query_cache_hits": 0,
+          "clearance_skips": 0,
+          "skipped_pass_pair_tests": 2732190,
+          "actor": "usb_cable_demo_plug"
+        }
+      ]
+    }
+  },
+  "contact_details_state_max_absolute_difference": {
+    "particles": 5.245208740234375e-06,
+    "velocities": 0.009317219257354736,
+    "deformation": 0.00011995434761047363,
+    "joints": 3.9479530755670567e-13
+  }
+}

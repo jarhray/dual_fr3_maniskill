@@ -6,6 +6,9 @@ import json
 from pathlib import Path
 import time
 
+# Import before ManiSkill to preserve the system Vulkan driver discovery.
+from dual_fr3_maniskill.sapien_compat import sapien  # noqa: F401
+
 import gymnasium as gym
 import numpy as np
 

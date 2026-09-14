@@ -3,8 +3,15 @@ project(dual_fr3_maniskill)
 find_package(ament_cmake REQUIRED)
 find_package(ament_cmake_python REQUIRED)
 ament_python_install_package(${PROJECT_NAME})
-install(PROGRAMS scripts/maniskill_bridge.py scripts/usb_cable_bridge.py scripts/trunking_cable_bridge.py scripts/check_simulation.py scripts/check_mpm.py
-  DESTINATION lib/${PROJECT_NAME})
+install(PROGRAMS
+  scripts/maniskill_bridge.py
+  scripts/usb_cable_bridge.py
+  scripts/trunking_cable_bridge.py
+  scripts/check_simulation.py
+  scripts/check_mpm.py
+  scripts/profile_trunking_cable.py
+  DESTINATION lib/${PROJECT_NAME}
+)
 install(DIRECTORY launch config meshes docs DESTINATION share/${PROJECT_NAME})
 install(FILES README.md requirements-maniskill2.txt DESTINATION share/${PROJECT_NAME})
 if(BUILD_TESTING)
@@ -13,5 +20,8 @@ if(BUILD_TESTING)
   ament_add_pytest_test(test_assets test/test_assets.py)
   ament_add_pytest_test(test_cable_model test/test_cable_model.py)
   ament_add_pytest_test(test_threading test/test_threading.py)
+  ament_add_pytest_test(test_sapien_compat test/test_sapien_compat.py)
+  ament_add_pytest_test(test_warp_setup test/test_warp_setup.py)
+  ament_add_pytest_test(test_cable_profile test/test_cable_profile.py)
 endif()
 ament_package()

@@ -1,5 +1,4 @@
 from pathlib import Path
-from types import SimpleNamespace as NS
 
 import numpy as np
 import pytest
@@ -7,7 +6,6 @@ from scipy.spatial.transform import Rotation
 
 from dual_fr3_maniskill.cable.model import cable_particles, load_config, USB_LINK
 from dual_fr3_maniskill.cable.threading import task_usb_mount, threaded_positions, guide_projection
-from dual_fr3_maniskill.cable.guide import SlidingGuide
 
 
 CONFIG = Path(__file__).resolve().parents[1] / "config/trunking_cable.yaml"
@@ -54,32 +52,8 @@ def test_material_crossing_changes_under_axial_sliding_without_axial_correction(
     assert np.all(shift[:4] == 0.)
 
 
-class Array:
-    def __init__(self, data):
-        self.data = np.array(data)
-
-    def numpy(self):
-        return self.data.copy()
-
-    def assign(self, data):
-        self.data = data.copy()
-
-
-def test_guide_removes_transverse_velocity_but_keeps_axial_sliding():
-    centers = np.column_stack((np.linspace(-.1, .1, 201), np.zeros((201, 2))))
-    state = NS(particle_q=Array(np.repeat(centers, 7, axis=0)),
-               particle_qd=Array(np.tile([.3, .2, .1], (201*7, 1))))
-    link = NS(pose=NS(p=np.zeros(3), q=[1., 0., 0., 0.]), velocity=np.zeros(3),
-              angular_velocity=np.zeros(3), cmass_local_pose=NS(p=np.zeros(3)))
-    cable = NS(states=[NS(struct=state)], sections=201, pin_ids_np=np.arange(28),
-               model=NS(struct=NS(particle_mass=Array(np.full(201*7, 1e-5)))))
-    guide = SlidingGuide(link, {"half_length": .008}, 100.)
-    guide.solve(cable, .002)
-    velocities = state.particle_qd.numpy().reshape(201, 7, 3)
-    np.testing.assert_allclose(velocities[:, :, 0], .3)
-    np.testing.assert_allclose(velocities[96:105, :, 1:], 0., atol=1e-7)
-    assert guide.impulse[3] == pytest.approx(0.)
-    assert guide.impulse[4] > 0.
+# The particle/velocity guide regression now runs on real CUDA arrays in
+# check_guide_cuda.py, alongside comparison against the frozen NumPy solver.
 
 def test_closed_shell_validation_keeps_cad_junctions_and_rejects_open_mesh():
     import trimesh

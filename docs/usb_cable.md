@@ -37,6 +37,9 @@ ros2 launch dual_fr3_moveit_config maniskill.launch.py maniskill_scene:=usb_cabl
 
 本页的独立 USB 场景采用固定安装并禁止左夹爪动作。MTC 使用另一个 `trunking_cable` 场景，在准备夹持后生成线缆，见 [MTC 线缆接口](mtc_cable.md)。两种场景的柔性线缆均不参与 MoveIt 避障。
 
+当前只实现 MPM 线缆。执行优化与验证见 [MPM 性能说明](mpm_performance.md)；
+后续细杆模型及参数选择的接入边界见[后端交接说明](cable_backends.md)，该选择功能尚未实现。
+
 需要可用的 NVIDIA CUDA GPU 和 Vulkan 显示环境。启动时会编译自定义固定点、网格边界和纤维内核。先关闭其他发布 `/joint_states`、`/clock` 的机器人仿真。
 
 RViz 默认选择 `left_fr3_arm`。拖动末端交互标记，点击 **Plan & Execute**，从小幅运动开始。拖动标记只修改规划目标，执行后的实际关节反馈才驱动 RViz 机器人。橙色线来自 MPM 粒子反馈。默认速度和加速度比例均为 0.05；MPM 可能明显慢于实时，请按仿真时间观察。

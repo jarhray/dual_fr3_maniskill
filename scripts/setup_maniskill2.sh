@@ -7,10 +7,10 @@ package="$workspace/src/dual_fr3_maniskill"
 deps="$workspace/.deps"
 source_dir="$deps/ManiSkill-0.5.3"
 venv="$workspace/.venv"
-cuda_path=${MANISKILL_CUDA_PATH:-/usr/local/cuda-11.8}
+cuda_path=$(PYTHONPATH="$package${PYTHONPATH:+:$PYTHONPATH}" /usr/bin/python3 -c \
+    'from dual_fr3_maniskill.warp_setup import find_cuda_toolkit; print(find_cuda_toolkit())')
 mkdir -p "$deps"
 touch "$deps/COLCON_IGNORE"
-test -x "$cuda_path/bin/nvcc" || { echo "Set MANISKILL_CUDA_PATH to a CUDA 11.x toolkit." >&2; exit 1; }
 if [[ ! -f "$source_dir/setup.py" ]]; then
     curl -L --fail --retry 3 https://codeload.github.com/mani-skill/ManiSkill/tar.gz/refs/tags/v0.5.3 \
         -o "$deps/maniskill2-v0.5.3.tar.gz"
@@ -34,10 +34,8 @@ if ! "$venv/bin/python" -m pip --version >/dev/null 2>&1; then
 fi
 "$venv/bin/python" -m pip install 'pip==25.3' 'setuptools==75.8.0' 'wheel==0.45.1'
 "$venv/bin/python" -m pip install -r "$package/requirements-maniskill2.txt" -e "$source_dir"
-if [[ ! -s "$source_dir/warp_maniskill/warp/bin/warp.so" ]]; then
-    CUDA_PATH="$cuda_path" PYTHONPATH="$source_dir/warp_maniskill:${PYTHONPATH:-}" \
-        "$venv/bin/python" -m warp_maniskill.build_lib --cuda_path "$cuda_path"
-fi
+PYTHONPATH="$package${PYTHONPATH:+:$PYTHONPATH}" \
+    "$venv/bin/python" -m dual_fr3_maniskill.warp_setup --cuda-path "$cuda_path"
 test -s "$source_dir/warp_maniskill/warp/bin/warp.so"
 "$venv/bin/python" -m pip check
 "$venv/bin/python" -m pip freeze --local > "$deps/maniskill2-installed.txt"

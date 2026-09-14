@@ -1,8 +1,9 @@
 """ManiSkill2 / SAPIEN 2 environment and measured state for the ROS bridge."""
 from __future__ import annotations
 
+from .sapien_compat import sapien
+
 import numpy as np
-import sapien.core as sapien
 from mani_skill2.agents.base_agent import AgentConfig, BaseAgent
 from mani_skill2.agents.controllers import PDJointPosControllerConfig
 from mani_skill2.envs.sapien_env import BaseEnv

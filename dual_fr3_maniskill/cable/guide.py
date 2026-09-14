@@ -2,44 +2,108 @@
 import numpy as np
 from transforms3d.quaternions import quat2mat
 
-from .threading import guide_projection
-
 
 class SlidingGuide:
     def __init__(self, link, config, material_coordinate):
         self.link, self.config = link, config
-        self.material_coordinate = material_coordinate
-        self.impulse = np.zeros(6)
+        self._coordinate = float(material_coordinate)
+        self._cable = None
+        self._dirty = False
         self.radial_error = 0.
 
-    def begin_step(self):
-        self.impulse[:] = 0.
+    def bind(self, cable):
+        """Allocate once; every solve uses the current MPM ping-pong state."""
+        # ManiSkill selects its matching Warp before the MPM cable is created.
+        # Keep imports lazy so geometry/configuration tools stay CUDA-independent.
+        import warp as wp
+        from . import guide_cuda as kernels
+        if self._cable is not None:
+            if self._cable is not cable:
+                raise ValueError("A sliding guide cannot be shared between cables")
+            return
+        if (cable.sections < 4 or not np.isfinite(self.config['half_length'])
+                or self.config['half_length'] <= 0):
+            raise RuntimeError("Invalid right TCP guide state")
+        self.wp, self.kernels = wp, kernels
+        self.device = cable.device
+        self._cable = cable
+        self._chunks = (cable.sections + kernels.CHUNK - 1) // kernels.CHUNK
+        self._centers = wp.zeros(cable.sections, dtype=wp.vec3, device=self.device)
+        self._arc = wp.zeros(cable.sections, dtype=float, device=self.device)
+        self._chunk_data = wp.zeros(self._chunks, dtype=wp.vec4, device=self.device)
+        self._offsets = wp.zeros(self._chunks, dtype=float, device=self.device)
+        self._control = wp.zeros(2, dtype=float, device=self.device)
+        self._reactions = wp.zeros(cable.sections, dtype=wp.spatial_vector, device=self.device)
+        self._pose = wp.zeros(6, dtype=wp.vec3, device=self.device)
+        summary = np.zeros(8, dtype=np.float32)
+        summary[6] = self._coordinate
+        self._summary = wp.array(summary, dtype=float, device=self.device)
 
-    def solve(self, cable, dt):
-        state = cable.states[0].struct
-        positions = state.particle_q.numpy().reshape(cable.sections, 7, 3)
-        velocities = state.particle_qd.numpy().reshape(cable.sections, 7, 3)
-        before = velocities.copy()
+    @property
+    def material_coordinate(self):
+        if self._cable is not None and self._dirty:
+            self._coordinate = float(self._summary.numpy()[6])
+            self._dirty = False
+        return self._coordinate
+
+    @material_coordinate.setter
+    def material_coordinate(self, value):
+        self._coordinate = float(value)
+        self._dirty = False
+        if self._cable is not None:
+            source = self.wp.array(np.array([value], dtype=np.float32), dtype=float, device='cpu')
+            self.wp.copy(self._summary, source, dest_offset=6, count=1)
+
+    @property
+    def impulse(self):
+        """Diagnostic readback only; the solve loop never accesses this property."""
+        return self._summary.numpy()[:6].copy() if self._cable is not None else np.zeros(6)
+
+    def update_pose(self):
+        """Upload 72 bytes once at each pre/post-PhysX coupling boundary."""
         pose = self.link.pose
         rotation = quat2mat(pose.q)
         axis = rotation[:, 0]
-        centers = positions.mean(axis=1)
-        shift, weight, coordinate = guide_projection(centers, pose.p, axis,
-            self.material_coordinate, self.config["half_length"], len(cable.pin_ids_np)//7)
-        self.material_coordinate = coordinate
-        positions += shift[:, None, :]
-        velocities += shift[:, None, :] / dt
         com = rotation @ self.link.cmass_local_pose.p + pose.p
-        hole_velocity = self.link.velocity + np.cross(self.link.angular_velocity, centers - com)
-        relative = velocities.mean(axis=1) - hole_velocity
-        normal = relative - (relative @ axis)[:, None]*axis
-        velocities -= (weight[:, None]*normal)[:, None, :]
-        mass = cable.model.struct.particle_mass.numpy().reshape(cable.sections, 7, 1)
-        impulse = -mass * (velocities - before)
-        self.impulse[3:] += impulse.sum(axis=(0, 1))
-        self.impulse[:3] += np.cross(positions - com, impulse).sum(axis=(0, 1))
-        state.particle_q.assign(positions.reshape(-1, 3).astype(np.float32))
-        state.particle_qd.assign(velocities.reshape(-1, 3).astype(np.float32))
+        data = np.array([pose.p, axis, axis / np.linalg.norm(axis), com,
+                         self.link.velocity, self.link.angular_velocity], dtype=np.float32)
+        if not np.isfinite(data).all():
+            raise RuntimeError("Invalid right TCP guide state")
+        self._pose.assign(data)
+
+    def begin_step(self, *, reset=False):
+        if self._cable is None:
+            return
+        self.wp.launch(self.kernels.clear_reaction, dim=6,
+                       inputs=[self._summary], device=self.device)
+        if reset:
+            zero = self.wp.array(np.zeros(1, dtype=np.float32), dtype=float, device='cpu')
+            self.wp.copy(self._summary, zero, dest_offset=7, count=1)
+
+    def solve(self, cable, dt):
+        if self._cable is None:
+            self.bind(cable)
+            self.update_pose()
+        elif self._cable is not cable:
+            raise ValueError("A sliding guide cannot be shared between cables")
+        if not np.isfinite(dt) or dt <= 0:
+            raise ValueError("Guide time step must be positive and finite")
+        state = cable.states[0].struct
+        wp, k = self.wp, self.kernels
+        pinned = len(cable.pin_ids_np) // 7
+        wp.launch(k.guide_centers, dim=cable.sections,
+                  inputs=[state.particle_q, self._centers], device=self.device)
+        wp.launch(k.scan_sections, dim=self._chunks, inputs=[self._centers, self._pose,
+                  self._summary, self._arc, self._chunk_data, cable.sections], device=self.device)
+        wp.launch(k.select_crossing, dim=1, inputs=[self._chunk_data, self._arc, self._offsets,
+                  self._summary, self._control, self._chunks, cable.sections, pinned], device=self.device)
+        wp.launch(k.project_guide, dim=cable.sections, inputs=[state.particle_q, state.particle_qd,
+                  cable.model.struct.particle_mass, self._centers, self._pose, self._arc,
+                  self._offsets, self._control, self._summary, self._reactions,
+                  self.config['half_length'], pinned, dt], device=self.device)
+        wp.launch(k.sum_reactions, dim=self._chunks,
+                  inputs=[self._reactions, self._summary, cable.sections], device=self.device)
+        self._dirty = True
 
     def measure(self, centers):
         """Measure the final state, including any subsequent rigid contact correction."""
@@ -53,7 +117,19 @@ class SlidingGuide:
         self.radial_error = float(np.max(np.linalg.norm(radial[core], axis=1), initial=0.))
 
     def apply_reaction(self, dt):
-        if not np.isfinite(self.impulse).all():
+        # One 32-byte readback, before advancing PhysX. Device failures are
+        # sticky, so a later valid crossing cannot conceal loss of threading.
+        summary = self._summary.numpy()
+        self._coordinate = float(summary[6])
+        self._dirty = False
+        errors = {1: "Invalid right TCP guide state",
+                  2: "Cable no longer crosses the right TCP guide; stop and reset the scene",
+                  3: "USB fixed end or cable free end reached the right TCP guide"}
+        if not np.isfinite(summary[7]):
             raise RuntimeError("Non-finite right-guide reaction")
-        self.link.add_force_torque(self.impulse[3:]/dt, self.impulse[:3]/dt)
-        self.impulse[:] = 0.
+        if summary[7] != 0:
+            raise RuntimeError(errors.get(int(summary[7]), "Invalid right TCP guide state"))
+        if not np.isfinite(summary).all():
+            raise RuntimeError("Non-finite right-guide reaction")
+        self.link.add_force_torque(summary[3:6].astype(float)/dt, summary[:3].astype(float)/dt)
+        self.begin_step()

@@ -1,0 +1,5171 @@
+{
+  "steps": 20,
+  "post_reset_steps": 5,
+  "position_limit_mm": 0.16,
+  "cable_config": {
+    "usb": {
+      "mesh_scale": 1.0,
+      "attachment": [
+        0.0,
+        -0.02,
+        0.0
+      ],
+      "grip_center": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "mass": 0.015,
+      "finger_position": 0.0037
+    },
+    "cable": {
+      "initial_layout": "table_spiral",
+      "length": 1.5,
+      "diameter": 0.002,
+      "particle_spacing": 0.001,
+      "pin_length": 0.007,
+      "density": 1200.0,
+      "young_modulus": 300000.0,
+      "axial_young_modulus": 30000000.0,
+      "axial_iterations": 6,
+      "poisson_ratio": 0.3,
+      "yield_stress": 1000000000.0,
+      "friction": 0.5,
+      "contact_margin": 2e-05,
+      "contact_iterations": 2,
+      "penetration_tolerance": 0.0001
+    },
+    "guide": {
+      "half_length": 0.012
+    },
+    "mpm": {
+      "frequency": 5000,
+      "grid_spacing": 0.006,
+      "max_grid_cells": 16000000,
+      "adaptive_resolution": true,
+      "max_grid_spacing": 0.015,
+      "grid_padding": 12,
+      "marker_stride": 1,
+      "cuda_graph": true,
+      "gpu_grid_check": true
+    }
+  },
+  "simulation_config": {
+    "control_freq": 50,
+    "sim_freq": 500,
+    "publish_freq": 25,
+    "realtime_factor": 1.0,
+    "path_position_tolerance": 0.2,
+    "goal_position_tolerance": 0.005,
+    "goal_velocity_tolerance": 0.02,
+    "goal_time_tolerance": 3.0,
+    "gripper_speed": 0.04,
+    "gripper_force": 40.0,
+    "gripper_goal_tolerance": 0.001,
+    "gripper_stall_timeout": 0.5,
+    "gripper_timeout": 5.0
+  },
+  "source_sha256": {
+    "execution.py": "ef1596921adcdd827ad6782192c04c4d71645ef84c415819e6f0ce285e976f75",
+    "mpm_cable.py": "2f67b177d7b103547affc084f6fbafad761e7369eb9610a5211d421fdb4e40ea",
+    "guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+    "ros_bridge.py": "c4f217613c66b01daf30192ebbd5e7d50b854d756f6dd68387ef1529e55c8ced",
+    "mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+    "__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+    "planning_scene.py": "9c765c4a38d4f55045b58ffeeb254a9216873f07e0bc2c906aa116567566115e",
+    "contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+    "threading.py": "a571b3645386b5175331080ca04a6e2362445c3198593db05a679020c735e0c0",
+    "solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+    "guide.py": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+    "trunking_bridge.py": "11d72d1bf2f7ba4e35fea69ad8ede43e949e8b9a0ec57568c845079efb92fe78",
+    "model.py": "2190e9a8e6e63d7fe0d119a8373a2742f4902450e1c9915aecef64576b0f2287",
+    "fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61"
+  },
+  "plain6": {
+    "diagnostics": [
+      {
+        "guide_material_coordinate": 645.396728515625,
+        "guide_radial_error_m": 1.2904973800687003e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.500192642211914,
+        "max_section_gap_m": 0.0010021466296166182,
+        "collar_next_section_gap_m": 0.0009992457926273346,
+        "attachment_error_m": 3.1597133581039245e-08,
+        "attachment_force_N": [
+          -0.00028895449941046536,
+          2.9558561436715536e-05,
+          -0.0009070581290870905
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 100,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6977797150611877,
+            0.4823299050331116,
+            0.09732167422771454
+          ],
+          [
+            0.7796841263771057,
+            1.9376661777496338,
+            0.10061103105545044
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.521240234375,
+        "guide_radial_error_m": 1.8505575383187534e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.501847743988037,
+        "max_section_gap_m": 0.0010092636803165078,
+        "collar_next_section_gap_m": 0.000995228998363018,
+        "attachment_error_m": 3.1572217040872946e-08,
+        "attachment_force_N": [
+          -0.0009974020067602396,
+          0.0002116250980179757,
+          -0.0013858077581971884
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 200,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6978233456611633,
+            0.4823387563228607,
+            0.09112812578678131
+          ],
+          [
+            0.7796955108642578,
+            1.9376661777496338,
+            0.10061195492744446
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.6979370117188,
+        "guide_radial_error_m": 1.8117613365120633e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5054409503936768,
+        "max_section_gap_m": 0.001019774004817009,
+        "collar_next_section_gap_m": 0.000994963920675218,
+        "attachment_error_m": 3.1796805637803015e-08,
+        "attachment_force_N": [
+          -0.0023967367596924305,
+          0.0008612337405793369,
+          -0.0025950404815375805
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 300,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6981689929962158,
+            0.48234882950782776,
+            0.08106662333011627
+          ],
+          [
+            0.7796969413757324,
+            1.9375756978988647,
+            0.10061217844486237
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.907958984375,
+        "guide_radial_error_m": 1.6821179826820298e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5089881420135498,
+        "max_section_gap_m": 0.0010301063302904367,
+        "collar_next_section_gap_m": 0.000997805269435048,
+        "attachment_error_m": 3.251925666614893e-08,
+        "attachment_force_N": [
+          -0.004258417058736086,
+          0.0030719812493771315,
+          -0.0053938995115458965
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 400,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6994273066520691,
+            0.48235848546028137,
+            0.06737112998962402
+          ],
+          [
+            0.7796897292137146,
+            1.9363967180252075,
+            0.10061882436275482
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.8750610351562,
+        "guide_radial_error_m": 8.535144502275216e-08,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5181750059127808,
+        "max_section_gap_m": 0.0010650105541571975,
+        "collar_next_section_gap_m": 0.0009990041144192219,
+        "attachment_error_m": 3.11984823199674e-08,
+        "attachment_force_N": [
+          -0.006075366400182247,
+          0.009674791246652603,
+          -0.010875813663005829
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 500,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7025059461593628,
+            0.48236626386642456,
+            0.04983258619904518
+          ],
+          [
+            0.7796819806098938,
+            1.933009386062622,
+            0.10062418133020401
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 648.0166015625,
+        "guide_radial_error_m": 2.0470866957111866e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.522101640701294,
+        "max_section_gap_m": 0.0011088558239862323,
+        "collar_next_section_gap_m": 0.0009992168052121997,
+        "attachment_error_m": 3.137258347126502e-08,
+        "attachment_force_N": [
+          -0.007714548148214817,
+          0.025375470519065857,
+          -0.02037419006228447
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 600,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7098527550697327,
+            0.482371062040329,
+            0.02845756523311138
+          ],
+          [
+            0.7796739339828491,
+            1.9273678064346313,
+            0.100624680519104
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 647.5224609375,
+        "guide_radial_error_m": 1.3516729779894376e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5149860382080078,
+        "max_section_gap_m": 0.0010508279083296657,
+        "collar_next_section_gap_m": 0.0009996239095926285,
+        "attachment_error_m": 3.321474120815402e-08,
+        "attachment_force_N": [
+          0.001189288217574358,
+          -0.005980676971375942,
+          0.0033602057956159115
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 700,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7139637470245361,
+            0.4823719561100006,
+            0.0029242592863738537
+          ],
+          [
+            0.7796725034713745,
+            1.919690489768982,
+            0.10062233358621597
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.5349731445312,
+        "guide_radial_error_m": 1.7288679998728185e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5130105018615723,
+        "max_section_gap_m": 0.0010547960409894586,
+        "collar_next_section_gap_m": 0.001000025193206966,
+        "attachment_error_m": 2.9815026872797546e-08,
+        "attachment_force_N": [
+          0.0021599859464913607,
+          0.012275812216103077,
+          -0.007211103104054928
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 800,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7150751352310181,
+            0.48236799240112305,
+            -0.02654670737683773
+          ],
+          [
+            0.7796738743782043,
+            1.9061259031295776,
+            0.10061744600534439
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 643.8944091796875,
+        "guide_radial_error_m": 1.9792543071162072e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5150989294052124,
+        "max_section_gap_m": 0.001078120549209416,
+        "collar_next_section_gap_m": 0.00100027269218117,
+        "attachment_error_m": 3.12080410915083e-08,
+        "attachment_force_N": [
+          0.0018303963588550687,
+          0.003723413683474064,
+          -0.002976367250084877
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 900,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.716261625289917,
+            0.48235946893692017,
+            -0.060013268142938614
+          ],
+          [
+            0.7796720862388611,
+            1.8943449258804321,
+            0.10062143951654434
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 642.4970092773438,
+        "guide_radial_error_m": 1.2146516326083656e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5185706615447998,
+        "max_section_gap_m": 0.001058145659044385,
+        "collar_next_section_gap_m": 0.0010006543016061187,
+        "attachment_error_m": 3.052494188674599e-08,
+        "attachment_force_N": [
+          0.00010693254444049671,
+          0.00785096175968647,
+          -0.007576566655188799
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1000,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7205343246459961,
+            0.4823474586009979,
+            -0.09709220379590988
+          ],
+          [
+            0.779664158821106,
+            1.8810451030731201,
+            0.10063596069812775
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 638.1121215820312,
+        "guide_radial_error_m": 1.274331680178875e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.520233154296875,
+        "max_section_gap_m": 0.001061246613971889,
+        "collar_next_section_gap_m": 0.0010008723475039005,
+        "attachment_error_m": 3.235967248000513e-08,
+        "attachment_force_N": [
+          -0.00032764303614385426,
+          0.0017295127036049962,
+          -0.002519100671634078
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1100,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7259723544120789,
+            0.48233354091644287,
+            -0.13826218247413635
+          ],
+          [
+            0.7796623110771179,
+            1.8618505001068115,
+            0.10063616186380386
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 634.5629272460938,
+        "guide_radial_error_m": 1.489399465981478e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5230646133422852,
+        "max_section_gap_m": 0.0010649214964359999,
+        "collar_next_section_gap_m": 0.0010011856211349368,
+        "attachment_error_m": 3.1388533689155625e-08,
+        "attachment_force_N": [
+          -0.003907266538590193,
+          0.010801075026392937,
+          -0.011379971168935299
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1200,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262538075447083,
+            0.4823155701160431,
+            -0.1834326982498169
+          ],
+          [
+            0.7796813249588013,
+            1.8385881185531616,
+            0.10062523931264877
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 631.4948120117188,
+        "guide_radial_error_m": 1.4492725597392564e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.523375153541565,
+        "max_section_gap_m": 0.0010652031050994992,
+        "collar_next_section_gap_m": 0.0010010430123656988,
+        "attachment_error_m": 3.130262325267948e-08,
+        "attachment_force_N": [
+          -0.00036495711538009346,
+          0.0057174889370799065,
+          -0.005058814771473408
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1300,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262381315231323,
+            0.48229625821113586,
+            -0.23232415318489075
+          ],
+          [
+            0.7798014879226685,
+            1.812623143196106,
+            0.10060883313417435
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 626.7977905273438,
+        "guide_radial_error_m": 2.009871735708657e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5275405645370483,
+        "max_section_gap_m": 0.001067987410351634,
+        "collar_next_section_gap_m": 0.0010009286925196648,
+        "attachment_error_m": 3.000863694020488e-08,
+        "attachment_force_N": [
+          2.548848897276912e-06,
+          0.015371951274573803,
+          -0.009920733980834484
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          96
+        ],
+        "grid_memory_MiB": 66.9375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1400,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.726249098777771,
+            0.48227953910827637,
+            -0.2851756513118744
+          ],
+          [
+            0.7799038887023926,
+            1.78116774559021,
+            0.10059818625450134
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 622.1560668945312,
+        "guide_radial_error_m": 1.6637631006233278e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5310463905334473,
+        "max_section_gap_m": 0.001105781295336783,
+        "collar_next_section_gap_m": 0.0010006997035816312,
+        "attachment_error_m": 3.18635280354151e-08,
+        "attachment_force_N": [
+          -0.000841609260533005,
+          0.008553793653845787,
+          -0.004641952458769083
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1500,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.725916862487793,
+            0.4822670817375183,
+            -0.3419818878173828
+          ],
+          [
+            0.7799824476242065,
+            1.7444339990615845,
+            0.10058838874101639
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 617.8561401367188,
+        "guide_radial_error_m": 1.7620480718960607e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5352959632873535,
+        "max_section_gap_m": 0.0010918951593339443,
+        "collar_next_section_gap_m": 0.0010005225194618106,
+        "attachment_error_m": 3.0513024901146075e-08,
+        "attachment_force_N": [
+          -0.0031638829968869686,
+          0.012570693157613277,
+          -0.006955614313483238
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1600,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7257297039031982,
+            0.48226019740104675,
+            -0.402653306722641
+          ],
+          [
+            0.7800484895706177,
+            1.701966404914856,
+            0.10056941211223602
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 611.7662963867188,
+        "guide_radial_error_m": 1.427587505986594e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5398244857788086,
+        "max_section_gap_m": 0.00110517384018749,
+        "collar_next_section_gap_m": 0.0010000072652474046,
+        "attachment_error_m": 3.042518330620311e-08,
+        "attachment_force_N": [
+          -0.004462291486561298,
+          0.011822018772363663,
+          -0.006334142293781042
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          128
+        ],
+        "grid_memory_MiB": 89.25,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1700,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7253966927528381,
+            0.4822590947151184,
+            -0.4671078026294708
+          ],
+          [
+            0.7800668478012085,
+            1.651151180267334,
+            0.1005520299077034
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 607.080078125,
+        "guide_radial_error_m": 1.2445241281966446e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5462082624435425,
+        "max_section_gap_m": 0.0011268805246800184,
+        "collar_next_section_gap_m": 0.0009996929438784719,
+        "attachment_error_m": 3.3165656198454026e-08,
+        "attachment_force_N": [
+          -0.004436716437339783,
+          0.024953356012701988,
+          -0.010814262554049492
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1800,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254647612571716,
+            0.4822643995285034,
+            -0.535487949848175
+          ],
+          [
+            0.7800344228744507,
+            1.5905418395996094,
+            0.10056186467409134
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 602.7625732421875,
+        "guide_radial_error_m": 1.9627545100320276e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5560266971588135,
+        "max_section_gap_m": 0.001132983947172761,
+        "collar_next_section_gap_m": 0.000999073381535709,
+        "attachment_error_m": 3.175481023614671e-08,
+        "attachment_force_N": [
+          -0.0016932175494730473,
+          0.027626117691397667,
+          -0.009031874127686024
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1900,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254027724266052,
+            0.48227590322494507,
+            -0.6076939702033997
+          ],
+          [
+            0.7799662947654724,
+            1.519212245941162,
+            0.10056769102811813
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 598.8861694335938,
+        "guide_radial_error_m": 1.4429497241508216e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5665578842163086,
+        "max_section_gap_m": 0.0011598829878494143,
+        "collar_next_section_gap_m": 0.0009985498618334532,
+        "attachment_error_m": 3.194831365606339e-08,
+        "attachment_force_N": [
+          0.0004680614802055061,
+          0.031517352908849716,
+          -0.0053793019615113735
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2000,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254173159599304,
+            0.482292115688324,
+            -0.6838298439979553
+          ],
+          [
+            0.7798762321472168,
+            1.4301576614379883,
+            0.10057684779167175
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.0067749023438,
+        "guide_radial_error_m": 1.7215884895449562e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.500196099281311,
+        "max_section_gap_m": 0.0010022285860031843,
+        "collar_next_section_gap_m": 0.0009996662847697735,
+        "attachment_error_m": 3.031587408158901e-08,
+        "attachment_force_N": [
+          -0.0002872366167139262,
+          2.9619690394611098e-05,
+          -0.0009072594111785293
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2100,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6978734731674194,
+            0.48230236768722534,
+            0.09730411320924759
+          ],
+          [
+            0.7798654437065125,
+            1.9375848770141602,
+            0.10060926526784897
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.169677734375,
+        "guide_radial_error_m": 1.360720318643871e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5018478631973267,
+        "max_section_gap_m": 0.0010092969750985503,
+        "collar_next_section_gap_m": 0.0009954723063856363,
+        "attachment_error_m": 3.110001369066364e-08,
+        "attachment_force_N": [
+          -0.0010059375781565905,
+          0.00021157348237466067,
+          -0.0013885007938370109
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2200,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6979178190231323,
+            0.48230859637260437,
+            0.09111038595438004
+          ],
+          [
+            0.779768705368042,
+            1.9375845193862915,
+            0.10060741007328033
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.2516479492188,
+        "guide_radial_error_m": 1.5840062417282752e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5054361820220947,
+        "max_section_gap_m": 0.0010198215022683144,
+        "collar_next_section_gap_m": 0.0009954868583008647,
+        "attachment_error_m": 3.1172279357485454e-08,
+        "attachment_force_N": [
+          -0.002401018049567938,
+          0.0008601218578405678,
+          -0.002598476829007268
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2300,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6982647776603699,
+            0.48231223225593567,
+            0.08105022460222244
+          ],
+          [
+            0.7797281742095947,
+            1.9374946355819702,
+            0.10060709714889526
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.3014526367188,
+        "guide_radial_error_m": 2.2240688224428595e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5089936256408691,
+        "max_section_gap_m": 0.0010304381139576435,
+        "collar_next_section_gap_m": 0.000998282921500504,
+        "attachment_error_m": 3.200457658057577e-08,
+        "attachment_force_N": [
+          -0.004246456548571587,
+          0.0030650224070996046,
+          -0.0053878952749073505
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2400,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6995306611061096,
+            0.48231494426727295,
+            0.06734971702098846
+          ],
+          [
+            0.7797030210494995,
+            1.9363209009170532,
+            0.1006135642528534
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.1019287109375,
+        "guide_radial_error_m": 1.2353355316463421e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5175426006317139,
+        "max_section_gap_m": 0.0010574673069640994,
+        "collar_next_section_gap_m": 0.0009995463769882917,
+        "attachment_error_m": 3.135576348164695e-08,
+        "attachment_force_N": [
+          -0.0060750460252165794,
+          0.00968564860522747,
+          -0.010890999808907509
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2500,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.702636182308197,
+            0.4823167622089386,
+            0.0498068742454052
+          ],
+          [
+            0.7796867489814758,
+            1.9329434633255005,
+            0.10062166303396225
+          ]
+        ]
+      }
+    ],
+    "maximum_tcp_motion_m": 0.0011133721293556066,
+    "setup_and_checks_wall_seconds": 9.516833719797432
+  },
+  "repeat6": {
+    "diagnostics": [
+      {
+        "guide_material_coordinate": 645.3969116210938,
+        "guide_radial_error_m": 1.8825915049092146e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.500192642211914,
+        "max_section_gap_m": 0.001002033124677837,
+        "collar_next_section_gap_m": 0.0009992503328248858,
+        "attachment_error_m": 3.1597157058270906e-08,
+        "attachment_force_N": [
+          -0.0002865132410079241,
+          2.9602540962514468e-05,
+          -0.0009066919446922839
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 100,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6977800726890564,
+            0.4823299050331116,
+            0.09732168167829514
+          ],
+          [
+            0.7796835899353027,
+            1.9376661777496338,
+            0.10061109066009521
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.5215454101562,
+        "guide_radial_error_m": 1.4715645590968052e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5018476247787476,
+        "max_section_gap_m": 0.0010091798612847924,
+        "collar_next_section_gap_m": 0.0009952442487701774,
+        "attachment_error_m": 3.157219561862475e-08,
+        "attachment_force_N": [
+          -0.0009996837470680475,
+          0.0002118221891578287,
+          -0.0013863611966371536
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 200,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6978244781494141,
+            0.4823387563228607,
+            0.0911278948187828
+          ],
+          [
+            0.7796977162361145,
+            1.9376661777496338,
+            0.1006118431687355
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.6983032226562,
+        "guide_radial_error_m": 1.4918163060428924e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5054399967193604,
+        "max_section_gap_m": 0.001019890303723514,
+        "collar_next_section_gap_m": 0.0009949211962521076,
+        "attachment_error_m": 3.179693625684798e-08,
+        "attachment_force_N": [
+          -0.0023974149953573942,
+          0.0008612379315309227,
+          -0.0025955061428248882
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 300,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6981683969497681,
+            0.48234882950782776,
+            0.0810667872428894
+          ],
+          [
+            0.7796982526779175,
+            1.9375743865966797,
+            0.10061223804950714
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.9080810546875,
+        "guide_radial_error_m": 1.1789083487201424e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5089870691299438,
+        "max_section_gap_m": 0.0010298846755176783,
+        "collar_next_section_gap_m": 0.0009978709276765585,
+        "attachment_error_m": 3.251925666614893e-08,
+        "attachment_force_N": [
+          -0.004258711822330952,
+          0.0030720599461346865,
+          -0.005394332576543093
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 400,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.69942706823349,
+            0.48235848546028137,
+            0.0673709586262703
+          ],
+          [
+            0.7796892523765564,
+            1.9363970756530762,
+            0.10061880946159363
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.8756713867188,
+        "guide_radial_error_m": 1.6988954598673445e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5181748867034912,
+        "max_section_gap_m": 0.0010650006588548422,
+        "collar_next_section_gap_m": 0.0009989021345973015,
+        "attachment_error_m": 3.1198626144908795e-08,
+        "attachment_force_N": [
+          -0.006073345895856619,
+          0.009672407992184162,
+          -0.010873310267925262
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 500,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7025048732757568,
+            0.48236626386642456,
+            0.049832820892333984
+          ],
+          [
+            0.779682993888855,
+            1.933009386062622,
+            0.10062417387962341
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 648.01611328125,
+        "guide_radial_error_m": 1.7658270223819272e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5220993757247925,
+        "max_section_gap_m": 0.0011087754974141717,
+        "collar_next_section_gap_m": 0.000999240204691887,
+        "attachment_error_m": 3.137280393858238e-08,
+        "attachment_force_N": [
+          -0.007704358547925949,
+          0.025364156812429428,
+          -0.020364556461572647
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 600,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7098537087440491,
+            0.482371062040329,
+            0.028457416221499443
+          ],
+          [
+            0.7796745896339417,
+            1.9273672103881836,
+            0.1006246879696846
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 647.5211181640625,
+        "guide_radial_error_m": 1.2610533417500847e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.515000581741333,
+        "max_section_gap_m": 0.0010591328609734774,
+        "collar_next_section_gap_m": 0.0009996115695685148,
+        "attachment_error_m": 3.321507626438928e-08,
+        "attachment_force_N": [
+          0.0011959202820435166,
+          -0.005997186526656151,
+          0.003369186306372285
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 700,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7139668464660645,
+            0.4823719561100006,
+            0.0029246103949844837
+          ],
+          [
+            0.7796728610992432,
+            1.9196901321411133,
+            0.10062238574028015
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.5330200195312,
+        "guide_radial_error_m": 1.792965065305907e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5129868984222412,
+        "max_section_gap_m": 0.0010551755549386144,
+        "collar_next_section_gap_m": 0.001000024494715035,
+        "attachment_error_m": 2.9815133386104106e-08,
+        "attachment_force_N": [
+          0.0021320499945431948,
+          0.012258559465408325,
+          -0.007203398272395134
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 800,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7150588631629944,
+            0.48236799240112305,
+            -0.026546882465481758
+          ],
+          [
+            0.7796733975410461,
+            1.906129002571106,
+            0.10061750560998917
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 643.8670043945312,
+        "guide_radial_error_m": 2.0348744556031306e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5150775909423828,
+        "max_section_gap_m": 0.0010782221797853708,
+        "collar_next_section_gap_m": 0.001000268035568297,
+        "attachment_error_m": 3.1207831855884143e-08,
+        "attachment_force_N": [
+          0.0017940049292519689,
+          0.0036074866075068712,
+          -0.0029015857726335526
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 900,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7162436246871948,
+            0.48235946893692017,
+            -0.060014113783836365
+          ],
+          [
+            0.7796737551689148,
+            1.8943458795547485,
+            0.10062147676944733
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 642.478271484375,
+        "guide_radial_error_m": 1.905704891669302e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5185692310333252,
+        "max_section_gap_m": 0.0010583820985630155,
+        "collar_next_section_gap_m": 0.0010006484808400273,
+        "attachment_error_m": 3.052424941490061e-08,
+        "attachment_force_N": [
+          0.00011391768930479884,
+          0.00806761160492897,
+          -0.007750587072223425
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1000,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7204930782318115,
+            0.4823474586009979,
+            -0.09709321707487106
+          ],
+          [
+            0.7796650528907776,
+            1.8810425996780396,
+            0.10063615441322327
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 638.0933837890625,
+        "guide_radial_error_m": 1.5419917076542333e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.520328402519226,
+        "max_section_gap_m": 0.0010612814221531153,
+        "collar_next_section_gap_m": 0.0010008722310885787,
+        "attachment_error_m": 3.23587514561978e-08,
+        "attachment_force_N": [
+          -0.00040347353206016123,
+          0.001954138744622469,
+          -0.002737495582550764
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1100,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7259543538093567,
+            0.48233354091644287,
+            -0.13826358318328857
+          ],
+          [
+            0.7796615958213806,
+            1.861893653869629,
+            0.10063649713993073
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 634.5535888671875,
+        "guide_radial_error_m": 1.7048903089289524e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.523077368736267,
+        "max_section_gap_m": 0.0010647333692759275,
+        "collar_next_section_gap_m": 0.001001159893348813,
+        "attachment_error_m": 3.138907344844738e-08,
+        "attachment_force_N": [
+          -0.00380673143081367,
+          0.01060254592448473,
+          -0.011165940202772617
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1200,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262458205223083,
+            0.4823155701160431,
+            -0.18343400955200195
+          ],
+          [
+            0.7796811461448669,
+            1.8386040925979614,
+            0.10062552243471146
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 631.4679565429688,
+        "guide_radial_error_m": 2.0718215409942786e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.523368239402771,
+        "max_section_gap_m": 0.0010651382617652416,
+        "collar_next_section_gap_m": 0.001001046854071319,
+        "attachment_error_m": 3.130266954871806e-08,
+        "attachment_force_N": [
+          -0.0003543727798387408,
+          0.005633111577481031,
+          -0.004979852586984634
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1300,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262369394302368,
+            0.48229625821113586,
+            -0.23232543468475342
+          ],
+          [
+            0.7798019647598267,
+            1.812637209892273,
+            0.10060907155275345
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 626.7894287109375,
+        "guide_radial_error_m": 1.376196792080009e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5275087356567383,
+        "max_section_gap_m": 0.0010678016114979982,
+        "collar_next_section_gap_m": 0.0010009523248299956,
+        "attachment_error_m": 3.000874352766099e-08,
+        "attachment_force_N": [
+          -1.0488087127669132e-06,
+          0.01533882599323988,
+          -0.00990298017859459
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          96
+        ],
+        "grid_memory_MiB": 66.9375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1400,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262501120567322,
+            0.48227953910827637,
+            -0.2851778566837311
+          ],
+          [
+            0.7799040079116821,
+            1.781164288520813,
+            0.10059822350740433
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 622.1723022460938,
+        "guide_radial_error_m": 1.4258023384172702e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.531046986579895,
+        "max_section_gap_m": 0.0011059902608394623,
+        "collar_next_section_gap_m": 0.0010007605887949467,
+        "attachment_error_m": 3.186330062811047e-08,
+        "attachment_force_N": [
+          -0.0008518400718457997,
+          0.008486149832606316,
+          -0.0046120453625917435
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1500,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7257221341133118,
+            0.4822670817375183,
+            -0.3419847786426544
+          ],
+          [
+            0.7799825072288513,
+            1.7444485425949097,
+            0.10058809071779251
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 617.8819580078125,
+        "guide_radial_error_m": 1.5937769148877123e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5352983474731445,
+        "max_section_gap_m": 0.001092108548618853,
+        "collar_next_section_gap_m": 0.0010004995856434107,
+        "attachment_error_m": 3.051245828406134e-08,
+        "attachment_force_N": [
+          -0.003285755403339863,
+          0.012883119285106659,
+          -0.00709613086655736
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1600,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7257297039031982,
+            0.48226019740104675,
+            -0.40265095233917236
+          ],
+          [
+            0.7800480723381042,
+            1.7019728422164917,
+            0.10056905448436737
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 611.7685546875,
+        "guide_radial_error_m": 1.2406140115217568e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5398128032684326,
+        "max_section_gap_m": 0.001104869181290269,
+        "collar_next_section_gap_m": 0.0010001284535974264,
+        "attachment_error_m": 3.042426219946719e-08,
+        "attachment_force_N": [
+          -0.004541850183159113,
+          0.01191042736172676,
+          -0.0063503943383693695
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          128
+        ],
+        "grid_memory_MiB": 89.25,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1700,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7253946661949158,
+            0.4822590947151184,
+            -0.4671083688735962
+          ],
+          [
+            0.7800663113594055,
+            1.6511495113372803,
+            0.10055284202098846
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 607.1082153320312,
+        "guide_radial_error_m": 1.2699494789103483e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5461704730987549,
+        "max_section_gap_m": 0.0011270944960415363,
+        "collar_next_section_gap_m": 0.0009998345049098134,
+        "attachment_error_m": 3.3166724396470764e-08,
+        "attachment_force_N": [
+          -0.0044540343806147575,
+          0.02498953975737095,
+          -0.010793616995215416
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1800,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254634499549866,
+            0.4822643995285034,
+            -0.5354891419410706
+          ],
+          [
+            0.7800349593162537,
+            1.5905152559280396,
+            0.10056119412183762
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 602.775146484375,
+        "guide_radial_error_m": 1.4754249377801898e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5560200214385986,
+        "max_section_gap_m": 0.0011322053615003824,
+        "collar_next_section_gap_m": 0.0009991272818297148,
+        "attachment_error_m": 3.1754726347361813e-08,
+        "attachment_force_N": [
+          -0.0016902732895687222,
+          0.027965258806943893,
+          -0.00913421344012022
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1900,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7253962755203247,
+            0.48227590322494507,
+            -0.6076920628547668
+          ],
+          [
+            0.7799665331840515,
+            1.5191885232925415,
+            0.10056684911251068
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 598.8943481445312,
+        "guide_radial_error_m": 1.3554225120060437e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5665380954742432,
+        "max_section_gap_m": 0.0011602395679801702,
+        "collar_next_section_gap_m": 0.0009984859498217702,
+        "attachment_error_m": 3.1948603151678216e-08,
+        "attachment_force_N": [
+          0.0004856293380726129,
+          0.0315573513507843,
+          -0.0053484681993722916
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2000,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254149317741394,
+            0.482292115688324,
+            -0.6838338971138
+          ],
+          [
+            0.7798757553100586,
+            1.4301105737686157,
+            0.10057636350393295
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.0075073242188,
+        "guide_radial_error_m": 1.402015215035135e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5001964569091797,
+        "max_section_gap_m": 0.0010022380156442523,
+        "collar_next_section_gap_m": 0.0009997956221923232,
+        "attachment_error_m": 3.031903782265874e-08,
+        "attachment_force_N": [
+          -0.0002789348945952952,
+          2.940729791589547e-05,
+          -0.000906050147023052
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2100,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.697874128818512,
+            0.48230236768722534,
+            0.09730402380228043
+          ],
+          [
+            0.7798656225204468,
+            1.9375849962234497,
+            0.10060936957597733
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.1695556640625,
+        "guide_radial_error_m": 1.765788368857102e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5018479824066162,
+        "max_section_gap_m": 0.0010093095479533076,
+        "collar_next_section_gap_m": 0.0009956022258847952,
+        "attachment_error_m": 3.1100051055529336e-08,
+        "attachment_force_N": [
+          -0.001004828722216189,
+          0.0002115470852004364,
+          -0.0013881407212466002
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2200,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6979187726974487,
+            0.48230859637260437,
+            0.09111007302999496
+          ],
+          [
+            0.7797690629959106,
+            1.9375853538513184,
+            0.10060751438140869
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.2518920898438,
+        "guide_radial_error_m": 1.913016944854462e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5054352283477783,
+        "max_section_gap_m": 0.0010198131203651428,
+        "collar_next_section_gap_m": 0.0009954061824828386,
+        "attachment_error_m": 3.12011527414423e-08,
+        "attachment_force_N": [
+          -0.002399022225290537,
+          0.0008598794229328632,
+          -0.002597878919914365
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2300,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6982657313346863,
+            0.48231223225593567,
+            0.08105067163705826
+          ],
+          [
+            0.7797294855117798,
+            1.937492847442627,
+            0.10060711950063705
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.3018798828125,
+        "guide_radial_error_m": 2.2249092523907166e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5089926719665527,
+        "max_section_gap_m": 0.0010303437011316419,
+        "collar_next_section_gap_m": 0.0009983009658753872,
+        "attachment_error_m": 3.1647965548422386e-08,
+        "attachment_force_N": [
+          -0.004247366916388273,
+          0.003065609373152256,
+          -0.005388315767049789
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2400,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6995311975479126,
+            0.48231494426727295,
+            0.06734956055879593
+          ],
+          [
+            0.7797034382820129,
+            1.9363189935684204,
+            0.10061360150575638
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.10205078125,
+        "guide_radial_error_m": 1.4498061773338122e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5175437927246094,
+        "max_section_gap_m": 0.0010574676562100649,
+        "collar_next_section_gap_m": 0.0009995684958994389,
+        "attachment_error_m": 2.9956093937355095e-08,
+        "attachment_force_N": [
+          -0.0060722436755895615,
+          0.00968202855437994,
+          -0.010887408629059792
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2500,
+        "cuda_graph": {
+          "enabled": false,
+          "captures": 0,
+          "replays": 0,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7026358246803284,
+            0.4823167622089386,
+            0.04980694130063057
+          ],
+          [
+            0.7796875834465027,
+            1.9329419136047363,
+            0.10062161087989807
+          ]
+        ]
+      }
+    ],
+    "maximum_tcp_motion_m": 0.0011133721293556066,
+    "setup_and_checks_wall_seconds": 8.919393023010343
+  },
+  "accelerated6": {
+    "diagnostics": [
+      {
+        "guide_material_coordinate": 645.396728515625,
+        "guide_radial_error_m": 1.8813472024703515e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.500192642211914,
+        "max_section_gap_m": 0.0010020786430686712,
+        "collar_next_section_gap_m": 0.0009992432314902544,
+        "attachment_error_m": 3.1597109981357126e-08,
+        "attachment_force_N": [
+          -0.00028538130572997034,
+          2.968149601656478e-05,
+          -0.0009064620244316757
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 100,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 100,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6977800726890564,
+            0.4823299050331116,
+            0.09732171148061752
+          ],
+          [
+            0.7796838283538818,
+            1.9376661777496338,
+            0.10061102360486984
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.521240234375,
+        "guide_radial_error_m": 1.4449470597810432e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5018478631973267,
+        "max_section_gap_m": 0.001009164028801024,
+        "collar_next_section_gap_m": 0.0009952180553227663,
+        "attachment_error_m": 3.157220631991816e-08,
+        "attachment_force_N": [
+          -0.0010015435982495546,
+          0.00021194359578657895,
+          -0.0013871159171685576
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 200,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 200,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6978243589401245,
+            0.4823387563228607,
+            0.0911276564002037
+          ],
+          [
+            0.7796964049339294,
+            1.9376661777496338,
+            0.10061193257570267
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.6981201171875,
+        "guide_radial_error_m": 1.3972388046568085e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5054402351379395,
+        "max_section_gap_m": 0.0010200156830251217,
+        "collar_next_section_gap_m": 0.0009948941878974438,
+        "attachment_error_m": 3.17968929297173e-08,
+        "attachment_force_N": [
+          -0.0023982557468116283,
+          0.0008613115060143173,
+          -0.0025960635393857956
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 300,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 300,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6981682181358337,
+            0.48234882950782776,
+            0.08106664568185806
+          ],
+          [
+            0.7796963453292847,
+            1.9375746250152588,
+            0.10061214864253998
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.9080810546875,
+        "guide_radial_error_m": 1.3977732749026472e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5089876651763916,
+        "max_section_gap_m": 0.0010300431167706847,
+        "collar_next_section_gap_m": 0.0009978462476283312,
+        "attachment_error_m": 3.2519421970609304e-08,
+        "attachment_force_N": [
+          -0.004259730223566294,
+          0.0030723046511411667,
+          -0.005394813138991594
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 400,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 400,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6994279026985168,
+            0.48235848546028137,
+            0.06737129390239716
+          ],
+          [
+            0.7796896696090698,
+            1.9363958835601807,
+            0.10061860084533691
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.8754272460938,
+        "guide_radial_error_m": 1.4169928874707693e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5181736946105957,
+        "max_section_gap_m": 0.0010650466429069638,
+        "collar_next_section_gap_m": 0.0009989168029278517,
+        "attachment_error_m": 3.119854135555833e-08,
+        "attachment_force_N": [
+          -0.006075391545891762,
+          0.009674313478171825,
+          -0.010875515639781952
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 500,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 500,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7025056481361389,
+            0.48236626386642456,
+            0.049832649528980255
+          ],
+          [
+            0.7796828746795654,
+            1.9330073595046997,
+            0.10062407702207565
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 648.0189819335938,
+        "guide_radial_error_m": 1.4624208688474027e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5221027135849,
+        "max_section_gap_m": 0.0011084735160693526,
+        "collar_next_section_gap_m": 0.0009992613922804594,
+        "attachment_error_m": 3.1372340925678084e-08,
+        "attachment_force_N": [
+          -0.007679624482989311,
+          0.025298889726400375,
+          -0.020313499495387077
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 600,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 600,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7098501920700073,
+            0.482371062040329,
+            0.02845761552453041
+          ],
+          [
+            0.77967369556427,
+            1.9273666143417358,
+            0.10062473267316818
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 647.5274047851562,
+        "guide_radial_error_m": 1.4552411187196412e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5149903297424316,
+        "max_section_gap_m": 0.0010505759855732322,
+        "collar_next_section_gap_m": 0.0009996253065764904,
+        "attachment_error_m": 3.321506230010495e-08,
+        "attachment_force_N": [
+          0.0011979284463450313,
+          -0.006009929813444614,
+          0.0033786320127546787
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 700,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 700,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7139468789100647,
+            0.4823719561100006,
+            0.002924407832324505
+          ],
+          [
+            0.7796721458435059,
+            1.9196889400482178,
+            0.10062248259782791
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.5413818359375,
+        "guide_radial_error_m": 1.830955369541698e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5130035877227783,
+        "max_section_gap_m": 0.0010547608835622668,
+        "collar_next_section_gap_m": 0.001000081654638052,
+        "attachment_error_m": 2.9814880419240566e-08,
+        "attachment_force_N": [
+          0.002143352059647441,
+          0.01232115924358368,
+          -0.007244012784212828
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 800,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 800,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7150524854660034,
+            0.48236799240112305,
+            -0.02654619701206684
+          ],
+          [
+            0.7796748876571655,
+            1.9061217308044434,
+            0.10061761736869812
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 643.8972778320312,
+        "guide_radial_error_m": 1.269757490263146e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5151052474975586,
+        "max_section_gap_m": 0.0010783527977764606,
+        "collar_next_section_gap_m": 0.001000280142761767,
+        "attachment_error_m": 3.1207744466206466e-08,
+        "attachment_force_N": [
+          0.0017769209807738662,
+          0.0034184036776423454,
+          -0.0027891185600310564
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 900,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 6,
+          "replays": 900,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7162162065505981,
+            0.48235946893692017,
+            -0.060013625770807266
+          ],
+          [
+            0.7796723246574402,
+            1.8943393230438232,
+            0.10062164813280106
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 642.5108032226562,
+        "guide_radial_error_m": 1.598261718527283e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5185573101043701,
+        "max_section_gap_m": 0.0010583497351035476,
+        "collar_next_section_gap_m": 0.0010006492957472801,
+        "attachment_error_m": 3.041982971745814e-08,
+        "attachment_force_N": [
+          9.773702913662419e-05,
+          0.008076676167547703,
+          -0.00775935361161828
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1000,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 6,
+          "replays": 1000,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7204572558403015,
+            0.4823475480079651,
+            -0.09709253907203674
+          ],
+          [
+            0.7796648144721985,
+            1.881034255027771,
+            0.10063621401786804
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 638.1279907226562,
+        "guide_radial_error_m": 1.0271470785028214e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.520277500152588,
+        "max_section_gap_m": 0.0010609397431835532,
+        "collar_next_section_gap_m": 0.0010008576791733503,
+        "attachment_error_m": 3.236071737652763e-08,
+        "attachment_force_N": [
+          -0.00041822867933660746,
+          0.002005194313824177,
+          -0.002791294362396002
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1100,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 6,
+          "replays": 1100,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7259077429771423,
+            0.48233354091644287,
+            -0.13826265931129456
+          ],
+          [
+            0.7796617746353149,
+            1.8618510961532593,
+            0.10063640028238297
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 634.5824584960938,
+        "guide_radial_error_m": 1.457744360777724e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5230624675750732,
+        "max_section_gap_m": 0.0010644732974469662,
+        "collar_next_section_gap_m": 0.001001163967885077,
+        "attachment_error_m": 3.137063801650986e-08,
+        "attachment_force_N": [
+          -0.0038536670617759228,
+          0.010692502371966839,
+          -0.011284491047263145
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1200,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 8,
+          "replays": 1200,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262459397315979,
+            0.4823155403137207,
+            -0.18343159556388855
+          ],
+          [
+            0.7796810269355774,
+            1.8385792970657349,
+            0.10062532126903534
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 631.5145874023438,
+        "guide_radial_error_m": 1.3457650993586867e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.523332118988037,
+        "max_section_gap_m": 0.0010654968209564686,
+        "collar_next_section_gap_m": 0.00100105965975672,
+        "attachment_error_m": 3.130257997968012e-08,
+        "attachment_force_N": [
+          -0.00035337050212547183,
+          0.005723599344491959,
+          -0.005042200442403555
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1300,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 8,
+          "replays": 1300,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262428998947144,
+            0.48229628801345825,
+            -0.23232555389404297
+          ],
+          [
+            0.779801607131958,
+            1.8125861883163452,
+            0.10060876607894897
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 626.8152465820312,
+        "guide_radial_error_m": 1.2636942869903578e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5275027751922607,
+        "max_section_gap_m": 0.0010682326974347234,
+        "collar_next_section_gap_m": 0.001000877353362739,
+        "attachment_error_m": 3.000833937933463e-08,
+        "attachment_force_N": [
+          1.985263043025043e-05,
+          0.0152467992156744,
+          -0.009808236733078957
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          96
+        ],
+        "grid_memory_MiB": 66.9375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1400,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 10,
+          "replays": 1400,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262556552886963,
+            0.48227953910827637,
+            -0.2851773202419281
+          ],
+          [
+            0.7799031138420105,
+            1.7811219692230225,
+            0.1005980521440506
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 622.1856079101562,
+        "guide_radial_error_m": 1.4485013366538624e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5310332775115967,
+        "max_section_gap_m": 0.0011058219242841005,
+        "collar_next_section_gap_m": 0.0010007916716858745,
+        "attachment_error_m": 3.1863448437917426e-08,
+        "attachment_force_N": [
+          -0.0008538072579540312,
+          0.00847972184419632,
+          -0.0046094004064798355
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1500,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 12,
+          "replays": 1500,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7257697582244873,
+            0.4822670817375183,
+            -0.3419826924800873
+          ],
+          [
+            0.7799823880195618,
+            1.7444000244140625,
+            0.10058817267417908
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 617.8903198242188,
+        "guide_radial_error_m": 9.368424258582309e-08,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5353238582611084,
+        "max_section_gap_m": 0.0010922923684120178,
+        "collar_next_section_gap_m": 0.0010005062213167548,
+        "attachment_error_m": 3.051281027781841e-08,
+        "attachment_force_N": [
+          -0.0031943621579557657,
+          0.012589757330715656,
+          -0.006949381437152624
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1600,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 12,
+          "replays": 1600,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7257352471351624,
+            0.48226019740104675,
+            -0.4026525616645813
+          ],
+          [
+            0.7800480723381042,
+            1.70194673538208,
+            0.10056900978088379
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 611.7813720703125,
+        "guide_radial_error_m": 1.3697059841888404e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5398280620574951,
+        "max_section_gap_m": 0.0011051880428567529,
+        "collar_next_section_gap_m": 0.0010000254260376096,
+        "attachment_error_m": 3.042477838433994e-08,
+        "attachment_force_N": [
+          -0.00456354720517993,
+          0.012010045349597931,
+          -0.0064141168259084225
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          128
+        ],
+        "grid_memory_MiB": 89.25,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1700,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 14,
+          "replays": 1700,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7253955006599426,
+            0.4822590947151184,
+            -0.46710821986198425
+          ],
+          [
+            0.7800658941268921,
+            1.6511256694793701,
+            0.10055282711982727
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 607.0933227539062,
+        "guide_radial_error_m": 1.1151762180361402e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5461814403533936,
+        "max_section_gap_m": 0.0011268297675997019,
+        "collar_next_section_gap_m": 0.0009997239103540778,
+        "attachment_error_m": 3.316568779091351e-08,
+        "attachment_force_N": [
+          -0.004451706074178219,
+          0.025014016777276993,
+          -0.010826030746102333
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1800,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 16,
+          "replays": 1800,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254670262336731,
+            0.4822643995285034,
+            -0.5354899168014526
+          ],
+          [
+            0.7800335884094238,
+            1.590498924255371,
+            0.10056202113628387
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 602.7697143554688,
+        "guide_radial_error_m": 8.752591185157144e-08,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5560200214385986,
+        "max_section_gap_m": 0.0011327925603836775,
+        "collar_next_section_gap_m": 0.00099905242677778,
+        "attachment_error_m": 3.1754876846241576e-08,
+        "attachment_force_N": [
+          -0.0017163832671940327,
+          0.0279447752982378,
+          -0.009127656929194927
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1900,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 16,
+          "replays": 1900,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7253996133804321,
+            0.48227590322494507,
+            -0.6076928973197937
+          ],
+          [
+            0.7799652218818665,
+            1.5191706418991089,
+            0.10056787729263306
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 598.8809204101562,
+        "guide_radial_error_m": 1.3073044158318226e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5665662288665771,
+        "max_section_gap_m": 0.0011598956771194935,
+        "collar_next_section_gap_m": 0.0009985263459384441,
+        "attachment_error_m": 3.194850278590581e-08,
+        "attachment_force_N": [
+          0.0005043243290856481,
+          0.03154299035668373,
+          -0.00537764560431242
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2000,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 18,
+          "replays": 2000,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254165410995483,
+            0.482292115688324,
+            -0.6838312149047852
+          ],
+          [
+            0.7798748016357422,
+            1.4301239252090454,
+            0.10057761520147324
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.0070190429688,
+        "guide_radial_error_m": 1.3406973664586985e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5001966953277588,
+        "max_section_gap_m": 0.0010021477937698364,
+        "collar_next_section_gap_m": 0.0009997112210839987,
+        "attachment_error_m": 3.0317732829478555e-08,
+        "attachment_force_N": [
+          -0.0002833523612935096,
+          2.9495131457224488e-05,
+          -0.0009066887432709336
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2100,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2100,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6978737711906433,
+            0.48230236768722534,
+            0.09730403125286102
+          ],
+          [
+            0.7798653244972229,
+            1.9375852346420288,
+            0.10060936957597733
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.1695556640625,
+        "guide_radial_error_m": 1.9507568538301712e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5018482208251953,
+        "max_section_gap_m": 0.0010093410965055227,
+        "collar_next_section_gap_m": 0.0009955673012882471,
+        "attachment_error_m": 3.11000160810566e-08,
+        "attachment_force_N": [
+          -0.0010107650887221098,
+          0.000211591919651255,
+          -0.001389853423461318
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2200,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2200,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6979179978370667,
+            0.48230859637260437,
+            0.09111001342535019
+          ],
+          [
+            0.7797694206237793,
+            1.9375852346420288,
+            0.10060743987560272
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.2510986328125,
+        "guide_radial_error_m": 1.271779552780572e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5054347515106201,
+        "max_section_gap_m": 0.0010197185911238194,
+        "collar_next_section_gap_m": 0.0009953154949471354,
+        "attachment_error_m": 3.1201141317733035e-08,
+        "attachment_force_N": [
+          -0.002397926291450858,
+          0.0008595638792030513,
+          -0.002596769481897354
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2300,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2300,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6982644200325012,
+            0.48231223225593567,
+            0.08105035126209259
+          ],
+          [
+            0.7797298431396484,
+            1.9374934434890747,
+            0.10060705244541168
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.3013916015625,
+        "guide_radial_error_m": 1.3526201314562059e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5089919567108154,
+        "max_section_gap_m": 0.0010302822338417172,
+        "collar_next_section_gap_m": 0.0009982878109440207,
+        "attachment_error_m": 3.1648016683020785e-08,
+        "attachment_force_N": [
+          -0.004251604434102774,
+          0.0030674338340759277,
+          -0.0053920745849609375
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2400,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2400,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6995302438735962,
+            0.48231494426727295,
+            0.06734984368085861
+          ],
+          [
+            0.7797029614448547,
+            1.936320185661316,
+            0.100613534450531
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.102294921875,
+        "guide_radial_error_m": 1.3515476382508496e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5175443887710571,
+        "max_section_gap_m": 0.0010575938504189253,
+        "collar_next_section_gap_m": 0.0009995073778554797,
+        "attachment_error_m": 2.9956101243762996e-08,
+        "attachment_force_N": [
+          -0.006067715119570494,
+          0.009677612222731113,
+          -0.010881425812840462
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2500,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2500,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.702635645866394,
+            0.4823167622089386,
+            0.049807243049144745
+          ],
+          [
+            0.7796873450279236,
+            1.9329439401626587,
+            0.10062167793512344
+          ]
+        ]
+      }
+    ],
+    "maximum_tcp_motion_m": 0.001113501263162555,
+    "setup_and_checks_wall_seconds": 7.277353999204934
+  },
+  "accelerated4": {
+    "diagnostics": [
+      {
+        "guide_material_coordinate": 645.3972778320312,
+        "guide_radial_error_m": 1.4110469237493817e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.500196933746338,
+        "max_section_gap_m": 0.0010024358052760363,
+        "collar_next_section_gap_m": 0.0009993761777877808,
+        "attachment_error_m": 3.1596956965323885e-08,
+        "attachment_force_N": [
+          -0.00028227042639628053,
+          2.8418127840268426e-05,
+          -0.0009045473416335881
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 100,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 100,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6977797150611877,
+            0.4823299050331116,
+            0.09732039272785187
+          ],
+          [
+            0.7796845436096191,
+            1.9376661777496338,
+            0.1006108969449997
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.5221557617188,
+        "guide_radial_error_m": 1.1627424356674965e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5019060373306274,
+        "max_section_gap_m": 0.0010108326096087694,
+        "collar_next_section_gap_m": 0.0009955946588888764,
+        "attachment_error_m": 3.157264087969964e-08,
+        "attachment_force_N": [
+          -0.0009570472175255418,
+          0.00020544072322081774,
+          -0.0013694280060008168
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 200,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 200,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.69781893491745,
+            0.4823387563228607,
+            0.09112181514501572
+          ],
+          [
+            0.7796940207481384,
+            1.9376661777496338,
+            0.10061189532279968
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.6928100585938,
+        "guide_radial_error_m": 1.4502907674796006e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5058220624923706,
+        "max_section_gap_m": 0.0010241417912766337,
+        "collar_next_section_gap_m": 0.0009953629923984408,
+        "attachment_error_m": 3.1795135874198956e-08,
+        "attachment_force_N": [
+          -0.0023071912582963705,
+          0.0008128973422572017,
+          -0.00254015251994133
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 300,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 300,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6981233358383179,
+            0.48234882950782776,
+            0.0810454860329628
+          ],
+          [
+            0.7796957492828369,
+            1.9376201629638672,
+            0.10061188042163849
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.9137573242188,
+        "guide_radial_error_m": 1.9399057293867372e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5101039409637451,
+        "max_section_gap_m": 0.0010413884883746505,
+        "collar_next_section_gap_m": 0.0009977371664717793,
+        "attachment_error_m": 3.164090622885459e-08,
+        "attachment_force_N": [
+          -0.004078189376741648,
+          0.0028492524288594723,
+          -0.005234573036432266
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          32
+        ],
+        "grid_memory_MiB": 22.3125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 400,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 2,
+          "replays": 400,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6992870569229126,
+            0.482358455657959,
+            0.06734071671962738
+          ],
+          [
+            0.7796880006790161,
+            1.936697006225586,
+            0.10061822831630707
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.97265625,
+        "guide_radial_error_m": 1.7323144163583493e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5204410552978516,
+        "max_section_gap_m": 0.0010929247364401817,
+        "collar_next_section_gap_m": 0.0009989104000851512,
+        "attachment_error_m": 3.137954113594243e-08,
+        "attachment_force_N": [
+          -0.0057577029801905155,
+          0.008768590167164803,
+          -0.010338576510548592
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 500,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 500,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7021840214729309,
+            0.482366144657135,
+            0.04979560524225235
+          ],
+          [
+            0.7796817421913147,
+            1.9336223602294922,
+            0.10062399506568909
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 647.9855346679688,
+        "guide_radial_error_m": 1.4694764161049534e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5261139869689941,
+        "max_section_gap_m": 0.001135298633016646,
+        "collar_next_section_gap_m": 0.0009992854902520776,
+        "attachment_error_m": 3.0944342076488536e-08,
+        "attachment_force_N": [
+          -0.006698337383568287,
+          0.021198458969593048,
+          -0.017932062968611717
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 600,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 600,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7087632417678833,
+            0.48237088322639465,
+            0.02844584919512272
+          ],
+          [
+            0.7796725034713745,
+            1.9282220602035522,
+            0.1006246954202652
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 647.253173828125,
+        "guide_radial_error_m": 1.483903844246015e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.517986536026001,
+        "max_section_gap_m": 0.0010809573577716947,
+        "collar_next_section_gap_m": 0.0009996023727580905,
+        "attachment_error_m": 3.2934207397199324e-08,
+        "attachment_force_N": [
+          0.0019399930024519563,
+          -0.005949121899902821,
+          0.0036597454454749823
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 700,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 700,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7134671807289124,
+            0.48237186670303345,
+            0.0029298688750714064
+          ],
+          [
+            0.779671311378479,
+            1.920601487159729,
+            0.10062287002801895
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 644.5619506835938,
+        "guide_radial_error_m": 1.4453864594088373e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5163581371307373,
+        "max_section_gap_m": 0.0010636398801580071,
+        "collar_next_section_gap_m": 0.0010000610491260886,
+        "attachment_error_m": 3.12628336550013e-08,
+        "attachment_force_N": [
+          0.0015853338409215212,
+          0.0075294626876711845,
+          -0.004806928336620331
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          48
+        ],
+        "grid_memory_MiB": 33.46875,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 800,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 4,
+          "replays": 800,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7145634889602661,
+            0.4823678433895111,
+            -0.026560502126812935
+          ],
+          [
+            0.7796735167503357,
+            1.907893419265747,
+            0.10061739385128021
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 642.0534057617188,
+        "guide_radial_error_m": 1.9419637453665928e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5170179605484009,
+        "max_section_gap_m": 0.0010908921249210835,
+        "collar_next_section_gap_m": 0.001000423333607614,
+        "attachment_error_m": 3.066033762142676e-08,
+        "attachment_force_N": [
+          0.0019072722643613815,
+          0.004099622834473848,
+          -0.00320209888741374
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 900,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 6,
+          "replays": 900,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7154648900032043,
+            0.48235926032066345,
+            -0.05996738001704216
+          ],
+          [
+            0.7796719074249268,
+            1.8955461978912354,
+            0.10061784833669662
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 640.3621826171875,
+        "guide_radial_error_m": 9.655480681658446e-08,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5240240097045898,
+        "max_section_gap_m": 0.001079814275726676,
+        "collar_next_section_gap_m": 0.001000830321572721,
+        "attachment_error_m": 3.1908360625307746e-08,
+        "attachment_force_N": [
+          0.0005375732434913516,
+          0.00906354933977127,
+          -0.008160680532455444
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1000,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 6,
+          "replays": 1000,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7183348536491394,
+            0.4823474586009979,
+            -0.0971357673406601
+          ],
+          [
+            0.7796667814254761,
+            1.883449912071228,
+            0.1006331816315651
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 636.9122314453125,
+        "guide_radial_error_m": 1.4617840804476145e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5276782512664795,
+        "max_section_gap_m": 0.0010889432160183787,
+        "collar_next_section_gap_m": 0.0010010921396315098,
+        "attachment_error_m": 3.2273599390293555e-08,
+        "attachment_force_N": [
+          -0.0011983929434791207,
+          0.004633648321032524,
+          -0.005131726618856192
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          64
+        ],
+        "grid_memory_MiB": 44.625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1100,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 6,
+          "replays": 1100,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7243378758430481,
+            0.48233339190483093,
+            -0.13824604451656342
+          ],
+          [
+            0.7796597480773926,
+            1.866803526878357,
+            0.10063593834638596
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 633.0919189453125,
+        "guide_radial_error_m": 1.4522699132157868e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5286509990692139,
+        "max_section_gap_m": 0.0011053470661863685,
+        "collar_next_section_gap_m": 0.0010011419653892517,
+        "attachment_error_m": 3.0059405987986725e-08,
+        "attachment_force_N": [
+          -0.002501268172636628,
+          0.006907020695507526,
+          -0.007110615260899067
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1200,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 8,
+          "replays": 1200,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262259125709534,
+            0.4823155403137207,
+            -0.1833038032054901
+          ],
+          [
+            0.7796820402145386,
+            1.842793345451355,
+            0.1006268709897995
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 628.9337158203125,
+        "guide_radial_error_m": 1.474349176078249e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.528458833694458,
+        "max_section_gap_m": 0.0010985295521095395,
+        "collar_next_section_gap_m": 0.0010010403348132968,
+        "attachment_error_m": 2.97112224962698e-08,
+        "attachment_force_N": [
+          -0.00013262114953249693,
+          0.004682951141148806,
+          -0.004618775099515915
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          80
+        ],
+        "grid_memory_MiB": 55.78125,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1300,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 8,
+          "replays": 1300,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262191772460938,
+            0.48229625821113586,
+            -0.23232588171958923
+          ],
+          [
+            0.7798029184341431,
+            1.8164266347885132,
+            0.10061269253492355
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 625.0818481445312,
+        "guide_radial_error_m": 1.9147978491673712e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5326849222183228,
+        "max_section_gap_m": 0.0010964196408167481,
+        "collar_next_section_gap_m": 0.0010008974932134151,
+        "attachment_error_m": 2.995251212664252e-08,
+        "attachment_force_N": [
+          0.000181432711542584,
+          0.012309183366596699,
+          -0.00988882128149271
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          96
+        ],
+        "grid_memory_MiB": 66.9375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1400,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 10,
+          "replays": 1400,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7262288928031921,
+            0.4822794795036316,
+            -0.2851868271827698
+          ],
+          [
+            0.7799056768417358,
+            1.7862014770507812,
+            0.10059640556573868
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 620.4053955078125,
+        "guide_radial_error_m": 1.7902564763971895e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5381479263305664,
+        "max_section_gap_m": 0.0011255801655352116,
+        "collar_next_section_gap_m": 0.001000653370283544,
+        "attachment_error_m": 3.1500016771011564e-08,
+        "attachment_force_N": [
+          -0.0003768026945181191,
+          0.008473142050206661,
+          -0.004847960080951452
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1500,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 12,
+          "replays": 1500,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254197597503662,
+            0.4822670817375183,
+            -0.34198999404907227
+          ],
+          [
+            0.7799814939498901,
+            1.7507375478744507,
+            0.10058294236660004
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 615.8419189453125,
+        "guide_radial_error_m": 1.8494418441150628e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5426558256149292,
+        "max_section_gap_m": 0.0011254438431933522,
+        "collar_next_section_gap_m": 0.0010003728093579412,
+        "attachment_error_m": 3.076672700070986e-08,
+        "attachment_force_N": [
+          -0.0020869991276413202,
+          0.011241373606026173,
+          -0.006369069684296846
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          112
+        ],
+        "grid_memory_MiB": 78.09375,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1600,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 12,
+          "replays": 1600,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7245284914970398,
+            0.4822600483894348,
+            -0.40263622999191284
+          ],
+          [
+            0.7800411581993103,
+            1.7088162899017334,
+            0.1005663126707077
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 609.85791015625,
+        "guide_radial_error_m": 1.2721500297629973e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5485267639160156,
+        "max_section_gap_m": 0.0011296955635771155,
+        "collar_next_section_gap_m": 0.0010000892216339707,
+        "attachment_error_m": 3.1577959143894444e-08,
+        "attachment_force_N": [
+          -0.004852356854826212,
+          0.012134966440498829,
+          -0.0066510336473584175
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          128
+        ],
+        "grid_memory_MiB": 89.25,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1700,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 14,
+          "replays": 1700,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7253679633140564,
+            0.48225900530815125,
+            -0.46710875630378723
+          ],
+          [
+            0.7800602912902832,
+            1.659462809562683,
+            0.10055997967720032
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 604.8775024414062,
+        "guide_radial_error_m": 1.4417464910820854e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5552383661270142,
+        "max_section_gap_m": 0.0011633133981376886,
+        "collar_next_section_gap_m": 0.0009995748987421393,
+        "attachment_error_m": 3.137052416560743e-08,
+        "attachment_force_N": [
+          -0.004998942371457815,
+          0.01801777258515358,
+          -0.008607433177530766
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1800,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 16,
+          "replays": 1800,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254429459571838,
+            0.4822641909122467,
+            -0.5354661345481873
+          ],
+          [
+            0.7800284028053284,
+            1.6005477905273438,
+            0.10057801008224487
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 600.6978759765625,
+        "guide_radial_error_m": 1.4415829241443134e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5650787353515625,
+        "max_section_gap_m": 0.0011749895056709647,
+        "collar_next_section_gap_m": 0.0009989278623834252,
+        "attachment_error_m": 3.0976837521993667e-08,
+        "attachment_force_N": [
+          -0.0022800550796091557,
+          0.021419839933514595,
+          -0.008952515199780464
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          144
+        ],
+        "grid_memory_MiB": 100.40625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 1900,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 16,
+          "replays": 1900,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7255963683128357,
+            0.4822755455970764,
+            -0.6077232956886292
+          ],
+          [
+            0.7799620032310486,
+            1.5311000347137451,
+            0.10058587789535522
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 596.1728515625,
+        "guide_radial_error_m": 1.386190859875569e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5775307416915894,
+        "max_section_gap_m": 0.0011967344908043742,
+        "collar_next_section_gap_m": 0.00099855475127697,
+        "attachment_error_m": 3.301700325959117e-08,
+        "attachment_force_N": [
+          -1.1415809240133967e-05,
+          0.027178917080163956,
+          -0.0077913133427500725
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "plate",
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2000,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 18,
+          "replays": 2000,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7254132628440857,
+            0.48229140043258667,
+            -0.6838327646255493
+          ],
+          [
+            0.779869019985199,
+            1.4463814496994019,
+            0.1005915105342865
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.0082397460938,
+        "guide_radial_error_m": 1.564744422921649e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5001987218856812,
+        "max_section_gap_m": 0.0010024522198364139,
+        "collar_next_section_gap_m": 0.0009997402084991336,
+        "attachment_error_m": 3.049369760717857e-08,
+        "attachment_force_N": [
+          -0.0002732780121732503,
+          2.8191599994897842e-05,
+          -0.0009040783043019474
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2100,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2100,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6978740096092224,
+            0.4823017716407776,
+            0.09730267524719238
+          ],
+          [
+            0.7798670530319214,
+            1.9375848770141602,
+            0.10060951858758926
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.1707153320312,
+        "guide_radial_error_m": 1.1179989201082208e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5019055604934692,
+        "max_section_gap_m": 0.0010112691670656204,
+        "collar_next_section_gap_m": 0.0009965066565200686,
+        "attachment_error_m": 3.097062443983348e-08,
+        "attachment_force_N": [
+          -0.0009559994796290994,
+          0.00020492030307650566,
+          -0.0013691430212929845
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2200,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2200,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6979142427444458,
+            0.482308030128479,
+            0.09110421687364578
+          ],
+          [
+            0.7797679305076599,
+            1.9375848770141602,
+            0.1006074771285057
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.2474975585938,
+        "guide_radial_error_m": 1.9299999109989585e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5058174133300781,
+        "max_section_gap_m": 0.0010240264236927032,
+        "collar_next_section_gap_m": 0.0009959118906408548,
+        "attachment_error_m": 3.122004022715366e-08,
+        "attachment_force_N": [
+          -0.002301026601344347,
+          0.0008105739834718406,
+          -0.002538333646953106
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2300,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2300,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.6982187628746033,
+            0.4823121130466461,
+            0.0810299888253212
+          ],
+          [
+            0.7797286510467529,
+            1.937538504600525,
+            0.1006072461605072
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.3092651367188,
+        "guide_radial_error_m": 1.6761808296905656e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5101099014282227,
+        "max_section_gap_m": 0.001041252980940044,
+        "collar_next_section_gap_m": 0.0009983208728954196,
+        "attachment_error_m": 3.0586351308343435e-08,
+        "attachment_force_N": [
+          -0.0040802727453410625,
+          0.0028474389109760523,
+          -0.005239238031208515
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2400,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2400,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.699388325214386,
+            0.48231470584869385,
+            0.06732040643692017
+          ],
+          [
+            0.779702365398407,
+            1.936619520187378,
+            0.10061325877904892
+          ]
+        ]
+      },
+      {
+        "guide_material_coordinate": 645.2022705078125,
+        "guide_radial_error_m": 1.3967496670375112e-07,
+        "particles": 10507,
+        "rest_length_m": 1.5,
+        "diameter_m": 0.002,
+        "current_centerline_length_m": 1.5198421478271484,
+        "max_section_gap_m": 0.0010828416561707854,
+        "collar_next_section_gap_m": 0.0009994417196139693,
+        "attachment_error_m": 3.080531325136109e-08,
+        "attachment_force_N": [
+          -0.005751580465584993,
+          0.008770421147346497,
+          -0.010344283655285835
+        ],
+        "max_rigid_penetration_m": 0.0,
+        "contact_margin_m": 2e-05,
+        "contact_model": "swept_section_spheres_after_fibers",
+        "contacted_bodies": [
+          "trunking"
+        ],
+        "grid_spacing_m": 0.006,
+        "grid_dimensions": [
+          48,
+          272,
+          160
+        ],
+        "grid_memory_MiB": 111.5625,
+        "grid_resolution_changes": 0,
+        "mpm_steps": 2500,
+        "cuda_graph": {
+          "enabled": true,
+          "captures": 20,
+          "replays": 2500,
+          "fallback_reason": null
+        },
+        "particle_bounds": [
+          [
+            0.7023094892501831,
+            0.48231661319732666,
+            0.049772709608078
+          ],
+          [
+            0.7796868681907654,
+            1.9335542917251587,
+            0.10062158107757568
+          ]
+        ]
+      }
+    ],
+    "maximum_tcp_motion_m": 0.0011134100982091656,
+    "setup_and_checks_wall_seconds": 6.181524253915995
+  },
+  "comparison": {
+    "repeat6": {
+      "motion_particles": {
+        "max_abs": 0.0001233220100402832,
+        "rms": 2.675582099695212e-05,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 0.00012444662841103776,
+        "passed": true
+      },
+      "motion_velocities": {
+        "max_abs": 0.016842834651470184,
+        "rms": 0.0018225910830204433,
+        "max_limit": 0.1,
+        "rms_limit": 0.003,
+        "passed": true
+      },
+      "motion_joints": {
+        "max_abs": 1.4901161193847656e-08,
+        "rms": 4.16789479063777e-09,
+        "max_limit": 2e-06,
+        "rms_limit": 2e-06,
+        "passed": true
+      },
+      "particles": {
+        "max_abs": 1.2159347534179688e-05,
+        "rms": 9.450565704191895e-07,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 1.2193814685106933e-05,
+        "passed": true
+      },
+      "velocities": {
+        "max_abs": 0.00897228717803955,
+        "rms": 0.00107498542779407,
+        "max_limit": 0.1,
+        "rms_limit": 0.003,
+        "passed": true
+      },
+      "joints": {
+        "max_abs": 2.3283064365386963e-10,
+        "rms": 5.488421281803087e-11,
+        "max_limit": 2e-06,
+        "rms_limit": 2e-06,
+        "passed": true
+      },
+      "trajectory_particles": {
+        "max_abs": 0.00023251771926879883,
+        "rms": 2.4303566589886856e-05,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 0.00024352929720850274,
+        "passed": false
+      }
+    },
+    "accelerated6": {
+      "motion_particles": {
+        "max_abs": 0.00010025501251220703,
+        "rms": 2.0262860273474453e-05,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 0.00010261154938810125,
+        "passed": true
+      },
+      "motion_velocities": {
+        "max_abs": 0.012245561927556992,
+        "rms": 0.0014184254424593392,
+        "max_limit": 0.1,
+        "rms_limit": 0.003,
+        "passed": true
+      },
+      "motion_joints": {
+        "max_abs": 2.9802322387695312e-08,
+        "rms": 7.97784258985532e-09,
+        "max_limit": 2e-06,
+        "rms_limit": 2e-06,
+        "passed": true
+      },
+      "particles": {
+        "max_abs": 1.0371208190917969e-05,
+        "rms": 9.95316684530181e-07,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 1.0373991080420518e-05,
+        "passed": true
+      },
+      "velocities": {
+        "max_abs": 0.041234951466321945,
+        "rms": 0.0014844133958975892,
+        "max_limit": 0.1,
+        "rms_limit": 0.003,
+        "passed": true
+      },
+      "joints": {
+        "max_abs": 2.9802322387695312e-08,
+        "rms": 7.0246895653051065e-09,
+        "max_limit": 2e-06,
+        "rms_limit": 2e-06,
+        "passed": true
+      },
+      "trajectory_particles": {
+        "max_abs": 0.00017452239990234375,
+        "rms": 1.921703352889567e-05,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 0.00018075911033211376,
+        "passed": false
+      }
+    },
+    "accelerated4": {
+      "motion_particles": {
+        "max_abs": 0.016284704208374023,
+        "rms": 0.004581850441440607,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 0.016286866131663295,
+        "passed": false
+      },
+      "motion_velocities": {
+        "max_abs": 0.5291986465454102,
+        "rms": 0.08382203090983145,
+        "max_limit": 0.1,
+        "rms_limit": 0.003,
+        "passed": false
+      },
+      "motion_joints": {
+        "max_abs": 5.662441253662109e-07,
+        "rms": 2.270846906684203e-07,
+        "max_limit": 2e-06,
+        "rms_limit": 2e-06,
+        "passed": true
+      },
+      "particles": {
+        "max_abs": 0.0007768608629703522,
+        "rms": 0.0002936763955456047,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 0.0010851000093632423,
+        "passed": false
+      },
+      "velocities": {
+        "max_abs": 0.07927603321149945,
+        "rms": 0.01439626376900972,
+        "max_limit": 0.1,
+        "rms_limit": 0.003,
+        "passed": false
+      },
+      "joints": {
+        "max_abs": 1.7881393432617188e-07,
+        "rms": 5.258674825663777e-08,
+        "max_limit": 2e-06,
+        "rms_limit": 2e-06,
+        "passed": true
+      },
+      "trajectory_particles": {
+        "max_abs": 0.016284704208374023,
+        "rms": 0.0018806671171985492,
+        "max_limit": 0.00016,
+        "rms_limit": 3e-05,
+        "max_point_distance": 0.016286866131663295,
+        "passed": false
+      }
+    }
+  },
+  "acceleration_accepted": false,
+  "four_iterations_accepted": false,
+  "selected_iterations": 6
+}

@@ -22,7 +22,6 @@ import warp as wp
 from .model import USB_LINK, cable_particles, grid_layout, initial_particle_positions
 from .solver import CableMPMSimulator
 from .fibers import AxialFibers
-from .execution import DeviceBounds, ConstraintGraphs
 from .contacts import CableContacts
 from mpm.mpm_model import MPMModelStruct, MPMStateStruct
 from .mesh_contacts import finger_collision_meshes
@@ -158,9 +157,6 @@ class MPMCable:
         self.targets = wp.zeros(len(self.pin_ids_np), dtype=wp.vec3, device=self.device)
         self.target_velocities = wp.zeros_like(self.targets)
         self.pin_impulse = wp.zeros(1, dtype=wp.spatial_vector, device=self.device)
-        self.pin_com_device = wp.zeros(1, dtype=wp.vec3, device=self.device)
-        self.device_bounds = DeviceBounds(len(world), self.device)
-        self.constraint_graphs = ConstraintGraphs(config['mpm'].get('cuda_graph', True))
         self.last_attachment_force = np.zeros(3)
         self.mpm_steps = 0
         if self.guide is not None:
@@ -241,7 +237,6 @@ class MPMCable:
         self.pin_rotation = wp.mat33(*(r @ self.initial_rotation.T).reshape(-1))
         self.pin_spin = wp.mat33(0., -w[2], w[1], w[2], 0., -w[0], -w[1], w[0], 0.)
         self.pin_com = wp.vec3(*com)
-        self.pin_com_device.assign(np.asarray(com, dtype=np.float32).reshape(1, 3))
         self.pin_pose = pose_transform(pose)
         self.pin_linear = wp.vec3(*self.plug.velocity)
         self.pin_angular = wp.vec3(*w)
@@ -262,15 +257,7 @@ class MPMCable:
             self.model.struct.particle_mass, self.pin_rotation, self.pin_spin,
             self.pin_com, self.pin_impulse, int(reaction)], device=self.device)
 
-    def _ensure_grid(self, positions=None):
-        if positions is None:
-            if self.config['mpm'].get('gpu_grid_check', True):
-                positions = self.device_bounds.check(self.states[0].struct.particle_q,
-                    self.spacing, self.config['mpm']['grid_padding'], self.grid_dims)
-                if positions is None:
-                    return
-            else:
-                positions = self.positions
+    def _ensure_grid(self, positions):
         if not np.isfinite(positions).all():
             raise RuntimeError("MPM particle state became non-finite")
         spacing, dims = grid_layout(positions, self.config, self.spacing)
@@ -282,7 +269,6 @@ class MPMCable:
             if np.prod(grown) <= self.config["mpm"]["max_grid_cells"]:
                 dims = grown
         wp.synchronize()
-        self.constraint_graphs.clear()
         self.model.struct.dx, self.model.struct.inv_dx = spacing, 1 / spacing
         self.model.struct.grid_dim_x, self.model.struct.grid_dim_y, self.model.struct.grid_dim_z = dims
         for state in self.states:
@@ -304,9 +290,7 @@ class MPMCable:
         for state in self.states:
             state.body_q.assign(np.asarray(poses, dtype=np.float32))
             state.body_qd.assign(np.asarray(velocities, dtype=np.float32))
-        # Contact cache entries are distances/normals in shape-local space.
-        # Rigid motion changes the query coordinates, not the cached geometry;
-        # the exact-coordinate/clearance checks account for that displacement.
+        self.contacts.invalidate_query_cache()
         if self.guide is not None:
             self.guide.update_pose()
 
@@ -333,7 +317,7 @@ class MPMCable:
         for _ in range(count):
             self._pin(False)
             self.contacts.capture(self.states[0].struct)
-            self._ensure_grid()
+            self._ensure_grid(self.positions)
             self.integrator.simulate(self.model, self.states[0], self.states[1], dt)
             if self.states[1].struct.error.numpy()[0]:
                 raise RuntimeError(f"ManiSkill2 MPM reported a numerical failure at substep {self.mpm_steps}")
@@ -341,7 +325,9 @@ class MPMCable:
                 raise RuntimeError("MPM contact buffer overflow")
             self.states.reverse()
             self._pin(True)
-            self._solve_fibers(dt)
+            self.fibers.solve(self.states[0].struct, self.model.struct.particle_mass,
+                              dt, self.pin_com, self.pin_impulse,
+                              lambda: self._solve_constraints(dt))
             self.mpm_steps += 1
         reaction = self.pin_impulse.numpy()[0] / rigid_dt
         if not np.isfinite(reaction).all():
@@ -353,25 +339,6 @@ class MPMCable:
         self.last_attachment_force = reaction[3:].copy()
         wp.copy(self.previous_body, self.states[0].body_q)
 
-    def _solve_fibers(self, dt):
-        def record():
-            self.fibers.solve(self.states[0].struct, self.model.struct.particle_mass,
-                              dt, self.pin_com_device, self.pin_impulse,
-                              lambda: self._solve_constraints(dt))
-        if self.contacts.profile_enabled:
-            # Counters have a separate allocation and host call accounting.
-            # Keep diagnostics on the ordinary path, never replay stale flags.
-            record()
-        else:
-            c = self.config['cable']
-            signature = (dt, c['axial_iterations'], c['axial_young_modulus'], c['diameter'],
-                         self.spacing, self.grid_dims, self.contacts.passes,
-                         self.contacts.radius, self.contacts.margin, self.contacts.profile_counts.ptr,
-                         self.guide.config['half_length'] if self.guide else None)
-            self.constraint_graphs.run(signature, self.states[0].struct.particle_q.ptr, record)
-        if self.guide is not None:
-            self.guide._dirty = True
-
     def follow_plug(self):
         self._prepare_anchor()
         self._pin(False)
@@ -379,7 +346,7 @@ class MPMCable:
         if self.guide is not None:
             self.guide.solve(self, self.rigid_dt)
             self.guide.apply_reaction(self.rigid_dt)
-        self.contacts.solve(self.states[0], old_body=self.previous_body, reuse_query_cache=True)
+        self.contacts.solve(self.states[0], old_body=self.previous_body)
         # These reactions are consumed by the next rigid step.
         self._apply_contact_impulses(self.rigid_dt)
 
@@ -416,8 +383,6 @@ class MPMCable:
         if self.guide is not None:
             self.guide.begin_step(reset=True)
             self.guide.radial_error = 0.
-        self.contacts.invalidate_query_cache()
-        self.constraint_graphs.clear()
         self.initial_rotation = r.copy()
         self.fibers.rest.assign(np.linalg.norm(world[7:] - world[:-7], axis=1).astype(np.float32))
         for state in self.states:
@@ -484,7 +449,4 @@ class MPMCable:
             "grid_spacing_m": self.spacing, "grid_dimensions": list(self.grid_dims),
             "grid_memory_MiB": float(np.prod(self.grid_dims) * 56 / 1024 ** 2),
             "grid_resolution_changes": self.grid_changes, "mpm_steps": self.mpm_steps,
-            "cuda_graph": {"enabled": self.constraint_graphs.enabled,
-                "captures": self.constraint_graphs.captures, "replays": self.constraint_graphs.replays,
-                "fallback_reason": self.constraint_graphs.fallback_reason},
             "particle_bounds": [x.min(axis=0).tolist(), x.max(axis=0).tolist()]}

@@ -1,0 +1,42 @@
+{
+  "bounds_cases": 245,
+  "capture_failure_checked": true,
+  "live": {
+    "shadow_checks": 40,
+    "max_absolute_difference": {
+      "particle_q": 0.0,
+      "particle_qd": 0.0,
+      "particle_C": 0.0,
+      "pin_impulse": 0.0,
+      "multipliers": 0.0,
+      "contact_accepted": 0.0,
+      "contact_centers": 0.0,
+      "contact_impulse": 4.547473508864641e-13,
+      "contact_hits": 0.0,
+      "contact_cache_point": 0.0,
+      "contact_cache_value": 0.0,
+      "contact_cache_valid": 0.0,
+      "guide_centers": 0.0,
+      "guide_arc": 0.0,
+      "guide_chunk_data": 0.0,
+      "guide_offsets": 0.0,
+      "guide_control": 0.0,
+      "guide_reactions": 0.0,
+      "guide_summary": 0.0
+    },
+    "maximum_tcp_motion_m": 0.0011033701265122863,
+    "resized": true,
+    "reset": true,
+    "graph": {
+      "enabled": true,
+      "captures": 20,
+      "replays": 2200,
+      "fallback_reason": null
+    },
+    "fallback_checked": true,
+    "resolution_change_checked": true,
+    "rejected_allocation_checked": true,
+    "contact_profile_calls": 410
+  },
+  "passed": true
+}

@@ -15,10 +15,12 @@ from warp.sim.model import Mesh, ModelBuilder
 from dual_fr3_maniskill.cable.contacts import CableContacts
 
 
-def setup(vertices, faces, center, spacing=.00175, frictionless=False):
+def setup(vertices, faces, center, spacing=.00175, frictionless=False,
+          shape_pos=(0., 0., 0.), shape_rot=(0., 0., 0., 1.)):
     builder = ModelBuilder()
     body = builder.add_body(origin=wp.transform_identity())
-    builder.add_shape_mesh(body=body, mesh=Mesh(vertices, faces.reshape(-1), compute_inertia=False))
+    builder.add_shape_mesh(body=body, mesh=Mesh(vertices, faces.reshape(-1), compute_inertia=False),
+                           pos=shape_pos, rot=shape_rot)
     model = builder.finalize('cuda')
     points = np.tile(center, (3, 1)).astype(np.float32)
     points[:, 1] += np.arange(3)*spacing
