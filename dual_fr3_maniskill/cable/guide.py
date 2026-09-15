@@ -11,6 +11,12 @@ class SlidingGuide:
         self._dirty = False
         self.radial_error = 0.
 
+    @property
+    def pose(self):
+        """Physical hole reference in the existing TCP's local frame."""
+        from ..sapien_compat import sapien
+        return self.link.pose * sapien.Pose(self.config.get("center_offset", [0., 0., 0.]))
+
     def bind(self, cable):
         """Allocate once; every solve uses the current MPM ping-pong state."""
         # ManiSkill selects its matching Warp before the MPM cable is created.
@@ -61,10 +67,10 @@ class SlidingGuide:
 
     def update_pose(self):
         """Upload 72 bytes once at each pre/post-PhysX coupling boundary."""
-        pose = self.link.pose
+        pose = self.pose
         rotation = quat2mat(pose.q)
         axis = rotation[:, 0]
-        com = rotation @ self.link.cmass_local_pose.p + pose.p
+        com = rotation @ self.link.cmass_local_pose.p + self.link.pose.p
         data = np.array([pose.p, axis, axis / np.linalg.norm(axis), com,
                          self.link.velocity, self.link.angular_velocity], dtype=np.float32)
         if not np.isfinite(data).all():
@@ -107,7 +113,7 @@ class SlidingGuide:
 
     def measure(self, centers):
         """Measure the final state, including any subsequent rigid contact correction."""
-        pose = self.link.pose
+        pose = self.pose
         axis = quat2mat(pose.q)[:, 0]
         arc = np.r_[0., np.cumsum(np.linalg.norm(np.diff(centers, axis=0), axis=1))]
         at_hole = np.interp(self.material_coordinate, np.arange(len(centers)), arc)

@@ -6,10 +6,11 @@
 
 - ROS 2 Humble 与系统 Python 3.10，已安装工作区需要的 MoveIt / Franka 依赖。
 - 可用的 Vulkan 渲染环境。当前 SAPIEN 即使关闭交互窗口也会创建渲染器。
-- 线缆仿真需要 NVIDIA CUDA GPU；编译 Warp 需要 CUDA 工具链。本机已使用 CUDA 12.8 完成编译，其他版本需以实际验证结果为准。
+- MPM 线缆仿真需要 NVIDIA CUDA GPU；编译 Warp 需要 CUDA 工具链。本机已使用 CUDA 12.8 完成编译，其他版本需以实际验证结果为准。
 - 安装时需联网下载 Python 依赖和固定版本源码。
 
-刚体使用 CPU 求解；线缆的 MPM、纤维和接触计算使用 CUDA。`maniskill_viewer:=false` 仅关闭窗口，不取消 Vulkan 要求。
+刚体和 Rope-Actor 线缆使用 CPU PhysX 求解；MPM、纤维和对应接触计算使用 CUDA。
+依赖安装仍沿用下面的 ManiSkill2 环境；选择 Rope-Actor 时不初始化 MPM/CUDA 求解器。`maniskill_viewer:=false` 仅关闭窗口，不取消 Vulkan 要求。
 
 ## 安装 Python 与 Warp 依赖
 

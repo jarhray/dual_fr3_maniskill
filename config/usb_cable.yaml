@@ -13,7 +13,10 @@ cable:
   diameter: 0.0035
   particle_spacing: 0.00175
   pin_length: 0.007
-  density: 1200.0
+  # Effective estimate from 2 m / 45 g including connectors, minus the modelled
+  # USB's existing 15 g estimate. The unmodelled far connector is distributed
+  # along the cable; 1.5 m weighs 22.5 g, plus the 15 g USB.
+  linear_density: 0.015  # kg/m; volume density is derived from diameter
   young_modulus: 300000.0
   # Axial fiber reinforcement prevents a sub-grid cable from numerically tearing.
   axial_young_modulus: 30000000.0
@@ -40,3 +43,26 @@ mpm:
   grid_padding: 12
   # Preserve every section in RViz: decimation can draw chords through walls.
   marker_stride: 1
+
+# Selected by cable_solver:=rope_actor; MPM settings above are then unused.
+# Capsule chain with spherical D6 joints, TGS and aligned adaptive substeps.
+rope_actor:
+  solver_type: tgs      # standalone scene; the two-hand MTC scene selects PGS
+  engine_tolerance_length: 0.001
+  engine_tolerance_speed: 0.02
+  links: 60
+  frequency: 1000
+  max_contact_travel: 0.00005  # adaptive substep travel cap [m], independent of acceptance tolerance
+  contact_offset: 0.00002  # contact generation distance, not permitted penetration [m]
+  inertia_floor: 1.1e-8   # rotational regularization [kg m^2]; mass is unchanged
+  twist_limit_deg: 85.0
+  bend_limit_deg: 85.0
+  # Angular spring (N m/rad); zero matches the reference's freely bending rope.
+  joint_stiffness: 0.0
+  joint_damping: 0.001    # N m s/rad
+  linear_damping: 1.0
+  angular_damping: 1.0
+  solver_iterations: 40
+  solver_velocity_iterations: 10
+  constraint_tolerance: 0.001  # segment joint/USB attachment error limit [m]
+  max_speed: 10.0             # surface speed guard [m/s]

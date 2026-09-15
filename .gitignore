@@ -13,3 +13,8 @@ htmlcov/
 /install/
 /log/
 /artifacts/
+
+# Local diagnostics; conclusions are kept in docs/debugging_summary.md.
+/docs/benchmarks/
+/temp/
+/imgui.ini

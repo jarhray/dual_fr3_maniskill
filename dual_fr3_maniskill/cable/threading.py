@@ -7,10 +7,21 @@ RIGHT_TCP = "right_fr3_hand_tcp"
 TOUCH_LINKS = (LEFT_TCP, "left_fr3_hand", "left_fr3_leftfinger", "left_fr3_rightfinger")
 
 
-def task_usb_mount(config):
-    """USB +Y (plug tip) faces TCP +X, including the task's forward/reverse yaw."""
+def task_usb_mount(config, *, orientation_direction=None):
+    """Place the USB grip below the guide TCP, with its tip along the path.
+
+    A reverse-facing leader holds USB +Y along TCP -X. TCP +Z points away
+    from the palm (down for the task's roll=pi), toward the physical grip.
+    """
+    if orientation_direction is None:
+        orientation_direction = config["usb"].get("orientation_direction", "reverse")
+    if orientation_direction not in ("forward", "reverse"):
+        raise ValueError("USB orientation_direction must be forward or reverse")
     rotation = np.array([[0., 1., 0.], [1., 0., 0.], [0., 0., -1.]])
-    return -rotation @ np.asarray(config["usb"]["grip_center"]), rotation
+    if orientation_direction == "reverse":
+        rotation[:2] *= -1.
+    grip_offset = np.asarray(config["usb"].get("tcp_grip_offset", [0., 0., .0075]))
+    return grip_offset - rotation @ np.asarray(config["usb"]["grip_center"]), rotation
 
 
 def _bezier(a, b, c, d, count=1000):
@@ -18,12 +29,8 @@ def _bezier(a, b, c, d, count=1000):
     return (1-t)**3*a + 3*(1-t)**2*t*b + 3*(1-t)*t*t*c + t**3*d
 
 
-def threaded_positions(config, local, rotation, translation, hole, axis):
-    """Preserve length, leave the USB tail, pass straight through the right TCP.
-
-    The free tail exits straight along the bore axis. Only the initial layout
-    uses this curve; subsequent motion uses MPM and the sliding eyelet.
-    """
+def threaded_centerline(config, s, rotation, translation, hole, axis):
+    """Sample the USB-to-eyelet initial curve; return guide arc length in metres."""
     hole = np.asarray(hole, dtype=float)
     axis = np.asarray(axis, dtype=float)
     axis = axis / np.linalg.norm(axis)
@@ -50,9 +57,16 @@ def threaded_positions(config, local, rotation, translation, hole, axis):
     length = config["cable"]["length"]
     if length <= guide_arc + half + .02:
         raise ValueError("Cable is too short to pass through the right TCP with a free tail")
-    sections = len(local) // 7
-    s = np.linspace(0., length, sections)
     center = np.column_stack([np.interp(s, arc, path[:, i]) for i in range(3)])
+    return center, guide_arc
+
+
+def threaded_positions(config, local, rotation, translation, hole, axis):
+    """Seven-point MPM cross sections on the common threaded curve."""
+    sections = len(local) // 7
+    length = config["cable"]["length"]
+    s = np.linspace(0., length, sections)
+    center, guide_arc = threaded_centerline(config, s, rotation, translation, hole, axis)
     tangent = np.gradient(center, axis=0)
     tangent /= np.linalg.norm(tangent, axis=1)[:, None]
     x_axes = np.empty_like(tangent)

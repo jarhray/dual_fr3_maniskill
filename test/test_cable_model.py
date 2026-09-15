@@ -22,10 +22,33 @@ def test_cable_dimensions_mass_and_attachment(length):
     np.testing.assert_allclose(center[0], [0., -.02, 0.], atol=1e-12)
     np.testing.assert_allclose(center[-1], [0., -.02-length, 0.], atol=1e-12)
     assert volume.sum() == pytest.approx(np.pi * (.0035 / 2) ** 2 * length)
-    assert volume.sum() * config['cable']['density'] == pytest.approx(.03463606 * length / 3, abs=1e-8)
+    assert volume.sum() * config['cable']['density'] == pytest.approx(.015 * length)
     assert pinned.sum() >= 7
     assert np.ptp(points[pinned, 1]) <= .007
     assert np.linalg.norm(np.diff(center, axis=0), axis=1).sum() == pytest.approx(length)
+
+
+@pytest.mark.parametrize("filename", ["usb_cable.yaml", "trunking_cable.yaml"])
+def test_reference_total_mass_and_shortened_cable(tmp_path, filename):
+    cfg = load_config(ROOT/"config"/filename, solver="rope_actor")
+    # 45 g at 2 m, retaining the existing unweighed 15 g USB estimate.
+    assert cfg["cable"]["linear_density"]*2+cfg["usb"]["mass"] == pytest.approx(.045)
+    assert cfg["cable"]["linear_density"]*1.5+cfg["usb"]["mass"] == pytest.approx(.0375)
+    # Geometry changes and serialized resolved configs must not change kg/m.
+    cfg["cable"]["diameter"] *= 1.2
+    path = tmp_path/"resized.yaml"
+    path.write_text(yaml.safe_dump(cfg))
+    c = load_config(path, solver="rope_actor")["cable"]
+    assert c["density"]*np.pi*(c["diameter"]/2)**2 == pytest.approx(.015)
+
+
+def test_legacy_volume_density_remains_supported(tmp_path):
+    cfg = load_config(ROOT/"config/usb_cable.yaml")
+    cfg["cable"].pop("linear_density")
+    cfg["cable"]["density"] = 1200.
+    path = tmp_path/"legacy.yaml"
+    path.write_text(yaml.safe_dump(cfg))
+    assert load_config(path)["cable"]["density"] == 1200.
 
 
 def test_fixed_mount_uses_original_usb_coordinates():
@@ -76,7 +99,10 @@ def test_spiral_preserves_material_length_and_rigid_collar(configured_length):
 
 @pytest.mark.parametrize('section,key,value', [
     ('cable','length',-1), ('cable','diameter',0), ('cable','friction',-1),
+    ('cable','linear_density',0), ('cable','linear_density',True),
+    ('cable','linear_density',float('nan')), ('cable','linear_density',float('inf')),
     ('usb','attachment',[0,0]), ('usb','finger_position',.1),
+    ('usb','tcp_grip_offset',[0,0]), ('usb','tcp_grip_offset',[0,0,float('nan')]),
     ('mpm','frequency',12.5), ('mpm','grid_padding',1),
     ('mpm','cuda_graph','false'), ('mpm','gpu_grid_check',1),
     ('cable','contact_margin',0), ('cable','contact_iterations',0),

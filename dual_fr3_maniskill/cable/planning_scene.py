@@ -11,7 +11,7 @@ from geometry_msgs.msg import Point, Pose
 from moveit_msgs.msg import AttachedCollisionObject, CollisionObject, PlanningScene
 from shape_msgs.msg import Mesh, MeshTriangle
 
-from .model import USB_LINK, load_config
+from .model import USB_LINK, load_geometry_config
 from .threading import LEFT_TCP, TOUCH_LINKS, task_usb_mount
 
 
@@ -32,8 +32,8 @@ def _quaternion_xyzw(r):
     return vectors[:, -1]
 
 
-def usb_collision_object(config_path):
-    config = load_config(config_path)
+def usb_collision_object(config_path, *, orientation_direction=None):
+    config = load_geometry_config(config_path)
     data = usb_mesh_path().read_bytes()
     count = struct.unpack_from("<I", data, 80)[0]
     if len(data) != 84 + 50*count:
@@ -46,7 +46,7 @@ def usb_collision_object(config_path):
         mesh.vertices.extend(Point(x=values[i]*scale, y=values[i+1]*scale,
                                    z=values[i+2]*scale) for i in (3, 6, 9))
         mesh.triangles.append(MeshTriangle(vertex_indices=[start, start+1, start+2]))
-    position, rotation = task_usb_mount(config)
+    position, rotation = task_usb_mount(config, orientation_direction=orientation_direction)
     pose = Pose()
     pose.position = Point(x=float(position[0]), y=float(position[1]), z=float(position[2]))
     # Use the same mount transform as SAPIEN, including quaternion ordering.
@@ -58,9 +58,10 @@ def usb_collision_object(config_path):
     return obj
 
 
-def attached_usb_scene(config_path):
+def attached_usb_scene(config_path, *, orientation_direction=None):
     scene = PlanningScene(is_diff=True)
     scene.robot_state.is_diff = True
     scene.robot_state.attached_collision_objects = [AttachedCollisionObject(
-        link_name=LEFT_TCP, object=usb_collision_object(config_path), touch_links=list(TOUCH_LINKS))]
+        link_name=LEFT_TCP, object=usb_collision_object(config_path,
+            orientation_direction=orientation_direction), touch_links=list(TOUCH_LINKS))]
     return scene

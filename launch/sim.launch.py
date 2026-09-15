@@ -8,6 +8,7 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.parameter_descriptions import ParameterValue
 
 from dual_fr3_maniskill.launch_support import create_bridge_node
+from dual_fr3_maniskill.cable.backends import CABLE_SOLVERS
 from dual_fr3_maniskill.scenes import SCENES
 
 
@@ -19,7 +20,10 @@ def launch_setup(context):
             LaunchConfiguration("robot_description_semantic"), value_type=str)},
         python=LaunchConfiguration("maniskill_python"), viewer=LaunchConfiguration("maniskill_viewer"),
         simulation_config=LaunchConfiguration("maniskill_config").perform(context),
+        cable_solver=LaunchConfiguration("cable_solver").perform(context),
         cable_config=LaunchConfiguration("cable_config").perform(context),
+        cable_trace_dir=LaunchConfiguration("cable_trace_dir").perform(context),
+        leader_orientation_direction=LaunchConfiguration("leader_orientation_direction").perform(context),
     )]
 
 
@@ -29,7 +33,12 @@ def generate_launch_description():
         DeclareLaunchArgument("robot_description"),
         DeclareLaunchArgument("robot_description_semantic"),
         DeclareLaunchArgument("maniskill_scene", default_value="robot", choices=SCENES),
+        DeclareLaunchArgument("cable_solver", default_value="mpm", choices=CABLE_SOLVERS),
+        DeclareLaunchArgument("leader_orientation_direction", default_value="reverse",
+                              choices=("forward", "reverse")),
         DeclareLaunchArgument("cable_config", default_value=""),
+        DeclareLaunchArgument("cable_trace_dir", default_value="",
+                              description="Optional Rope-Actor diagnostic output directory; empty disables recording."),
         DeclareLaunchArgument("maniskill_config", default_value=""),
         DeclareLaunchArgument("maniskill_python", default_value=python),
         DeclareLaunchArgument("maniskill_viewer", default_value="false"),

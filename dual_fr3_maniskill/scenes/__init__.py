@@ -38,11 +38,39 @@ def extend_scene_description(description: str, semantic: str, *, scene: str,
                              cable_config: str | Path | None = None) -> tuple[str, str]:
     """Extend caller-owned URDF/SRDF without depending on a MoveIt package."""
     scene_spec(scene)
-    if scene in ("robot", "trunking_cable"):
+    if scene == "robot":
         return description, semantic
-    from ..cable.model import add_usb_description, load_config
+    from ..cable.model import add_usb_description, load_geometry_config
+
+    if scene == "trunking_cable":
+        import xml.etree.ElementTree as ET
+        config = load_geometry_config(resolve_cable_config(cable_config, scene=scene))
+        variant = config["scene"].get("trunking_mesh")
+        if variant is None:
+            return description, semantic
+        robot = ET.fromstring(description)
+        trunking = robot.find("link[@name='trunking']")
+        if trunking is None:
+            raise ValueError("scene.trunking_mesh requires a trunking link")
+        filename, origin = {
+            "original": ("Trunking.STL", "0 0 0"),
+            "simplified": ("Trunking_simplify.stl", "0.00014546 -0.00068397 0"),
+        }[variant]
+        for kind in ("visual", "collision"):
+            shapes = trunking.findall(kind)
+            if len(shapes) != 1 or shapes[0].find("geometry/mesh") is None:
+                raise ValueError(f"Expected one trunking {kind} mesh")
+            shape = shapes[0]
+            pose = shape.find("origin")
+            if pose is None:
+                pose = ET.SubElement(shape, "origin")
+            pose.set("xyz", origin)
+            pose.set("rpy", "0 0 0")
+            shape.find("geometry/mesh").set("filename",
+                "package://dual_fr3_moveit_config/meshes/" + filename)
+        return ET.tostring(robot, encoding="unicode"), semantic
 
     share = Path(get_package_share_directory("dual_fr3_maniskill"))
     return add_usb_description(description, semantic, share / "meshes/USB1.stl",
-                               load_config(resolve_cable_config(cable_config)),
+                               load_geometry_config(resolve_cable_config(cable_config)),
                                mesh_uri="package://dual_fr3_maniskill/meshes/USB1.stl")

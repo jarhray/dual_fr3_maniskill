@@ -1,7 +1,7 @@
-# MTC experiment: original slotted trunking and the measured 3 mm cable diameter.
+# MTC scene: 2 mm cable fits the existing research-finger bore at closed TCP.
 # All dimensions, including USB1.stl coordinates, are metres.
 scene:
-  trunking_mesh: original
+  trunking_mesh: simplified
 usb:
   mesh_scale: 1.0
   attachment: [0.0, -0.02, 0.0]
@@ -16,7 +16,7 @@ usb:
 cable:
   initial_layout: table_spiral
   length: 1.5
-  diameter: 0.003
+  diameter: 0.002
   particle_spacing: 0.001
   pin_length: 0.007
   # Effective mass estimate: measured 2 m / 45 g includes both connectors.
@@ -38,9 +38,7 @@ cable:
   penetration_tolerance: 0.0001
 # Used only by the deferred MTC scene (trunking_cable).
 guide:
-  # Bore centre is about 2.4 mm beyond the existing TCP along local +Z.
-  # This offsets the spawn curve / aperture observer, not the robot TCP or CAD.
-  center_offset: [0.0, 0.0, 0.0024]
+  center_offset: [0.0, 0.0, 0.0]
   half_length: 0.012     # straight guided length on each side of the right TCP [m]
 mpm:
   # Disable individually when comparing another machine or debugging kernels.
@@ -64,8 +62,8 @@ rope_actor:
   # segment, not a rigid strain-relief sleeve fixed in the USB direction.
   root_joint: spherical
   # Use convex/triangle contacts: analytic capsule/triangle PCM missed the
-  # recorded hole and trunking edges. Inscribed surface deficit < 0.042 mm;
-  # geometric guards measure the full 3 mm ideal capsule.
+  # recorded hole and trunking edges. Inscribed surface deficit < 0.028 mm;
+  # geometric guards still measure the original 2 mm ideal capsule.
   collision_geometry: convex_capsule
   solver_type: pgs      # preserves joint damping without the reproduced TGS energy burst
   engine_tolerance_length: 0.1

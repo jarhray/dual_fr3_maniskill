@@ -12,6 +12,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("--mode", choices=("actions", "mtc", "tests", "render", "physics", "mpm"), default="actions")
     parser.add_argument("--viewer", action="store_true")
+    parser.add_argument("--cable-solver", choices=("mpm", "rope_actor"), default="mpm")
+    parser.add_argument("--cable-config", default="")
     parser.add_argument("--fixture-closeup", action="store_true")
     parser.add_argument("--timeout", type=float, default=600)
     args = parser.parse_args()
@@ -41,7 +43,10 @@ def main():
         command += ["dual_fr3_moveit_config", "demo.launch.py", "simulation_backend:=maniskill"]
     else:
         command += ["dual_fr3_trunking_mtc", "mtc_prototype.launch.py", "simulation_backend:=maniskill",
-                    "execute:=true", "preparation_interactive:=false", "mtc_keep_alive_sec:=0.1"]
+                    "execute:=true", "preparation_interactive:=false", "mtc_keep_alive_sec:=0.1",
+                    f"cable_solver:={args.cable_solver}"]
+        if args.cable_config:
+            command.append(f"cable_config:={args.cable_config}")
     command += [f"use_rviz:={'true' if args.viewer else 'false'}",
                 f"maniskill_viewer:={'true' if args.viewer else 'false'}", f"maniskill_python:={python}"]
     print(f"Starting {args.mode} verification; log: {log}", flush=True)

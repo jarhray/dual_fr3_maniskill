@@ -9,64 +9,151 @@ USB_LINK = "usb_cable_demo_plug"
 TCP_LINK = "left_fr3_hand_tcp"
 
 
-def load_config(path):
+def load_config(path, *, solver="mpm"):
+    """Validate common geometry and only the selected solver's settings.
+
+    ``solver=None`` is for MoveIt geometry consumers, which do not run physics.
+    The launch/ROS parameter is the single source of solver selection.
+    """
+    from .backends import validate_solver
+    if solver is not None:
+        validate_solver(solver)
     with open(path, encoding="utf-8") as stream:
         config = yaml.safe_load(stream)
-    for section in ("usb", "cable", "mpm"):
+    if not isinstance(config, dict):
+        raise ValueError("Cable configuration must be a mapping")
+    scene = config.setdefault("scene", {})
+    if not isinstance(scene, dict):
+        raise ValueError("scene configuration must be a mapping")
+    if "trunking_mesh" in scene and scene["trunking_mesh"] not in ("original", "simplified"):
+        raise ValueError("scene.trunking_mesh must be original or simplified")
+    for section in ("usb", "cable"):
         if not isinstance(config.get(section), dict):
             raise ValueError(f"Missing {section} configuration")
-    c, m = config["cable"], config["mpm"]
-    for key in ('cuda_graph', 'gpu_grid_check'):
-        m.setdefault(key, True)
-        if not isinstance(m[key], bool):
-            raise ValueError(f'mpm.{key} must be boolean')
+    c = config["cable"]
     c.setdefault("contact_margin", 0.00002)
     c.setdefault("contact_iterations", 2)
     c.setdefault("penetration_tolerance", 0.0001)
     c.setdefault("initial_layout", "table_spiral")
-    if c.get("initial_layout", "straight") not in ("straight", "table_spiral"):
+    if c["initial_layout"] not in ("straight", "table_spiral"):
         raise ValueError("initial_layout must be straight or table_spiral")
-    for key in ("attachment", "grip_center"):
-        vector = np.asarray(config["usb"][key])
+
+    def positive(section, keys):
+        for key in keys:
+            value = config[section].get(key)
+            if (not isinstance(value, (int, float)) or isinstance(value, bool)
+                    or not np.isfinite(value) or value <= 0):
+                raise ValueError(f"{section}.{key} must be positive and finite")
+
+    def integer(section, keys):
+        positive(section, keys)
+        for key in keys:
+            if not isinstance(config[section][key], int):
+                raise ValueError(f"{section}.{key} must be an integer")
+
+    config["usb"].setdefault("tcp_grip_offset", [0., 0., .0075])
+    for key in ("attachment", "grip_center", "tcp_grip_offset"):
+        vector = np.asarray(config["usb"].get(key), dtype=float)
         if vector.shape != (3,) or not np.isfinite(vector).all():
             raise ValueError(f"usb.{key} must have three finite coordinates")
-    for key in ("mass", "mesh_scale", "finger_position"):
-        if not np.isfinite(config["usb"][key]) or config["usb"][key] <= 0:
-            raise ValueError(f"usb.{key} must be positive and finite")
+    positive("usb", ("mass", "mesh_scale", "finger_position"))
     if config["usb"]["finger_position"] > .04:
         raise ValueError("USB grip exceeds the FR3 finger travel")
-    if not np.isfinite(c["friction"]) or c["friction"] < 0:
+    friction = c.get("friction")
+    if not isinstance(friction, (int, float)) or not np.isfinite(friction) or friction < 0:
         raise ValueError("cable.friction must be nonnegative and finite")
-    for key in ("length", "diameter", "particle_spacing", "pin_length", "density",
-                "young_modulus", "axial_young_modulus", "yield_stress", "contact_margin", "penetration_tolerance"):
-        if not np.isfinite(c[key]) or c[key] <= 0:
-            raise ValueError(f"cable.{key} must be positive and finite")
-    if not 0 < c["poisson_ratio"] < 0.49 or c["pin_length"] >= c["length"]:
-        raise ValueError("Invalid Poisson ratio or pin length")
-    if not isinstance(c["axial_iterations"], int) or c["axial_iterations"] < 1:
-        raise ValueError("axial_iterations must be a positive integer")
-    if not isinstance(c["contact_iterations"], int) or c["contact_iterations"] < 1:
-        raise ValueError("contact_iterations must be a positive integer")
+    positive("cable", ("length", "diameter", "pin_length", "contact_margin", "penetration_tolerance"))
+    if "linear_density" in c:
+        positive("cable", ("linear_density",))
+        # kg/m is the mass input when available; density remains the resolved
+        # kg/m^3 value consumed by both solvers and saved in trace metadata.
+        c["density"] = c["linear_density"]/(np.pi*(c["diameter"]/2)**2)
+    positive("cable", ("density",))
+    if c["pin_length"] >= c["length"]:
+        raise ValueError("Invalid pin length")
+    integer("cable", ("contact_iterations",))
     if c["contact_margin"] >= c["diameter"] / 2 or c["penetration_tolerance"] >= c["diameter"] / 2:
         raise ValueError("Contact margin and penetration tolerance must be smaller than the cable radius")
-    for key in ("grid_spacing", "max_grid_spacing", "frequency", "max_grid_cells", "grid_padding", "marker_stride"):
-        if not np.isfinite(m[key]) or m[key] <= 0:
-            raise ValueError(f"mpm.{key} must be positive and finite")
-    if m["max_grid_spacing"] < m["grid_spacing"]:
-        raise ValueError("max_grid_spacing must be at least grid_spacing")
-    for key in ("frequency", "max_grid_cells", "grid_padding", "marker_stride"):
-        if not isinstance(m[key], int):
-            raise ValueError(f"mpm.{key} must be an integer")
-    if m["grid_padding"] < 6:
-        raise ValueError("grid_padding must be at least 6 for the MPM stencil")
-    if c["particle_spacing"] > c["diameter"] / 2:
-        raise ValueError("particle_spacing must be no greater than half the diameter")
     guide = config.setdefault("guide", {})
+    if not isinstance(guide, dict):
+        raise ValueError("guide configuration must be a mapping")
     guide.setdefault("half_length", .012)
-    for key in ("half_length",):
-        if not np.isfinite(guide[key]) or guide[key] <= 0:
-            raise ValueError(f"guide.{key} must be positive and finite")
+    guide.setdefault("center_offset", [0., 0., 0.])
+    offset = np.asarray(guide["center_offset"], dtype=float)
+    if offset.shape != (3,) or not np.isfinite(offset).all():
+        raise ValueError("guide.center_offset must have three finite coordinates")
+    positive("guide", ("half_length",))
+    display = config.setdefault("display", {})
+    if not isinstance(display, dict):
+        raise ValueError("display configuration must be a mapping")
+    legacy_mpm = config.get("mpm", {})
+    display.setdefault("marker_stride", legacy_mpm.get("marker_stride", 1)
+                       if isinstance(legacy_mpm, dict) and solver == "mpm" else 1)
+    integer("display", ("marker_stride",))
+
+    if solver == "mpm":
+        if not isinstance(config.get("mpm"), dict):
+            raise ValueError("Missing mpm configuration")
+        m = config["mpm"]
+        for key in ("cuda_graph", "gpu_grid_check"):
+            m.setdefault(key, True)
+            if not isinstance(m[key], bool):
+                raise ValueError(f"mpm.{key} must be boolean")
+        positive("cable", ("particle_spacing", "young_modulus", "axial_young_modulus", "yield_stress"))
+        if not 0 < c.get("poisson_ratio", 0) < .49:
+            raise ValueError("Invalid Poisson ratio")
+        integer("cable", ("axial_iterations",))
+        positive("mpm", ("grid_spacing", "max_grid_spacing"))
+        integer("mpm", ("frequency", "max_grid_cells", "grid_padding", "marker_stride"))
+        if m["max_grid_spacing"] < m["grid_spacing"]:
+            raise ValueError("max_grid_spacing must be at least grid_spacing")
+        if m["grid_padding"] < 6:
+            raise ValueError("grid_padding must be at least 6 for the MPM stencil")
+        if c["particle_spacing"] > c["diameter"] / 2:
+            raise ValueError("particle_spacing must be no greater than half the diameter")
+    elif solver == "rope_actor":
+        r = config.setdefault("rope_actor", {})
+        if not isinstance(r, dict):
+            raise ValueError("rope_actor configuration must be a mapping")
+        defaults = dict(links=60, frequency=1000, contact_offset=.00002, inertia_floor=1.1e-8,
+                        solver_type="tgs", root_joint="fixed", collision_geometry="capsule",
+                        max_contact_travel=.00005,
+                        engine_tolerance_length=.1, engine_tolerance_speed=.2,
+                        twist_limit_deg=85., bend_limit_deg=85.,
+                        joint_stiffness=0., joint_damping=.001,
+                        linear_damping=1., angular_damping=1.,
+                        solver_iterations=40, solver_velocity_iterations=10,
+                        constraint_tolerance=0.001, max_speed=10.0)
+        for key, value in defaults.items():
+            r.setdefault(key, value)
+        if r["solver_type"] not in ("pgs", "tgs"):
+            raise ValueError("rope_actor.solver_type must be pgs or tgs")
+        if r["root_joint"] not in ("fixed", "spherical"):
+            raise ValueError("rope_actor.root_joint must be fixed or spherical")
+        if r["collision_geometry"] not in ("capsule", "convex_capsule"):
+            raise ValueError("rope_actor.collision_geometry must be capsule or convex_capsule")
+        integer("rope_actor", ("links", "frequency", "solver_iterations", "solver_velocity_iterations"))
+        if not 6 <= r["links"] <= 256:
+            raise ValueError("rope_actor.links must be between 6 and 256")
+        positive("rope_actor", ("twist_limit_deg", "bend_limit_deg", "constraint_tolerance", "max_speed", "contact_offset", "inertia_floor", "engine_tolerance_length", "engine_tolerance_speed"))
+        positive("rope_actor", ("max_contact_travel",))
+        if r["max_contact_travel"] > c["diameter"]/4:
+            raise ValueError("rope_actor.max_contact_travel must not exceed half the cable radius")
+        if r["inertia_floor"] <= 1.e-8:
+            raise ValueError("rope_actor.inertia_floor must exceed SAPIEN 2 minimum 1e-8")
+        if max(r["twist_limit_deg"], r["bend_limit_deg"]) >= 180:
+            raise ValueError("Rope joint limits must be smaller than 180 degrees")
+        for key in ("joint_stiffness", "joint_damping", "linear_damping", "angular_damping"):
+            value = r[key]
+            if not isinstance(value, (int, float)) or not np.isfinite(value) or value < 0:
+                raise ValueError(f"rope_actor.{key} must be nonnegative and finite")
+        if min(c["pin_length"], (c["length"]-c["pin_length"])/(r["links"]-1)) <= c["diameter"]:
+            raise ValueError("Rope segments and pin_length must exceed cable.diameter; reduce rope_actor.links")
     return config
+
+
+def load_geometry_config(path):
+    return load_config(path, solver=None)
 
 
 def usb_mount(config):
@@ -157,14 +244,11 @@ def grid_layout(points, config, spacing=None):
         spacing *= 1.2
 
 
-def initial_particle_positions(config, local, rotation, translation):
-    """Rest-shaped cable laid on the current table, with a straight clamp collar.
-
-    Resample by arc length to preserve the configured material length.
-    The spiral is an initial condition, never a constraint during simulation.
-    """
+def initial_centerline(config, s, rotation, translation):
+    """Sample the shared initial curve at material distances in metres."""
     if config["cable"].get("initial_layout", "straight") == "straight":
-        return local @ rotation.T + translation
+        attachment = rotation @ np.asarray(config["usb"]["attachment"]) + translation
+        return attachment[None, :] - np.asarray(s)[:, None]*rotation[:, 1]
     c = config["cable"]
     attachment = rotation @ np.asarray(config["usb"]["attachment"]) + translation
     direction = rotation @ np.array([0., -1., 0.])
@@ -193,9 +277,18 @@ def initial_particle_positions(config, local, rotation, translation):
     arc = np.r_[0., np.cumsum(np.linalg.norm(np.diff(path, axis=0), axis=1))]
     if arc[-1] < c["length"]:
         raise ValueError("table_spiral supports this scene's cable lengths up to %.3f m" % arc[-1])
+    center = np.column_stack([np.interp(s, arc, path[:, axis]) for axis in range(3)])
+    return center
+
+
+def initial_particle_positions(config, local, rotation, translation):
+    """Seven-point MPM cross sections on the common initial curve."""
+    if config["cable"].get("initial_layout", "straight") == "straight":
+        return local @ rotation.T + translation
+    c = config["cable"]
     sections = len(local) // 7
     s = np.linspace(0., c["length"], sections)
-    center = np.column_stack([np.interp(s, arc, path[:, axis]) for axis in range(3)])
+    center = initial_centerline(config, s, rotation, translation)
     tangent = np.gradient(center, axis=0)
     tangent /= np.linalg.norm(tangent, axis=1)[:, None]
     # Construct a continuous frame from the initial USB X axis.

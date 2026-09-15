@@ -9,6 +9,7 @@ from ..ros_bridge import ManiSkillBridge, main as bridge_main, stamp
 from ..scenes import resolve_cable_config
 from .model import USB_LINK, load_config
 from .ros_bridge import UsbCableBridge
+from .threading import task_usb_mount
 
 
 class TrunkingCableBridge(UsbCableBridge):
@@ -22,8 +23,12 @@ class TrunkingCableBridge(UsbCableBridge):
     def create_simulation(self, assets):
         from ..scenes.trunking_cable import TrunkingCableSimulation
         path = self.declare_parameter("cable_config", resolve_cable_config(scene="trunking_cable")).value
-        self.cable_config = load_config(path)
-        return TrunkingCableSimulation(assets, cable_config=self.cable_config,
+        self.cable_solver = self.declare_parameter("cable_solver", "mpm").value
+        self.cable_config = load_config(path, solver=self.cable_solver)
+        self.cable_config["usb"]["orientation_direction"] = self.declare_parameter(
+            "leader_orientation_direction", "reverse").value
+        task_usb_mount(self.cable_config)  # Validate before starting the simulator.
+        return TrunkingCableSimulation(assets, cable_config=self.cable_config, cable_solver=self.cable_solver,
             control_freq=self.config["control_freq"], sim_freq=self.config["sim_freq"], viewer=self.config["viewer"])
 
     def finish_gripper(self, side, *, reached=False, stalled=False, cancel=False):

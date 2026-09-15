@@ -1,0 +1,1299 @@
+{
+  "schema_version": 1,
+  "date": "2026-09-15",
+  "notes": [
+    "Extracted from completed local recordings before removing raw debugging files.",
+    "Original summary metrics are preserved; geometry_audits=0 means max_penetration_m=0 or null is not evidence of zero penetration.",
+    "No full states, control streams or PhysX caches are included; this is not a replay dataset.",
+    "A recording without failure does not independently establish complete MTC execution."
+  ],
+  "cleanup_groups": [
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/cleanup_20260914",
+      "files": 9,
+      "bytes": 30158
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/mpm_20260912",
+      "files": 11,
+      "bytes": 292848
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/original_trunking_3mm_20260915",
+      "files": 12,
+      "bytes": 5670601
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_actor_20260914",
+      "files": 10,
+      "bytes": 534429
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_actor_20260915",
+      "files": 10,
+      "bytes": 769722
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_contact_guide_20260915",
+      "files": 12,
+      "bytes": 1320678
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_finger_decoupling_20260915",
+      "files": 29,
+      "bytes": 8160439
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_missing_contact_20260915",
+      "files": 18,
+      "bytes": 83179698
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_penetration_tolerance_20260915",
+      "files": 25,
+      "bytes": 1242167
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_proxy_rotation_20260915",
+      "files": 12,
+      "bytes": 1206646
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_resolution_tolerance_20260915",
+      "files": 54,
+      "bytes": 4996076
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_short_segments_20260915",
+      "files": 6,
+      "bytes": 131347
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_sliding_contacts_20260915",
+      "files": 20,
+      "bytes": 11244736
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_solver_schedule_20260915",
+      "files": 37,
+      "bytes": 133560203
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_tension_20260915",
+      "files": 35,
+      "bytes": 26350627
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/rope_usb_clearance_20260915",
+      "files": 18,
+      "bytes": 31794380
+    },
+    {
+      "path": "src/dual_fr3_maniskill/docs/benchmarks/trunking_simplify_20260915",
+      "files": 37,
+      "bytes": 2152580
+    },
+    {
+      "path": "artifacts/cable_trace/run_20260915T090429Z_qnjlsyk2",
+      "files": 6,
+      "bytes": 99186457
+    },
+    {
+      "path": "artifacts/cable_trace/run_20260915T092025Z_qypob_ra",
+      "files": 6,
+      "bytes": 118472398
+    },
+    {
+      "path": "artifacts/cable_trace/run_20260915T101458Z_nt8fuwky",
+      "files": 6,
+      "bytes": 369458357
+    },
+    {
+      "path": "artifacts/cable_trace/run_20260915T105250Z_b1pd3st0",
+      "files": 6,
+      "bytes": 141549438
+    },
+    {
+      "path": "artifacts/cable_trace/run_20260915T111051Z_3p2xrfi1",
+      "files": 6,
+      "bytes": 771366230
+    },
+    {
+      "path": "artifacts/cable_trace/run_20260915T113808Z_3scs5omg",
+      "files": 5,
+      "bytes": 8060090226
+    },
+    {
+      "path": "artifacts/cable_trace/run_20260915T124531Z_2rln3131",
+      "files": 5,
+      "bytes": 369316779
+    },
+    {
+      "path": "temp",
+      "files": 19,
+      "bytes": 1719436
+    }
+  ],
+  "total_removed_files": 414,
+  "total_removed_bytes": 10243796656,
+  "runs": [
+    {
+      "run_id": "run_20260915T090429Z_qnjlsyk2",
+      "scene": "TrunkingCableEnv",
+      "spawn_time_s": 24.200000000006593,
+      "cable_duration_s": 2.0999999999999943,
+      "cable_config": {
+        "usb": {
+          "mesh_scale": 1.0,
+          "attachment": [
+            0.0,
+            -0.02,
+            0.0
+          ],
+          "grip_center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mass": 0.015,
+          "finger_position": 0.0037
+        },
+        "cable": {
+          "initial_layout": "table_spiral",
+          "length": 1.5,
+          "diameter": 0.002,
+          "particle_spacing": 0.001,
+          "pin_length": 0.007,
+          "density": 1200.0,
+          "young_modulus": 300000.0,
+          "axial_young_modulus": 30000000.0,
+          "axial_iterations": 6,
+          "poisson_ratio": 0.3,
+          "yield_stress": 1000000000.0,
+          "friction": 0.5,
+          "contact_margin": 2e-05,
+          "contact_iterations": 2,
+          "penetration_tolerance": 0.0001
+        },
+        "guide": {
+          "half_length": 0.012
+        },
+        "mpm": {
+          "cuda_graph": true,
+          "gpu_grid_check": true,
+          "frequency": 5000,
+          "grid_spacing": 0.006,
+          "max_grid_cells": 16000000,
+          "adaptive_resolution": true,
+          "max_grid_spacing": 0.015,
+          "grid_padding": 12,
+          "marker_stride": 1
+        },
+        "rope_actor": {
+          "engine_tolerance_length": 0.1,
+          "engine_tolerance_speed": 0.2,
+          "links": 151,
+          "frequency": 1000,
+          "max_contact_travel": 5e-05,
+          "contact_offset": 2e-05,
+          "inertia_floor": 1.1e-08,
+          "twist_limit_deg": 85.0,
+          "bend_limit_deg": 85.0,
+          "joint_stiffness": 0.0,
+          "joint_damping": 0.001,
+          "linear_damping": 1.0,
+          "angular_damping": 1.0,
+          "solver_iterations": 40,
+          "solver_velocity_iterations": 10,
+          "constraint_tolerance": 0.001,
+          "max_speed": 10.0
+        },
+        "display": {
+          "marker_stride": 1
+        }
+      },
+      "source_sha256": {
+        "__init__.py": "cfa7bb8d166435b32be0d94bcad648627af2dc87b6a271b00bc81a0e1f1253d7",
+        "assets.py": "1fc53a25b22e477e2ba328f0ae895d5e799b38b10e2f0a3555155e1721eb20bc",
+        "cable/__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+        "cable/aperture.py": "d048afdbc3e854b4e92b5c194322d15b6064ec2d5f57a56949b34f15bba34db1",
+        "cable/backends.py": "141eb043917c3fd438b0895c889352c297a6672a02e4f3c1a72a300bd15a5c9c",
+        "cable/contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+        "cable/execution.py": "48b4ed29ba58bb282ac594ccec3a806de536d3a06bb63b8008e77210a1f204d9",
+        "cable/fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61",
+        "cable/guide.py": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+        "cable/guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+        "cable/kinematic.py": "a442fd852ea0f497a65dfded4d312a9e8463f60cd7f454bb8f948f2f5c06de30",
+        "cable/mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+        "cable/model.py": "10fa4c8b1967c93a3ea7642e5657dce779c4e04c3b0356c806f4e925fb9a2b15",
+        "cable/mpm_cable.py": "1e4ebe26f6156f508df3481bb8d862887fc1751c1f29c0605fdb040f616d6dc0",
+        "cable/planning_scene.py": "46b5a86efe896eaba3cac09c27e44199c7a83c3d2a5ba445ea30463a43eca356",
+        "cable/rope_actor.py": "a7d00003aecb0413cff72aa8bf6e4e56173d19494cf58d2fbbfa59d2f8e5a520",
+        "cable/rope_diagnostics.py": "fdb95bd027b083a04cee226e906f6c18a5d37f0a94df0c03e3c5b46cb9fc40ee",
+        "cable/ros_bridge.py": "ee7a2322cbce8ccd9178ebd85888a53405b41d017f900dcc9d4be808969f3e2e",
+        "cable/solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+        "cable/threading.py": "813560f1c8a4eaaccecf67207df0530f1b51662ac58210d9edfd4ce2ec810412",
+        "cable/trunking_bridge.py": "42494666d4e12eff684bcdcd8da61cd79d3ddcfa9ca2dd15e41195ac25b0172b",
+        "collision.py": "a5ce6ee9e69cbd12532b7bb7db82b61014bd428e7ec52a01cbe4c058a9b64a4f",
+        "launch_support.py": "5d7b3101775d959189a20caa4d722e228f7ced816ad7ab68cc3925b50e24b007",
+        "ros_bridge.py": "c3ef9b3558114fe3a267b7f5748795fd68d23c54c4f5705c49da887c90eb5275",
+        "sapien_compat.py": "863f40b0cd961a3b7a66c8f7b595357b44820cdaa91647197e46721706f6b86f",
+        "scenes/__init__.py": "2bfde43db89bf6fa85758ca32409ba71367a6e529bcdff966691efa0997c8a2e",
+        "scenes/trunking_cable.py": "240b59c0422e22b38e6a6bb0213b592d55aab6e5324ea260ef672568b1fbd661",
+        "scenes/usb_cable.py": "2bfcbbc0f46e901887b0acb613a410c7eb366876f3f6b98489e89c5a97a2585f",
+        "simulation.py": "b5e72017df69371e8dac01b7a0b98e6839e98e6c568ecd241f9868f4ffbcec5d",
+        "trajectory.py": "52074a05cced03b47ced1867cc269ba140bbe63d5eb17b9e27f5c21429d95572",
+        "warp_setup.py": "22a38e075bfbec1daa61056beeb51482f1bfe5d3139da8fe8d36d308a5874bb3"
+      },
+      "summary": {
+        "time_s": 26.300000000006587,
+        "control_steps": 1315,
+        "epochs": 1,
+        "failures": 1,
+        "last_epoch": {
+          "substeps": 8329,
+          "contact_substeps": 8216,
+          "geometry_audits": 0,
+          "nonfinite_state_detected": false,
+          "max_endpoint_speed_m_s": 3.9789805674833705,
+          "max_kinetic_energy_J": 0.006149555123310907,
+          "max_penetration_m": 0.0,
+          "max_joint_gap_m": 7.907972251405917e-06,
+          "max_proxy_position_error_m": 1.3480411767959595,
+          "max_contact_impulse_Ns": 0.0010360608575865626
+        },
+        "recording_errors": []
+      },
+      "failure_events": [
+        {
+          "reason": "Rope-Actor rigid contact penetration 0.114 mm exceeds tolerance; object=trunking, segment_index=37 (0-based), segment=rope_actor_37, segment_length=9.953 mm, frame=world, centerline=(0.755453, 0.804745, 0.058762) m, obstacle_surface=(0.755000, 0.804745, 0.058000) m",
+          "time_s": 26.300000000006587,
+          "epoch": 1,
+          "control_step": 1315,
+          "guard": {
+            "max_penetration_m": 0.00011393486230332932,
+            "max_penetration_contact": {
+              "object": "trunking",
+              "segment_index": 37,
+              "segment_name": "rope_actor_37",
+              "segment_index_base": 0,
+              "segment_length_m": 0.009953333333333335,
+              "frame_id": "world",
+              "depth_m": 0.00011393486230332932,
+              "centerline_world_m": [
+                0.7554528397928288,
+                0.8047452406884269,
+                0.05876160774937508
+              ],
+              "obstacle_surface_world_m": [
+                0.7549999952316284,
+                0.8047452406884269,
+                0.058000002056360245
+              ],
+              "collision_triangle_index": 9278
+            }
+          },
+          "recording_errors": []
+        }
+      ],
+      "source_files_sha256": {
+        "initial_001.json": "2059c96d5250efe96025d876a9f644499606f1d5f6cc6c348e0c414b6c30abb6",
+        "summary.json": "d863608e0e0d65ba95aee295f6f43d744bf15304d10e5deb3dcf8d3ae15ea75e",
+        "failure_001.json": "565337cefd34bdeefaf9dac68211b32be0a4d04b28d4f071a2af55bafbee2e6e",
+        "metadata.json": "241777fd9be0c2d6702810e2bf5c44e0f8f3b5dd1928ac841c32545510962158"
+      }
+    },
+    {
+      "run_id": "run_20260915T092025Z_qypob_ra",
+      "scene": "TrunkingCableEnv",
+      "spawn_time_s": 26.380000000009257,
+      "cable_duration_s": 2.4426487630248808,
+      "cable_config": {
+        "usb": {
+          "mesh_scale": 1.0,
+          "attachment": [
+            0.0,
+            -0.02,
+            0.0
+          ],
+          "grip_center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mass": 0.015,
+          "finger_position": 0.0037
+        },
+        "cable": {
+          "initial_layout": "table_spiral",
+          "length": 1.5,
+          "diameter": 0.002,
+          "particle_spacing": 0.001,
+          "pin_length": 0.007,
+          "density": 1200.0,
+          "young_modulus": 300000.0,
+          "axial_young_modulus": 30000000.0,
+          "axial_iterations": 6,
+          "poisson_ratio": 0.3,
+          "yield_stress": 1000000000.0,
+          "friction": 0.5,
+          "contact_margin": 2e-05,
+          "contact_iterations": 2,
+          "penetration_tolerance": 0.0001
+        },
+        "guide": {
+          "half_length": 0.012
+        },
+        "mpm": {
+          "cuda_graph": true,
+          "gpu_grid_check": true,
+          "frequency": 5000,
+          "grid_spacing": 0.006,
+          "max_grid_cells": 16000000,
+          "adaptive_resolution": true,
+          "max_grid_spacing": 0.015,
+          "grid_padding": 12,
+          "marker_stride": 1
+        },
+        "rope_actor": {
+          "engine_tolerance_length": 0.1,
+          "engine_tolerance_speed": 0.2,
+          "links": 151,
+          "frequency": 1000,
+          "max_contact_travel": 5e-05,
+          "contact_offset": 2e-05,
+          "inertia_floor": 1.1e-08,
+          "twist_limit_deg": 85.0,
+          "bend_limit_deg": 85.0,
+          "joint_stiffness": 0.0,
+          "joint_damping": 0.001,
+          "linear_damping": 1.0,
+          "angular_damping": 1.0,
+          "solver_iterations": 40,
+          "solver_velocity_iterations": 10,
+          "constraint_tolerance": 0.001,
+          "max_speed": 10.0
+        },
+        "display": {
+          "marker_stride": 1
+        }
+      },
+      "source_sha256": {
+        "__init__.py": "cfa7bb8d166435b32be0d94bcad648627af2dc87b6a271b00bc81a0e1f1253d7",
+        "assets.py": "1fc53a25b22e477e2ba328f0ae895d5e799b38b10e2f0a3555155e1721eb20bc",
+        "cable/__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+        "cable/aperture.py": "d048afdbc3e854b4e92b5c194322d15b6064ec2d5f57a56949b34f15bba34db1",
+        "cable/backends.py": "141eb043917c3fd438b0895c889352c297a6672a02e4f3c1a72a300bd15a5c9c",
+        "cable/contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+        "cable/execution.py": "48b4ed29ba58bb282ac594ccec3a806de536d3a06bb63b8008e77210a1f204d9",
+        "cable/fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61",
+        "cable/guide.py": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+        "cable/guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+        "cable/kinematic.py": "079c7f3ddbbfa7ab442d8ef6e946b8b3436e7f7ec9988cfc71597b771069055b",
+        "cable/mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+        "cable/model.py": "10fa4c8b1967c93a3ea7642e5657dce779c4e04c3b0356c806f4e925fb9a2b15",
+        "cable/mpm_cable.py": "1e4ebe26f6156f508df3481bb8d862887fc1751c1f29c0605fdb040f616d6dc0",
+        "cable/planning_scene.py": "46b5a86efe896eaba3cac09c27e44199c7a83c3d2a5ba445ea30463a43eca356",
+        "cable/rope_actor.py": "b0db2e520ca5e7a30e840df04a11c5aee059d8d463d0bf07f832922c191f5f95",
+        "cable/rope_diagnostics.py": "8e710d323fe147b53a22d3b1bfdd3f5d1ab6b27dae0792bd93f9377f2b64dd2f",
+        "cable/ros_bridge.py": "ee7a2322cbce8ccd9178ebd85888a53405b41d017f900dcc9d4be808969f3e2e",
+        "cable/solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+        "cable/threading.py": "813560f1c8a4eaaccecf67207df0530f1b51662ac58210d9edfd4ce2ec810412",
+        "cable/trunking_bridge.py": "42494666d4e12eff684bcdcd8da61cd79d3ddcfa9ca2dd15e41195ac25b0172b",
+        "collision.py": "a5ce6ee9e69cbd12532b7bb7db82b61014bd428e7ec52a01cbe4c058a9b64a4f",
+        "launch_support.py": "5d7b3101775d959189a20caa4d722e228f7ced816ad7ab68cc3925b50e24b007",
+        "ros_bridge.py": "c3ef9b3558114fe3a267b7f5748795fd68d23c54c4f5705c49da887c90eb5275",
+        "sapien_compat.py": "863f40b0cd961a3b7a66c8f7b595357b44820cdaa91647197e46721706f6b86f",
+        "scenes/__init__.py": "2bfde43db89bf6fa85758ca32409ba71367a6e529bcdff966691efa0997c8a2e",
+        "scenes/trunking_cable.py": "240b59c0422e22b38e6a6bb0213b592d55aab6e5324ea260ef672568b1fbd661",
+        "scenes/usb_cable.py": "2bfcbbc0f46e901887b0acb613a410c7eb366876f3f6b98489e89c5a97a2585f",
+        "simulation.py": "b5e72017df69371e8dac01b7a0b98e6839e98e6c568ecd241f9868f4ffbcec5d",
+        "trajectory.py": "52074a05cced03b47ced1867cc269ba140bbe63d5eb17b9e27f5c21429d95572",
+        "warp_setup.py": "22a38e075bfbec1daa61056beeb51482f1bfe5d3139da8fe8d36d308a5874bb3"
+      },
+      "summary": {
+        "time_s": 28.822648763034138,
+        "control_steps": 1442,
+        "epochs": 1,
+        "failures": 1,
+        "last_epoch": {
+          "substeps": 11248,
+          "contact_substeps": 11135,
+          "geometry_audits": 1,
+          "nonfinite_state_detected": false,
+          "invalid_proxy_pose_detected": false,
+          "max_endpoint_speed_m_s": 14.680258766669603,
+          "max_kinetic_energy_J": 0.07712389089801432,
+          "max_penetration_m": 3.699331606277689e-05,
+          "max_joint_gap_m": 1.2740412536175561e-05,
+          "max_proxy_position_error_m": 4.701593752542976e-06,
+          "max_contact_impulse_Ns": 0.007053501438349485
+        },
+        "recording_errors": []
+      },
+      "failure_events": [
+        {
+          "reason": "Rope-Actor segment 2 endpoint speed 14.680 m/s exceeded max_speed; dt=1.61708e-05 s, kinetic energy 0.0033999->0.0771239 J, largest contact impulse=0.0070535 N s (['rope_actor_67', 'rope_contact_right_fr3_leftfinger']). Physics state is invalid; reset is required.",
+          "time_s": 28.822648763034138,
+          "epoch": 1,
+          "control_step": 1442,
+          "guard": {
+            "max_penetration_m": 3.699331606277689e-05,
+            "max_penetration_contact": {
+              "object": "right_fr3_leftfinger",
+              "segment_index": 67,
+              "segment_name": "rope_actor_67",
+              "segment_index_base": 0,
+              "segment_length_m": 0.009953333333333335,
+              "frame_id": "world",
+              "depth_m": 3.699331606277689e-05,
+              "centerline_world_m": [
+                0.7794398024977196,
+                1.0902734911395366,
+                0.050727153747029394
+              ],
+              "obstacle_surface_world_m": [
+                0.7794411563314477,
+                1.0897025471942374,
+                0.05150263204248047
+              ],
+              "collision_triangle_index": 10619
+            }
+          },
+          "recording_errors": []
+        }
+      ],
+      "source_files_sha256": {
+        "initial_001.json": "bf829db744c68cf7fb68a05fdd41c66ad57d6c8c061e7fe2e678ace2a294c5e3",
+        "summary.json": "3b142129ad8ada03fb5a049eeee4b95f277eb74891cbfa82acaf9a25dd387dee",
+        "failure_001.json": "420d5bda4ad6083d2bdb9f1cb56738a5627393954e3a70d03c036ee0f15fb88f",
+        "metadata.json": "6a21af593a09787c9fc6bc654464518909c611b5183e2ddefaf20c8b7917f21a"
+      }
+    },
+    {
+      "run_id": "run_20260915T101458Z_nt8fuwky",
+      "scene": "TrunkingCableEnv",
+      "spawn_time_s": 20.340000000001876,
+      "cable_duration_s": 4.119999999997535,
+      "cable_config": {
+        "usb": {
+          "mesh_scale": 1.0,
+          "attachment": [
+            0.0,
+            -0.02,
+            0.0
+          ],
+          "grip_center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "mass": 0.015,
+          "finger_position": 0.0037
+        },
+        "cable": {
+          "initial_layout": "table_spiral",
+          "length": 1.5,
+          "diameter": 0.002,
+          "particle_spacing": 0.001,
+          "pin_length": 0.007,
+          "linear_density": 0.015,
+          "young_modulus": 300000.0,
+          "axial_young_modulus": 30000000.0,
+          "axial_iterations": 6,
+          "poisson_ratio": 0.3,
+          "yield_stress": 1000000000.0,
+          "friction": 0.5,
+          "contact_margin": 2e-05,
+          "contact_iterations": 2,
+          "penetration_tolerance": 0.0001,
+          "density": 4774.64829275686
+        },
+        "guide": {
+          "half_length": 0.012
+        },
+        "mpm": {
+          "cuda_graph": true,
+          "gpu_grid_check": true,
+          "frequency": 5000,
+          "grid_spacing": 0.006,
+          "max_grid_cells": 16000000,
+          "adaptive_resolution": true,
+          "max_grid_spacing": 0.015,
+          "grid_padding": 12,
+          "marker_stride": 1
+        },
+        "rope_actor": {
+          "solver_type": "pgs",
+          "engine_tolerance_length": 0.1,
+          "engine_tolerance_speed": 0.2,
+          "links": 151,
+          "frequency": 1000,
+          "max_contact_travel": 5e-05,
+          "contact_offset": 2e-05,
+          "inertia_floor": 1.1e-08,
+          "twist_limit_deg": 85.0,
+          "bend_limit_deg": 85.0,
+          "joint_stiffness": 0.0,
+          "joint_damping": 0.001,
+          "linear_damping": 1.0,
+          "angular_damping": 1.0,
+          "solver_iterations": 40,
+          "solver_velocity_iterations": 10,
+          "constraint_tolerance": 0.001,
+          "max_speed": 10.0
+        },
+        "display": {
+          "marker_stride": 1
+        }
+      },
+      "source_sha256": {
+        "__init__.py": "cfa7bb8d166435b32be0d94bcad648627af2dc87b6a271b00bc81a0e1f1253d7",
+        "assets.py": "1fc53a25b22e477e2ba328f0ae895d5e799b38b10e2f0a3555155e1721eb20bc",
+        "cable/__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+        "cable/aperture.py": "d048afdbc3e854b4e92b5c194322d15b6064ec2d5f57a56949b34f15bba34db1",
+        "cable/backends.py": "141eb043917c3fd438b0895c889352c297a6672a02e4f3c1a72a300bd15a5c9c",
+        "cable/contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+        "cable/execution.py": "48b4ed29ba58bb282ac594ccec3a806de536d3a06bb63b8008e77210a1f204d9",
+        "cable/fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61",
+        "cable/guide.py": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+        "cable/guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+        "cable/kinematic.py": "079c7f3ddbbfa7ab442d8ef6e946b8b3436e7f7ec9988cfc71597b771069055b",
+        "cable/mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+        "cable/model.py": "d5a7326eb4ad602b102a40aa23ed4a9068a56483a6896915f8db9912613ccca6",
+        "cable/mpm_cable.py": "1e4ebe26f6156f508df3481bb8d862887fc1751c1f29c0605fdb040f616d6dc0",
+        "cable/planning_scene.py": "46b5a86efe896eaba3cac09c27e44199c7a83c3d2a5ba445ea30463a43eca356",
+        "cable/rope_actor.py": "d4fdeb7ff815a85497210c07e12a1d1cac8a4d7232e4655dc5942025144a4284",
+        "cable/rope_diagnostics.py": "79c833a2668c973681ce158ace820b36296bbbfcf6ddaae9d35533c54a4589f8",
+        "cable/ros_bridge.py": "ee7a2322cbce8ccd9178ebd85888a53405b41d017f900dcc9d4be808969f3e2e",
+        "cable/solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+        "cable/threading.py": "813560f1c8a4eaaccecf67207df0530f1b51662ac58210d9edfd4ce2ec810412",
+        "cable/timestep.py": "ebd647545a7ad3cbe2bfa981931e5a1e9caec6a66968dd38259a239142dd0774",
+        "cable/trunking_bridge.py": "42494666d4e12eff684bcdcd8da61cd79d3ddcfa9ca2dd15e41195ac25b0172b",
+        "collision.py": "a5ce6ee9e69cbd12532b7bb7db82b61014bd428e7ec52a01cbe4c058a9b64a4f",
+        "launch_support.py": "5d7b3101775d959189a20caa4d722e228f7ced816ad7ab68cc3925b50e24b007",
+        "ros_bridge.py": "c3ef9b3558114fe3a267b7f5748795fd68d23c54c4f5705c49da887c90eb5275",
+        "sapien_compat.py": "863f40b0cd961a3b7a66c8f7b595357b44820cdaa91647197e46721706f6b86f",
+        "scenes/__init__.py": "2bfde43db89bf6fa85758ca32409ba71367a6e529bcdff966691efa0997c8a2e",
+        "scenes/trunking_cable.py": "ffff8da5ca93b85c67f572864f2af561148efedc784806899010407dcea50a9d",
+        "scenes/usb_cable.py": "e55c31af414d1ae9876a3fb8235970f03bfa554b2d57bbaf07dc5842716f2e84",
+        "simulation.py": "b5e72017df69371e8dac01b7a0b98e6839e98e6c568ecd241f9868f4ffbcec5d",
+        "trajectory.py": "52074a05cced03b47ced1867cc269ba140bbe63d5eb17b9e27f5c21429d95572",
+        "warp_setup.py": "22a38e075bfbec1daa61056beeb51482f1bfe5d3139da8fe8d36d308a5874bb3"
+      },
+      "summary": {
+        "time_s": 24.45999999999941,
+        "control_steps": 1223,
+        "epochs": 1,
+        "failures": 1,
+        "last_epoch": {
+          "substeps": 33216,
+          "contact_substeps": 33060,
+          "geometry_audits": 0,
+          "nonfinite_state_detected": false,
+          "invalid_proxy_pose_detected": false,
+          "max_endpoint_speed_m_s": 6.1740642337509675,
+          "max_kinetic_energy_J": 0.03072812527788376,
+          "max_penetration_m": 0.0,
+          "max_joint_gap_m": 1.9951133122959676e-05,
+          "max_proxy_position_error_m": 2.4285236577270553e-06,
+          "max_contact_impulse_Ns": 0.0009067413047887385
+        },
+        "recording_errors": []
+      },
+      "failure_events": [
+        {
+          "reason": "Rope-Actor rigid contact penetration 0.118 mm exceeds tolerance; object=right_fr3_leftfinger, segment_index=68 (0-based), segment=rope_actor_68, segment_length=9.953 mm, frame=world, centerline=(0.778279, 1.089710, 0.050652) m, obstacle_surface=(0.778011, 1.089488, 0.051462) m",
+          "time_s": 24.45999999999941,
+          "epoch": 1,
+          "control_step": 1223,
+          "guard": {
+            "max_penetration_m": 0.00011848933745403373,
+            "max_penetration_contact": {
+              "object": "right_fr3_leftfinger",
+              "segment_index": 68,
+              "segment_name": "rope_actor_68",
+              "segment_index_base": 0,
+              "segment_length_m": 0.009953333333333335,
+              "frame_id": "world",
+              "depth_m": 0.00011848933745403373,
+              "centerline_world_m": [
+                0.778278506243002,
+                1.0897096757677736,
+                0.05065221060894449
+              ],
+              "obstacle_surface_world_m": [
+                0.7780109175879816,
+                1.0894884503419222,
+                0.05146245375904536
+              ],
+              "collision_triangle_index": 10598
+            }
+          },
+          "recording_errors": []
+        }
+      ],
+      "source_files_sha256": {
+        "initial_001.json": "7bb481d47c35c59aeb34ea26482ea1895f0dee6342e51290578a5e5b548dd596",
+        "summary.json": "516ffca0c5079e1e849aed5f97d96e534e627c7bf4027b4c7f7e611f0f0556f1",
+        "failure_001.json": "d6d16478f3b94082ee8c4a57d8911e9b7d618175c5b754b7d85cb3f1c1f3540e",
+        "metadata.json": "c872bca17c4154337fd0c3ef5cbb9d65aa13f69f5844222eb60137a73e2a4d6f"
+      }
+    },
+    {
+      "run_id": "run_20260915T105250Z_b1pd3st0",
+      "scene": "TrunkingCableEnv",
+      "spawn_time_s": 25.300000000007937,
+      "cable_duration_s": 0.7198554687509819,
+      "cable_config": {
+        "usb": {
+          "mesh_scale": 1.0,
+          "attachment": [
+            0.0,
+            -0.02,
+            0.0
+          ],
+          "grip_center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "tcp_grip_offset": [
+            0.0,
+            0.0,
+            0.0075
+          ],
+          "mass": 0.015,
+          "finger_position": 0.0037,
+          "orientation_direction": "reverse"
+        },
+        "cable": {
+          "initial_layout": "table_spiral",
+          "length": 1.5,
+          "diameter": 0.002,
+          "particle_spacing": 0.001,
+          "pin_length": 0.007,
+          "linear_density": 0.015,
+          "young_modulus": 300000.0,
+          "axial_young_modulus": 30000000.0,
+          "axial_iterations": 6,
+          "poisson_ratio": 0.3,
+          "yield_stress": 1000000000.0,
+          "friction": 0.5,
+          "contact_margin": 2e-05,
+          "contact_iterations": 2,
+          "penetration_tolerance": 0.0001,
+          "density": 4774.64829275686
+        },
+        "guide": {
+          "half_length": 0.012
+        },
+        "mpm": {
+          "cuda_graph": true,
+          "gpu_grid_check": true,
+          "frequency": 5000,
+          "grid_spacing": 0.006,
+          "max_grid_cells": 16000000,
+          "adaptive_resolution": true,
+          "max_grid_spacing": 0.015,
+          "grid_padding": 12,
+          "marker_stride": 1
+        },
+        "rope_actor": {
+          "solver_type": "pgs",
+          "engine_tolerance_length": 0.1,
+          "engine_tolerance_speed": 0.2,
+          "links": 151,
+          "frequency": 1000,
+          "max_contact_travel": 5e-05,
+          "contact_offset": 0.0001,
+          "inertia_floor": 1.1e-08,
+          "twist_limit_deg": 85.0,
+          "bend_limit_deg": 85.0,
+          "joint_stiffness": 0.0,
+          "joint_damping": 0.001,
+          "linear_damping": 1.0,
+          "angular_damping": 1.0,
+          "solver_iterations": 40,
+          "solver_velocity_iterations": 10,
+          "constraint_tolerance": 0.001,
+          "max_speed": 10.0
+        },
+        "display": {
+          "marker_stride": 1
+        }
+      },
+      "source_sha256": {
+        "__init__.py": "cfa7bb8d166435b32be0d94bcad648627af2dc87b6a271b00bc81a0e1f1253d7",
+        "assets.py": "1fc53a25b22e477e2ba328f0ae895d5e799b38b10e2f0a3555155e1721eb20bc",
+        "cable/__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+        "cable/aperture.py": "d048afdbc3e854b4e92b5c194322d15b6064ec2d5f57a56949b34f15bba34db1",
+        "cable/backends.py": "141eb043917c3fd438b0895c889352c297a6672a02e4f3c1a72a300bd15a5c9c",
+        "cable/contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+        "cable/execution.py": "48b4ed29ba58bb282ac594ccec3a806de536d3a06bb63b8008e77210a1f204d9",
+        "cable/fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61",
+        "cable/guide.py": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+        "cable/guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+        "cable/kinematic.py": "079c7f3ddbbfa7ab442d8ef6e946b8b3436e7f7ec9988cfc71597b771069055b",
+        "cable/mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+        "cable/model.py": "c9973a7774b4026ab49c52ab0188137e71949085f1110d596ee880b7d295bbd3",
+        "cable/mpm_cable.py": "1e4ebe26f6156f508df3481bb8d862887fc1751c1f29c0605fdb040f616d6dc0",
+        "cable/planning_scene.py": "8a4d55f97f627fc374c7d72eeafd64b140dfd80ed12030ad4d01c61126cae95c",
+        "cable/rope_actor.py": "e572f016f3a327df2569d8d0ac445cf5c5961a9a1e5ffd1b28755d8ca137b277",
+        "cable/rope_diagnostics.py": "623e28e68b54ed22f005d0fdb0b281f815be2cd714682e2669ff2d3638e10827",
+        "cable/ros_bridge.py": "ee7a2322cbce8ccd9178ebd85888a53405b41d017f900dcc9d4be808969f3e2e",
+        "cable/solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+        "cable/threading.py": "6ca5db50fdb6ee78a7367b96c5481cdd2f41b5e503a6a78a142520e640f4f980",
+        "cable/timestep.py": "ebd647545a7ad3cbe2bfa981931e5a1e9caec6a66968dd38259a239142dd0774",
+        "cable/trunking_bridge.py": "cb7880d968b3f276ddc4c4d74b24c670a81c7233695053133aa51707f6b93d52",
+        "collision.py": "a5ce6ee9e69cbd12532b7bb7db82b61014bd428e7ec52a01cbe4c058a9b64a4f",
+        "launch_support.py": "b36b1bdc2df67d6304239a5ad9b68caa6ff5144d8d02ca94bf1552b2bb13e42a",
+        "ros_bridge.py": "c3ef9b3558114fe3a267b7f5748795fd68d23c54c4f5705c49da887c90eb5275",
+        "sapien_compat.py": "863f40b0cd961a3b7a66c8f7b595357b44820cdaa91647197e46721706f6b86f",
+        "scenes/__init__.py": "2bfde43db89bf6fa85758ca32409ba71367a6e529bcdff966691efa0997c8a2e",
+        "scenes/trunking_cable.py": "ffff8da5ca93b85c67f572864f2af561148efedc784806899010407dcea50a9d",
+        "scenes/usb_cable.py": "e55c31af414d1ae9876a3fb8235970f03bfa554b2d57bbaf07dc5842716f2e84",
+        "simulation.py": "b5e72017df69371e8dac01b7a0b98e6839e98e6c568ecd241f9868f4ffbcec5d",
+        "trajectory.py": "52074a05cced03b47ced1867cc269ba140bbe63d5eb17b9e27f5c21429d95572",
+        "warp_setup.py": "22a38e075bfbec1daa61056beeb51482f1bfe5d3139da8fe8d36d308a5874bb3"
+      },
+      "summary": {
+        "time_s": 26.01985546875892,
+        "control_steps": 1301,
+        "epochs": 1,
+        "failures": 1,
+        "last_epoch": {
+          "substeps": 5837,
+          "contact_substeps": 5684,
+          "geometry_audits": 1,
+          "nonfinite_state_detected": false,
+          "invalid_proxy_pose_detected": false,
+          "max_endpoint_speed_m_s": 16.46467844177201,
+          "max_kinetic_energy_J": 0.04726756105554462,
+          "max_penetration_m": 1.4498963996355339e-05,
+          "max_joint_gap_m": 0.00035924043319285776,
+          "max_proxy_position_error_m": 1.5772722008478013e-06,
+          "max_contact_impulse_Ns": 0.4558226764202118
+        },
+        "recording_errors": []
+      },
+      "failure_events": [
+        {
+          "reason": "Rope-Actor segment 2 endpoint speed 16.465 m/s exceeded max_speed; dt=3.90625e-06 s, kinetic energy 0.00900633->0.0472676 J, largest contact impulse=0.455823 N s (['rope_actor_0', 'trunking']). Physics state is invalid; reset is required.",
+          "time_s": 26.01985546875892,
+          "epoch": 1,
+          "control_step": 1301,
+          "guard": {
+            "max_penetration_m": 1.4498963996355339e-05,
+            "max_penetration_contact": {
+              "object": "right_fr3_leftfinger",
+              "segment_index": 65,
+              "segment_name": "rope_actor_65",
+              "segment_index_base": 0,
+              "segment_length_m": 0.009953333333333335,
+              "frame_id": "world",
+              "depth_m": 1.4498963996355339e-05,
+              "centerline_world_m": [
+                0.7788190490402042,
+                1.089915421522855,
+                0.052485652557921356
+              ],
+              "obstacle_surface_world_m": [
+                0.778749348512227,
+                1.0895114748852437,
+                0.053381866261919056
+              ],
+              "collision_triangle_index": 10627
+            }
+          },
+          "recording_errors": []
+        }
+      ],
+      "source_files_sha256": {
+        "initial_001.json": "1b32d3c46cf2b323e774fd64f2d4b49dd2160bd19c1149f2c37f0aaf35653528",
+        "summary.json": "2be14b23fc8f9ddda39f26b2ed07b58c5fdefc30de96e9de43ea808797584054",
+        "failure_001.json": "ab8df367fe1ee246b6d020209acbe104ad8ec1b191079d357707f1f38b20e676",
+        "metadata.json": "1691944be4c38cd8e7c61a8c220021980fff7f6b62bbc7953b1184c1c0f2cfa9"
+      }
+    },
+    {
+      "run_id": "run_20260915T111051Z_3p2xrfi1",
+      "scene": "TrunkingCableEnv",
+      "spawn_time_s": 18.639999999999798,
+      "cable_duration_s": 2.979999999977551,
+      "cable_config": {
+        "usb": {
+          "mesh_scale": 1.0,
+          "attachment": [
+            0.0,
+            -0.02,
+            0.0
+          ],
+          "grip_center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "tcp_grip_offset": [
+            0.0,
+            0.0,
+            0.0075
+          ],
+          "mass": 0.015,
+          "finger_position": 0.0037,
+          "orientation_direction": "reverse"
+        },
+        "cable": {
+          "initial_layout": "table_spiral",
+          "length": 1.5,
+          "diameter": 0.002,
+          "particle_spacing": 0.001,
+          "pin_length": 0.007,
+          "linear_density": 0.015,
+          "young_modulus": 300000.0,
+          "axial_young_modulus": 30000000.0,
+          "axial_iterations": 6,
+          "poisson_ratio": 0.3,
+          "yield_stress": 1000000000.0,
+          "friction": 0.5,
+          "contact_margin": 2e-05,
+          "contact_iterations": 2,
+          "penetration_tolerance": 0.0001,
+          "density": 4774.64829275686
+        },
+        "guide": {
+          "half_length": 0.012
+        },
+        "mpm": {
+          "cuda_graph": true,
+          "gpu_grid_check": true,
+          "frequency": 5000,
+          "grid_spacing": 0.006,
+          "max_grid_cells": 16000000,
+          "adaptive_resolution": true,
+          "max_grid_spacing": 0.015,
+          "grid_padding": 12,
+          "marker_stride": 1
+        },
+        "rope_actor": {
+          "root_joint": "spherical",
+          "solver_type": "pgs",
+          "engine_tolerance_length": 0.1,
+          "engine_tolerance_speed": 0.2,
+          "links": 151,
+          "frequency": 1000,
+          "max_contact_travel": 5e-05,
+          "contact_offset": 0.0001,
+          "inertia_floor": 1.1e-08,
+          "twist_limit_deg": 85.0,
+          "bend_limit_deg": 85.0,
+          "joint_stiffness": 0.0,
+          "joint_damping": 0.001,
+          "linear_damping": 1.0,
+          "angular_damping": 1.0,
+          "solver_iterations": 40,
+          "solver_velocity_iterations": 10,
+          "constraint_tolerance": 0.001,
+          "max_speed": 10.0
+        },
+        "display": {
+          "marker_stride": 1
+        }
+      },
+      "source_sha256": {
+        "__init__.py": "cfa7bb8d166435b32be0d94bcad648627af2dc87b6a271b00bc81a0e1f1253d7",
+        "assets.py": "1fc53a25b22e477e2ba328f0ae895d5e799b38b10e2f0a3555155e1721eb20bc",
+        "cable/__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+        "cable/aperture.py": "d048afdbc3e854b4e92b5c194322d15b6064ec2d5f57a56949b34f15bba34db1",
+        "cable/backends.py": "141eb043917c3fd438b0895c889352c297a6672a02e4f3c1a72a300bd15a5c9c",
+        "cable/contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+        "cable/execution.py": "48b4ed29ba58bb282ac594ccec3a806de536d3a06bb63b8008e77210a1f204d9",
+        "cable/fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61",
+        "cable/guide.py": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+        "cable/guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+        "cable/kinematic.py": "079c7f3ddbbfa7ab442d8ef6e946b8b3436e7f7ec9988cfc71597b771069055b",
+        "cable/mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+        "cable/model.py": "59fe015f0f05fd75e1a9d7d2d5ef0d7edcdc669d45fb7db7ac4f599c9431fb35",
+        "cable/mpm_cable.py": "1e4ebe26f6156f508df3481bb8d862887fc1751c1f29c0605fdb040f616d6dc0",
+        "cable/planning_scene.py": "8a4d55f97f627fc374c7d72eeafd64b140dfd80ed12030ad4d01c61126cae95c",
+        "cable/rope_actor.py": "07550ac67f195c5a57bf8619ad3b89edc906aab76018beedfa030b490152a371",
+        "cable/rope_diagnostics.py": "3034cf60ed26e4dde92ebc4ac27b5d961f7771217a4216774d69ea6fda0efa06",
+        "cable/ros_bridge.py": "ee7a2322cbce8ccd9178ebd85888a53405b41d017f900dcc9d4be808969f3e2e",
+        "cable/solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+        "cable/threading.py": "6ca5db50fdb6ee78a7367b96c5481cdd2f41b5e503a6a78a142520e640f4f980",
+        "cable/timestep.py": "ebd647545a7ad3cbe2bfa981931e5a1e9caec6a66968dd38259a239142dd0774",
+        "cable/trunking_bridge.py": "cb7880d968b3f276ddc4c4d74b24c670a81c7233695053133aa51707f6b93d52",
+        "collision.py": "a5ce6ee9e69cbd12532b7bb7db82b61014bd428e7ec52a01cbe4c058a9b64a4f",
+        "launch_support.py": "b36b1bdc2df67d6304239a5ad9b68caa6ff5144d8d02ca94bf1552b2bb13e42a",
+        "ros_bridge.py": "c3ef9b3558114fe3a267b7f5748795fd68d23c54c4f5705c49da887c90eb5275",
+        "sapien_compat.py": "863f40b0cd961a3b7a66c8f7b595357b44820cdaa91647197e46721706f6b86f",
+        "scenes/__init__.py": "2bfde43db89bf6fa85758ca32409ba71367a6e529bcdff966691efa0997c8a2e",
+        "scenes/trunking_cable.py": "ffff8da5ca93b85c67f572864f2af561148efedc784806899010407dcea50a9d",
+        "scenes/usb_cable.py": "e55c31af414d1ae9876a3fb8235970f03bfa554b2d57bbaf07dc5842716f2e84",
+        "simulation.py": "b5e72017df69371e8dac01b7a0b98e6839e98e6c568ecd241f9868f4ffbcec5d",
+        "trajectory.py": "52074a05cced03b47ced1867cc269ba140bbe63d5eb17b9e27f5c21429d95572",
+        "warp_setup.py": "22a38e075bfbec1daa61056beeb51482f1bfe5d3139da8fe8d36d308a5874bb3"
+      },
+      "summary": {
+        "time_s": 21.61999999997735,
+        "control_steps": 1081,
+        "epochs": 1,
+        "failures": 1,
+        "last_epoch": {
+          "substeps": 31383,
+          "contact_substeps": 31230,
+          "geometry_audits": 0,
+          "nonfinite_state_detected": false,
+          "invalid_proxy_pose_detected": false,
+          "max_endpoint_speed_m_s": 6.169515181492342,
+          "max_kinetic_energy_J": 0.030619216155895326,
+          "max_penetration_m": null,
+          "max_joint_gap_m": 2.7288802307085514e-05,
+          "max_proxy_position_error_m": 3.88951684726635e-06,
+          "max_contact_impulse_Ns": 0.0007127206772565842
+        },
+        "recording_errors": []
+      },
+      "failure_events": [
+        {
+          "reason": "Rope-Actor rigid contact penetration 0.158 mm exceeds tolerance; object=trunking, segment_index=30 (0-based), segment=rope_actor_30, segment_length=9.953 mm, frame=world, centerline=(0.752671, 0.750211, 0.047706) m, obstacle_surface=(0.752276, 0.750500, 0.048390) m",
+          "time_s": 21.61999999997735,
+          "epoch": 1,
+          "control_step": 1081,
+          "guard": {
+            "max_penetration_m": 0.00015826151521919514,
+            "max_penetration_contact": {
+              "object": "trunking",
+              "segment_index": 30,
+              "segment_name": "rope_actor_30",
+              "segment_index_base": 0,
+              "segment_length_m": 0.009953333333333335,
+              "frame_id": "world",
+              "depth_m": 0.00015826151521919514,
+              "centerline_world_m": [
+                0.7526712099401546,
+                0.7502108199072226,
+                0.0477056817797466
+              ],
+              "obstacle_surface_world_m": [
+                0.7522759622630438,
+                0.7505000233650208,
+                0.04839027239500308
+              ],
+              "collision_triangle_index": 9266
+            }
+          },
+          "recording_errors": []
+        }
+      ],
+      "source_files_sha256": {
+        "initial_001.json": "f6c3b714d36dc23a3741f229087c7aed801fd1ad4184c4d5998eea0079a44326",
+        "summary.json": "2be17dac0174c1a60bb35d1083a54a5ac32be1edb77e680c5abe160fe84cf6bd",
+        "failure_001.json": "9277a6884d43955769c9a2502fd795f10ab5a2e41871914638f5ef9334259bbc",
+        "metadata.json": "5202a78a722273d71dfdb6d7613096726f35c3f6d0b83c7a395722413d6a6d9c"
+      }
+    },
+    {
+      "run_id": "run_20260915T113808Z_3scs5omg",
+      "scene": "TrunkingCableEnv",
+      "spawn_time_s": 16.25999999999689,
+      "cable_duration_s": 49.63999999999287,
+      "cable_config": {
+        "usb": {
+          "mesh_scale": 1.0,
+          "attachment": [
+            0.0,
+            -0.02,
+            0.0
+          ],
+          "grip_center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "tcp_grip_offset": [
+            0.0,
+            0.0,
+            0.0075
+          ],
+          "mass": 0.015,
+          "finger_position": 0.0037,
+          "orientation_direction": "reverse"
+        },
+        "cable": {
+          "initial_layout": "table_spiral",
+          "length": 1.5,
+          "diameter": 0.002,
+          "particle_spacing": 0.001,
+          "pin_length": 0.007,
+          "linear_density": 0.015,
+          "young_modulus": 300000.0,
+          "axial_young_modulus": 30000000.0,
+          "axial_iterations": 6,
+          "poisson_ratio": 0.3,
+          "yield_stress": 1000000000.0,
+          "friction": 0.5,
+          "contact_margin": 2e-05,
+          "contact_iterations": 2,
+          "penetration_tolerance": 0.0001,
+          "density": 4774.64829275686
+        },
+        "guide": {
+          "half_length": 0.012
+        },
+        "mpm": {
+          "cuda_graph": true,
+          "gpu_grid_check": true,
+          "frequency": 5000,
+          "grid_spacing": 0.006,
+          "max_grid_cells": 16000000,
+          "adaptive_resolution": true,
+          "max_grid_spacing": 0.015,
+          "grid_padding": 12,
+          "marker_stride": 1
+        },
+        "rope_actor": {
+          "root_joint": "spherical",
+          "collision_geometry": "convex_capsule",
+          "solver_type": "pgs",
+          "engine_tolerance_length": 0.1,
+          "engine_tolerance_speed": 0.2,
+          "links": 151,
+          "frequency": 1000,
+          "max_contact_travel": 5e-05,
+          "contact_offset": 0.0001,
+          "inertia_floor": 1.1e-08,
+          "twist_limit_deg": 85.0,
+          "bend_limit_deg": 85.0,
+          "joint_stiffness": 0.0,
+          "joint_damping": 0.001,
+          "linear_damping": 1.0,
+          "angular_damping": 1.0,
+          "solver_iterations": 40,
+          "solver_velocity_iterations": 10,
+          "constraint_tolerance": 0.001,
+          "max_speed": 10.0
+        },
+        "display": {
+          "marker_stride": 1
+        }
+      },
+      "source_sha256": {
+        "__init__.py": "cfa7bb8d166435b32be0d94bcad648627af2dc87b6a271b00bc81a0e1f1253d7",
+        "assets.py": "1fc53a25b22e477e2ba328f0ae895d5e799b38b10e2f0a3555155e1721eb20bc",
+        "cable/__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+        "cable/aperture.py": "d048afdbc3e854b4e92b5c194322d15b6064ec2d5f57a56949b34f15bba34db1",
+        "cable/backends.py": "141eb043917c3fd438b0895c889352c297a6672a02e4f3c1a72a300bd15a5c9c",
+        "cable/capsule_mesh.py": "4e06893807fa9d66e637a456785359a60ee3950bbdd849d174eb545333053b78",
+        "cable/contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+        "cable/execution.py": "48b4ed29ba58bb282ac594ccec3a806de536d3a06bb63b8008e77210a1f204d9",
+        "cable/fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61",
+        "cable/guide.py": "107e4dd79a42395538e58e5916cd870d63375760f24ec2600afafe4fa2acab22",
+        "cable/guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+        "cable/kinematic.py": "079c7f3ddbbfa7ab442d8ef6e946b8b3436e7f7ec9988cfc71597b771069055b",
+        "cable/mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+        "cable/model.py": "7a97fc711938feb4a395c4e57c742b578613134225b1ab590503a00d4d09b81e",
+        "cable/mpm_cable.py": "1e4ebe26f6156f508df3481bb8d862887fc1751c1f29c0605fdb040f616d6dc0",
+        "cable/planning_scene.py": "8a4d55f97f627fc374c7d72eeafd64b140dfd80ed12030ad4d01c61126cae95c",
+        "cable/rope_actor.py": "ffd0d808abb26dac0c41eecbd9a0d7de5ce4987698baee52f0be4c6c34e17df1",
+        "cable/rope_diagnostics.py": "70cc7c6f646960d882d0cda5b080899719cb1feacd1d79eafcb35563d6520518",
+        "cable/ros_bridge.py": "ee7a2322cbce8ccd9178ebd85888a53405b41d017f900dcc9d4be808969f3e2e",
+        "cable/solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+        "cable/threading.py": "6ca5db50fdb6ee78a7367b96c5481cdd2f41b5e503a6a78a142520e640f4f980",
+        "cable/timestep.py": "ebd647545a7ad3cbe2bfa981931e5a1e9caec6a66968dd38259a239142dd0774",
+        "cable/trunking_bridge.py": "cb7880d968b3f276ddc4c4d74b24c670a81c7233695053133aa51707f6b93d52",
+        "collision.py": "a5ce6ee9e69cbd12532b7bb7db82b61014bd428e7ec52a01cbe4c058a9b64a4f",
+        "launch_support.py": "b36b1bdc2df67d6304239a5ad9b68caa6ff5144d8d02ca94bf1552b2bb13e42a",
+        "ros_bridge.py": "c3ef9b3558114fe3a267b7f5748795fd68d23c54c4f5705c49da887c90eb5275",
+        "sapien_compat.py": "863f40b0cd961a3b7a66c8f7b595357b44820cdaa91647197e46721706f6b86f",
+        "scenes/__init__.py": "2bfde43db89bf6fa85758ca32409ba71367a6e529bcdff966691efa0997c8a2e",
+        "scenes/trunking_cable.py": "ffff8da5ca93b85c67f572864f2af561148efedc784806899010407dcea50a9d",
+        "scenes/usb_cable.py": "e55c31af414d1ae9876a3fb8235970f03bfa554b2d57bbaf07dc5842716f2e84",
+        "simulation.py": "b5e72017df69371e8dac01b7a0b98e6839e98e6c568ecd241f9868f4ffbcec5d",
+        "trajectory.py": "52074a05cced03b47ced1867cc269ba140bbe63d5eb17b9e27f5c21429d95572",
+        "warp_setup.py": "22a38e075bfbec1daa61056beeb51482f1bfe5d3139da8fe8d36d308a5874bb3"
+      },
+      "summary": {
+        "time_s": 65.89999999998976,
+        "control_steps": 3295,
+        "epochs": 1,
+        "failures": 0,
+        "last_epoch": {
+          "substeps": 223217,
+          "contact_substeps": 223065,
+          "geometry_audits": 0,
+          "nonfinite_state_detected": false,
+          "invalid_proxy_pose_detected": false,
+          "max_endpoint_speed_m_s": 6.1713741141665315,
+          "max_kinetic_energy_J": 0.030626737206162904,
+          "max_penetration_m": null,
+          "max_joint_gap_m": 0.00011681991437342952,
+          "max_proxy_position_error_m": 7.106479188223602e-06,
+          "max_contact_impulse_Ns": 0.007717904634773731
+        },
+        "recording_errors": []
+      },
+      "failure_events": [],
+      "source_files_sha256": {
+        "initial_001.json": "b97a968335bbf999f6025a12448094f454c27873302d509f5481b887d2571be0",
+        "summary.json": "43368daada4fbc4d429c54da25451bad468b961c5cb6478cae4375748e5809c2",
+        "metadata.json": "0d4b14439de3a793fecee19bf3c5e3510a499702b9aa21b1b3c8664d6ff34e7d"
+      }
+    },
+    {
+      "run_id": "run_20260915T124531Z_2rln3131",
+      "scene": "TrunkingCableEnv",
+      "spawn_time_s": 45.95999999998359,
+      "cable_duration_s": 0.8497499999876936,
+      "cable_config": {
+        "scene": {
+          "trunking_mesh": "original"
+        },
+        "usb": {
+          "mesh_scale": 1.0,
+          "attachment": [
+            0.0,
+            -0.02,
+            0.0
+          ],
+          "grip_center": [
+            0.0,
+            0.0,
+            0.0
+          ],
+          "tcp_grip_offset": [
+            0.0,
+            0.0,
+            0.0075
+          ],
+          "mass": 0.015,
+          "finger_position": 0.0037,
+          "orientation_direction": "reverse"
+        },
+        "cable": {
+          "initial_layout": "table_spiral",
+          "length": 1.5,
+          "diameter": 0.003,
+          "particle_spacing": 0.001,
+          "pin_length": 0.007,
+          "linear_density": 0.015,
+          "young_modulus": 300000.0,
+          "axial_young_modulus": 30000000.0,
+          "axial_iterations": 6,
+          "poisson_ratio": 0.3,
+          "yield_stress": 1000000000.0,
+          "friction": 0.5,
+          "contact_margin": 2e-05,
+          "contact_iterations": 2,
+          "penetration_tolerance": 0.0001,
+          "density": 2122.065907891938
+        },
+        "guide": {
+          "center_offset": [
+            0.0,
+            0.0,
+            0.0024
+          ],
+          "half_length": 0.012
+        },
+        "mpm": {
+          "cuda_graph": true,
+          "gpu_grid_check": true,
+          "frequency": 5000,
+          "grid_spacing": 0.006,
+          "max_grid_cells": 16000000,
+          "adaptive_resolution": true,
+          "max_grid_spacing": 0.015,
+          "grid_padding": 12,
+          "marker_stride": 1
+        },
+        "rope_actor": {
+          "root_joint": "spherical",
+          "collision_geometry": "convex_capsule",
+          "solver_type": "pgs",
+          "engine_tolerance_length": 0.1,
+          "engine_tolerance_speed": 0.2,
+          "links": 151,
+          "frequency": 1000,
+          "max_contact_travel": 5e-05,
+          "contact_offset": 0.0001,
+          "inertia_floor": 1.1e-08,
+          "twist_limit_deg": 85.0,
+          "bend_limit_deg": 85.0,
+          "joint_stiffness": 0.0,
+          "joint_damping": 0.001,
+          "linear_damping": 1.0,
+          "angular_damping": 1.0,
+          "solver_iterations": 40,
+          "solver_velocity_iterations": 10,
+          "constraint_tolerance": 0.001,
+          "max_speed": 10.0
+        },
+        "display": {
+          "marker_stride": 1
+        }
+      },
+      "source_sha256": {
+        "__init__.py": "cfa7bb8d166435b32be0d94bcad648627af2dc87b6a271b00bc81a0e1f1253d7",
+        "assets.py": "1fc53a25b22e477e2ba328f0ae895d5e799b38b10e2f0a3555155e1721eb20bc",
+        "cable/__init__.py": "c9fdd57b69e4db170cc1b5e7b8dfcae9d33adc316031388281708db0257591dc",
+        "cable/aperture.py": "d048afdbc3e854b4e92b5c194322d15b6064ec2d5f57a56949b34f15bba34db1",
+        "cable/backends.py": "141eb043917c3fd438b0895c889352c297a6672a02e4f3c1a72a300bd15a5c9c",
+        "cable/capsule_mesh.py": "4e06893807fa9d66e637a456785359a60ee3950bbdd849d174eb545333053b78",
+        "cable/contacts.py": "9160ffc2138578b2d9b884a438ecd2cb9bb21816bb5081ea7e022178b1f736b7",
+        "cable/execution.py": "48b4ed29ba58bb282ac594ccec3a806de536d3a06bb63b8008e77210a1f204d9",
+        "cable/fibers.py": "886ca55b8dd3cb536ba7f580e55972e0ba181a437501273d55ca1ae0cd373a61",
+        "cable/guide.py": "49b261361e5e3d49f9214c90549d88a47067d801b805d96820a523bafcc8a621",
+        "cable/guide_cuda.py": "f2d6731639b1c8bc596164f86e18ee6cabfe052b70d24a40828d383de008cca6",
+        "cable/kinematic.py": "079c7f3ddbbfa7ab442d8ef6e946b8b3436e7f7ec9988cfc71597b771069055b",
+        "cable/mesh_contacts.py": "1c4aff0f7ab66c6174f9fdd70cedf2962823db24644c87885748d9ebfc2c842e",
+        "cable/model.py": "d2cebdc40ddda5f0064398b0d8ec154f8dc8ae2f0267e736f4fcaf5d0dac7112",
+        "cable/mpm_cable.py": "1e4ebe26f6156f508df3481bb8d862887fc1751c1f29c0605fdb040f616d6dc0",
+        "cable/planning_scene.py": "8a4d55f97f627fc374c7d72eeafd64b140dfd80ed12030ad4d01c61126cae95c",
+        "cable/rope_actor.py": "9b1e0d54ca3d84ccf620cb0123f7ee321b1b3dcf8a124a8f571abff602fdcfbe",
+        "cable/rope_diagnostics.py": "70cc7c6f646960d882d0cda5b080899719cb1feacd1d79eafcb35563d6520518",
+        "cable/ros_bridge.py": "ee7a2322cbce8ccd9178ebd85888a53405b41d017f900dcc9d4be808969f3e2e",
+        "cable/solver.py": "34aa2f4bc422e5b0ddcc822e8cacb32ef2f22e63f54461c34ca0c19dba085408",
+        "cable/threading.py": "6ca5db50fdb6ee78a7367b96c5481cdd2f41b5e503a6a78a142520e640f4f980",
+        "cable/timestep.py": "ebd647545a7ad3cbe2bfa981931e5a1e9caec6a66968dd38259a239142dd0774",
+        "cable/trunking_bridge.py": "cb7880d968b3f276ddc4c4d74b24c670a81c7233695053133aa51707f6b93d52",
+        "collision.py": "a5ce6ee9e69cbd12532b7bb7db82b61014bd428e7ec52a01cbe4c058a9b64a4f",
+        "launch_support.py": "b36b1bdc2df67d6304239a5ad9b68caa6ff5144d8d02ca94bf1552b2bb13e42a",
+        "ros_bridge.py": "c3ef9b3558114fe3a267b7f5748795fd68d23c54c4f5705c49da887c90eb5275",
+        "sapien_compat.py": "863f40b0cd961a3b7a66c8f7b595357b44820cdaa91647197e46721706f6b86f",
+        "scenes/__init__.py": "3cabb583ad163cd3264b8d8852d83404b5ece6e8d555e74624e3f819c5721026",
+        "scenes/trunking_cable.py": "88b21f3d981da8b42fef4ba4343df4ecd365eb7fead1f7b7815eb4034b0c149e",
+        "scenes/usb_cable.py": "e55c31af414d1ae9876a3fb8235970f03bfa554b2d57bbaf07dc5842716f2e84",
+        "simulation.py": "b5e72017df69371e8dac01b7a0b98e6839e98e6c568ecd241f9868f4ffbcec5d",
+        "trajectory.py": "52074a05cced03b47ced1867cc269ba140bbe63d5eb17b9e27f5c21429d95572",
+        "warp_setup.py": "22a38e075bfbec1daa61056beeb51482f1bfe5d3139da8fe8d36d308a5874bb3"
+      },
+      "summary": {
+        "time_s": 46.80974999997128,
+        "control_steps": 2341,
+        "epochs": 1,
+        "failures": 0,
+        "last_epoch": {
+          "substeps": 6371,
+          "contact_substeps": 6311,
+          "geometry_audits": 0,
+          "nonfinite_state_detected": false,
+          "invalid_proxy_pose_detected": false,
+          "max_endpoint_speed_m_s": 6.150868826106154,
+          "max_kinetic_energy_J": 0.030383937491650477,
+          "max_penetration_m": null,
+          "max_joint_gap_m": 2.9308906578394818e-05,
+          "max_proxy_position_error_m": 2.0339948605396785e-06,
+          "max_contact_impulse_Ns": 0.0006054687546566129
+        },
+        "recording_errors": []
+      },
+      "failure_events": [],
+      "source_files_sha256": {
+        "initial_001.json": "b5fcae51de9d2186845cc366d9448b18cf756fbe35c14423aaeaaa3dbad136e4",
+        "summary.json": "9556a8a746ef02f8d3039aa69a9e4cb27027fda79bbfe85b0b01e19d946fbdb5",
+        "metadata.json": "7640d0c238cf343f2fb7b0595e5bd693814f1338034882e6ba6cfb0dfb185300"
+      }
+    }
+  ]
+}

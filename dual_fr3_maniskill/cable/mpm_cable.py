@@ -98,6 +98,15 @@ def initialize_warp():
 
 
 class MPMCable:
+    solver = "mpm"
+
+    @property
+    def max_section_gap(self):
+        return self.config["cable"]["particle_spacing"]*2
+
+    def close(self):
+        self.constraint_graphs.clear()
+
     def __init__(self, env, config, *, plug=None, layout=None, guide=None):
         self.env, self.config = env, config
         self.plug = plug if plug is not None else env.agent.links[USB_LINK]
@@ -468,7 +477,7 @@ class MPMCable:
         contacted_shapes = np.flatnonzero(self.contacts.hits.numpy())
         shape_bodies = self.model.shape_body.numpy()
         contacted_bodies = sorted({self.actors[shape_bodies[s]].name for s in contacted_shapes})
-        return {"guide_material_coordinate": self.guide.material_coordinate if self.guide else None,
+        return {"solver": self.solver, "guide_material_coordinate": self.guide.material_coordinate if self.guide else None,
             "guide_radial_error_m": self.guide.radial_error if self.guide else None,
             "particles": len(x), "rest_length_m": self.config["cable"]["length"],
             "diameter_m": self.config["cable"]["diameter"],

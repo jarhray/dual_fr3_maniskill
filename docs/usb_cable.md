@@ -1,8 +1,11 @@
-# USB + MPM 线缆场景
+# USB 线缆场景
 
 独立 USB 场景在启动时把插头固定到左 TCP，通过 RViz 的 **Plan & Execute** 移动左臂，观察线缆响应。场景、材料与接触实现位于本包 `scenes/` 和 `cable/`，完整 MoveIt 启动入口位于 `dual_fr3_moveit_config`。
 
 原 `dual_fr3_usb_cable_demo` 包已合并到本包，反馈接口仍保留 `/usb_cable_demo/*` 命名。
+
+可在启动命令追加 `cable_solver:=rope_actor` 使用 CPU 胶囊关节链，默认 `mpm` 保留原有实现。
+本页的 MPM 材料与网格参数仅适用于 `mpm`；两种模型的区别见[线缆建模方式](cable_backends.md)。
 
 ## 启动
 
