@@ -33,6 +33,7 @@ def test_guide_offset_tracks_rotating_tcp_without_changing_its_pose():
     ("guide", "center_offset", [0., 0.]),
     ("guide", "center_offset", [0., 0., float("nan")]),
     ("scene", "trunking_mesh", "typo"),
+    ("scene", "trunking_visual_mesh", "typo"),
 ])
 def test_invalid_experiment_geometry_is_rejected(tmp_path, section, key, value):
     import yaml

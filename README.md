@@ -7,6 +7,7 @@
 支持 `cable_solver:=mpm`（默认）和 `cable_solver:=rope_actor`。
 Rope-Actor 的简化线槽 / 2 mm 线缆已由用户确认完成完整 MTC 走线，配置保存在
 [trunking_cable_simplified_2mm.yaml](config/trunking_cable_simplified_2mm.yaml)。
+该配置使用简化线槽做碰撞，ManiSkill / RViz 显示原始线槽模型。
 当前默认配置为原始线槽 / 3 mm 线缆，已有局部验证通过，完整任务验证范围见
 [调试总结](docs/debugging_summary.md)。Rope-Actor 仍为实验后端，材料与摩擦尚未标定。
 参数、模型差异和验证方法见[线缆建模方式](docs/cable_backends.md)。
@@ -81,10 +82,17 @@ MTC 当前默认原始线槽 / 3 mm 线缆，初始穿线参考点沿右 TCP 局
 cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.yaml"
 ```
 
+此配置保持 2 mm 线径和简化碰撞网格，并用 `scene.trunking_visual_mesh: original`
+单独选择原始显示网格；显示和碰撞各自使用对应的 CAD 原点。
+
 左端连接 USB；Rope-Actor 右孔使用真实网格接触与摩擦，MPM 使用理想滑孔。
 `execute:=false` 只规划、不生成线缆，`maniskill_cable:=false` 关闭线缆。详见 [MTC 线缆接口](docs/mtc_cable.md)。
 
 ## 常用设置
+
+末端与手指作用力默认发布到 `/maniskill/forces`，可用的局部力/力矩另提供
+`WrenchStamped` 话题；支持 JSONL 记录。数据来源、缺失分量、基座配置与查看命令见
+[末端与手指作用力采集](docs/forces.md)。
 
 | 设置 | 用途 |
 | --- | --- |

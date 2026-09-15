@@ -39,6 +39,7 @@ class TrunkingCableEnv(UsbCableEnv):
             for _ in range(self._sim_steps_per_control*self.rigid_substeps):
                 self.agent.before_simulation_step()
                 self._scene.step()
+                DualFR3Env._sample_forces(self, self.sim_timestep/self.rigid_substeps)
                 if self.rope_trace is not None:
                     self.rope_trace.capture("rigid_step", dt=self.sim_timestep/self.rigid_substeps)
             return

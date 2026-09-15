@@ -38,6 +38,7 @@ install(FILES README.md requirements-maniskill2.txt DESTINATION share/${PROJECT_
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_trajectory test/test_trajectory.py)
+  ament_add_pytest_test(test_forces test/test_forces.py)
   ament_add_pytest_test(test_assets test/test_assets.py)
   ament_add_pytest_test(test_cable_model test/test_cable_model.py)
   ament_add_pytest_test(test_cable_backends test/test_cable_backends.py)

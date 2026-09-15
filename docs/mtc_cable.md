@@ -54,13 +54,24 @@ MTC 默认配置是 `dual_fr3_maniskill/config/trunking_cable.yaml`，线长 1.5
 同时传入 MTC 和仿真。线长不足或初始线缆穿入刚体时，创建会返回失败。
 
 默认 YAML 中 `scene.trunking_mesh: original` 为原始有齿缝网格；`simplified` 为简化网格。
-最终 URDF 的显示与碰撞一起切换，并共用于 MoveIt、MTC、RViz 和 ManiSkill。
+`scene.trunking_visual_mesh` 可单独指定显示网格；省略时显示跟随 `trunking_mesh`。
+两者各自使用对应的局部原点，最终 URDF 共用于 MoveIt、MTC、RViz 和 ManiSkill。
 原始线槽测得一段侧壁齿缝约 8 mm，3 mm 线径仍可能进入，不能用加粗代替避开卡口的路径验证。
 回到已完成的基线，只需在原启动命令中增加：
 
 ```bash
 cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.yaml"
 ```
+
+该简化版配置已设置：
+
+```yaml
+scene:
+  trunking_mesh: simplified
+  trunking_visual_mesh: original
+```
+
+碰撞使用简化模型，显示使用原始模型；线径保持该配置的 2 mm。
 
 `cable_solver:=rope_actor` 使用胶囊/三轴关节链；`cable_solver:=mpm` 或省略参数使用原有 MPM。
 两者保留相同的准备和生成时序。Rope-Actor 的右孔由原始手指网格碰撞与摩擦实现，不锁定线缆位置和朝向；

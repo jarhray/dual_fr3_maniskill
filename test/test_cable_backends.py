@@ -67,6 +67,88 @@ assert shader_directory('rope_actor') == 'ibl'
 '''], check=True, capture_output=True, text=True)
 
 
+def test_recorded_3mm_rim_contact_uses_private_fixture_shell(native_scene, tmp_path):
+    """The shared 1 mm fixture shell missed this overlap even in a fresh scene."""
+    import hashlib
+    import json
+    from ament_index_python.packages import get_package_share_directory
+    from dual_fr3_maniskill.assets import convert_stl_to_glb
+
+    sapien, scene, _, env = native_scene
+    recorded = json.loads((ROOT/"test/data/rope_trunking_3mm_20260915.json").read_text())
+    mesh = Path(get_package_share_directory("dual_fr3_moveit_config"))/"meshes/Trunking.STL"
+    assert hashlib.sha256(mesh.read_bytes()).hexdigest() == recorded["mesh_sha256"]
+    builder = scene.create_actor_builder()
+    builder.add_nonconvex_collision_from_file(str(convert_stl_to_glb(mesh, tmp_path)))
+    fixture = builder.build_static("trunking")
+    fixture.set_pose(sapien.Pose(recorded["fixture_pose"]["position_m"],
+                                recorded["fixture_pose"]["quaternion_wxyz"]))
+    env.fixtures[fixture.name] = fixture
+    original = fixture.get_collision_shapes()[0]
+    original.contact_offset = .001
+    groups = original.get_collision_groups()
+    actors_before = len(scene.get_all_actors())
+    c = config()
+    c["cable"]["diameter"] = recorded["diameter_m"]
+    cable = create_cable(env, c, solver="rope_actor")
+    try:
+        assert cable.lengths[2] == pytest.approx(recorded["segment_length_m"])
+        proxy, source = cable.fixture_proxies[0]
+        shape = proxy.get_collision_shapes()[0]
+        assert source is fixture
+        assert original.contact_offset == pytest.approx(.001)
+        assert original.get_collision_groups() == groups
+        assert shape.contact_offset == pytest.approx(c["rope_actor"]["contact_offset"])
+        assert shape.rest_offset == original.rest_offset
+        assert not proxy.get_visual_bodies()
+        np.testing.assert_array_equal(shape.geometry.vertices, original.geometry.vertices)
+        np.testing.assert_array_equal(shape.geometry.indices, original.geometry.indices)
+        np.testing.assert_array_equal(shape.geometry.scale, original.geometry.scale)
+        # The private copy contacts the rope, while the robot retains the original.
+        private = shape.get_collision_groups()
+        rope = cable.links[2].get_collision_shapes()[0].get_collision_groups()
+        assert not (groups[0] & rope[1] or groups[1] & rope[0])
+        assert private[0] & rope[1]
+        assert not (private[0] & 1 or private[1] & 1)
+        for drive in [cable.anchor, *cable.joints]:
+            scene.remove_drive(drive)
+        cable.anchor = None
+        cable.joints.clear()
+        for actor in cable.links:
+            actor.set_pose(sapien.Pose([5., 0., 0.]))
+            actor.set_velocity([0., 0., 0.])
+            actor.set_angular_velocity([0., 0., 0.])
+        actor = cable.links[2]
+        state = recorded["capsule"]
+        actor.set_pose(sapien.Pose(state["position_m"], state["quaternion_wxyz"]))
+        scene.set_timestep(.00025)
+        scene.step()
+        contacts = [c for c in scene.get_contacts() if actor.id in {c.actor0.id, c.actor1.id}]
+        assert contacts
+        assert all(proxy.id in {c.actor0.id, c.actor1.id} for c in contacts)
+        depth = max(-p.separation for contact in contacts for p in contact.points)
+        assert abs(depth-recorded["expected_depth_m"]) < .00002
+        cable._collect_contacts()
+        cable._audit_contacts()
+        assert "trunking" in cable.contacted_bodies
+        assert cable.max_penetration_contact["object"] == "trunking"
+        # Static test/scene edits must also reach the cable collider.
+        bounds_before = cable._world_obstacle_bounds()
+        old_position = fixture.pose.p.copy()
+        fixture.set_pose(sapien.Pose([0., 0., -1.]))
+        box_index = next(i for i, (actor, _, _) in enumerate(cable._obstacle_boxes) if actor is proxy)
+        np.testing.assert_allclose(cable._world_obstacle_bounds()[box_index],
+            bounds_before[box_index]+fixture.pose.p-old_position, atol=1.e-7)
+        cable.step(.00025)
+        np.testing.assert_array_equal(proxy.pose.p, fixture.pose.p)
+    finally:
+        cable.close()
+    scene.step()  # SAPIEN finalizes pending actor removals at the next step.
+    assert len(scene.get_all_actors()) == actors_before
+    assert original.contact_offset == pytest.approx(.001)
+    assert original.get_collision_groups() == groups
+
+
 @pytest.fixture
 def native_scene(request):
     pytest.importorskip("sapien.core")
@@ -385,6 +467,49 @@ def trace_env(env, cable):
     env.agent.joints = {}
     env.agent.robot = SimpleNamespace(get_qpos=lambda: np.array([]), get_qvel=lambda: np.array([]))
     return env
+
+
+def test_force_observer_keeps_rope_state_and_adaptive_schedule_identical(native_scene):
+    from dual_fr3_maniskill.forces import ForceCollector
+    from dual_fr3_maniskill.scenes.usb_cable import UsbCableEnv
+    sapien, scene, plug, env = native_scene
+    tcp = scene.create_actor_builder().build_kinematic("left_fr3_hand_tcp")
+    tcp.set_pose(plug.pose)
+    env.agent.links[tcp.name] = tcp
+    env.mount_drive = object()  # Isolated fixture represents the existing ideal clamp.
+    c = config()
+    c["rope_actor"]["links"] = 13
+    c["cable"]["length"] = .08
+    results = []
+    for enabled in (False, True):
+        cable = create_cable(env, c, solver="rope_actor")
+        trace_env(env, cable)
+        observer = ForceCollector(env) if enabled else None
+        env.force_collector = observer
+        timesteps = []
+        native_step = cable.step
+
+        def step(dt):
+            timesteps.append(dt)
+            native_step(dt)
+
+        cable.step = step
+        try:
+            for i in range(3):
+                cable.links[-1].add_force_at_point([0., 0., -1.e-5], cable.links[-1].pose.p)
+                if observer:
+                    observer.begin(i*.004)
+                UsbCableEnv.step_action(env, np.array([]))
+                if observer:
+                    row = observer.finish((i+1)*.004)
+                    assert row["sensors"]["left/cable"]["available"]
+                    assert row["physics_substeps"] > 0
+            results.append((cable.centerline.copy(), np.array([a.velocity for a in cable.links]), timesteps))
+        finally:
+            env.force_collector = None
+            cable.close()
+    for first, second in zip(*results):
+        np.testing.assert_array_equal(first, second)
 
 
 def test_run_recorder_keeps_native_stepping_identical(native_scene, tmp_path):

@@ -65,6 +65,14 @@ class DualFR3Agent(BaseAgent):
 class DualFR3Env(BaseEnv):
     SUPPORTED_REWARD_MODES = ("none",)
 
+    def _sample_forces(self, dt):
+        collector = getattr(self, "force_collector", None)
+        if collector is not None:
+            collector.sample(dt)
+
+    def _after_simulation_step(self):
+        self._sample_forces(self.sim_timestep)
+
     def __init__(self, assets: SceneAssets, *, control_freq=100, sim_freq=500,
                  viewer=False, shader_dir="ibl"):
         if control_freq <= 0 or sim_freq <= 0 or sim_freq % control_freq:
@@ -197,8 +205,13 @@ class Simulation:
         for name, index in self.indices.items():
             if "finger_joint2" in name:
                 self.target[index] = self.target[self.indices[name.replace("finger_joint2", "finger_joint1")]]
+        collector = getattr(self.env, "force_collector", None)
+        if collector is not None:
+            collector.begin(self.time)
         self.env.step(self.target.astype(np.float32))
         self.steps += 1
+        if collector is not None:
+            collector.finish(self.time)
         if not np.isfinite(self.positions).all() or not np.isfinite(self.velocities).all():
             raise RuntimeError("Non-finite state from ManiSkill2 physics")
         if self.viewer and self.steps % max(1, self.control_freq // 30) == 0:

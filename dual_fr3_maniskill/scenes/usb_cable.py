@@ -73,6 +73,7 @@ class UsbCableEnv(DualFR3Env):
                 self._scene.step()
                 try:
                     self.cable.follow_plug()
+                    DualFR3Env._sample_forces(self, dt)
                 finally:
                     if self.rope_trace is not None:
                         self.rope_trace.capture("substep", self, dt=dt)
@@ -82,6 +83,7 @@ class UsbCableEnv(DualFR3Env):
             self.cable.step(self.sim_timestep/self.rigid_substeps)
             self._scene.step()
             self.cable.follow_plug()
+            DualFR3Env._sample_forces(self, self.sim_timestep/self.rigid_substeps)
 
     def update_render(self):
         if self.cable is not None:

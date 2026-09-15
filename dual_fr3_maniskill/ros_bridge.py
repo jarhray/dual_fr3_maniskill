@@ -75,6 +75,7 @@ class ManiSkillBridge(Node):
             "gripper_speed": 0.04, "gripper_force": 40.0,
             "gripper_goal_tolerance": 0.001, "gripper_stall_timeout": 0.5,
             "gripper_timeout": 5.0,
+            "force_enabled": True, "force_record_path": "", "force_usb_base_names": "",
         }
         self.config = {name: self.declare_parameter(name, default).value
                        for name, default in defaults.items()}
@@ -113,6 +114,10 @@ class ManiSkillBridge(Node):
             PoseStamped, f"/maniskill/{side}_tcp_pose", 10) for side in SIDES
             if f"{side}_fr3_hand_tcp" in self.sim.link_names}
         self.actions = []
+        self.force_output = None
+        if c["force_enabled"]:
+            from .force_output import ForceOutput
+            self.force_output = ForceOutput(self, stamp)
         group = ReentrantCallbackGroup()
         for side in SIDES:
             self.actions.append(ActionServer(
@@ -264,6 +269,8 @@ class ManiSkillBridge(Node):
         self.acceleration = (v - self.last_velocity) / self.dt
         self.last_velocity = v.copy()
         self.clock_pub.publish(Clock(clock=stamp(self.sim.time)))
+        if self.force_output is not None:
+            self.force_output.publish()
         for side, job in list(self.arms.items()):
             elapsed = self.sim.time - job.start
             if elapsed < 0:
@@ -340,6 +347,8 @@ class ManiSkillBridge(Node):
             for action in self.actions:
                 action.destroy()
         finally:
+            if self.force_output is not None:
+                self.force_output.close()
             self.sim.close()
             self.cache.cleanup()
 

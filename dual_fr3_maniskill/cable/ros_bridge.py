@@ -70,6 +70,8 @@ class UsbCableBridge(ManiSkillBridge):
             super().tick()
         except RuntimeError as exc:
             self.failure = str(exc)
+            if getattr(self, "force_output", None) is not None:
+                self.force_output.fail(self.failure)
             if self.sim.env.rope_trace is not None:
                 report = self.sim.env.rope_trace.capture("failure", self.sim.env, reason=self.failure)
                 if report is not None:

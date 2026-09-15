@@ -1,7 +1,8 @@
 # MTC scene: 2 mm cable fits the existing research-finger bore at closed TCP.
 # All dimensions, including USB1.stl coordinates, are metres.
 scene:
-  trunking_mesh: simplified
+  trunking_mesh: simplified       # Collision geometry retains the filled slots.
+  trunking_visual_mesh: original  # Render the original CAD at its own origin.
 usb:
   mesh_scale: 1.0
   attachment: [0.0, -0.02, 0.0]
@@ -71,7 +72,7 @@ rope_actor:
   links: 151            # 7 mm flexible root + 150 regular segments of 9.953 mm
   frequency: 1000
   max_contact_travel: 0.00005  # adaptive substep travel cap [m], independent of acceptance tolerance
-  # Native capsules AND finger meshes: generate rim contacts before overlap.
+  # Capsules, finger meshes and cable-only static mesh copies share this shell.
   # Zero rest offset / original CAD; penetration_tolerance stays independent.
   contact_offset: 0.0001  # per-shape contact generation distance [m]
   inertia_floor: 1.1e-8   # rotational regularization [kg m^2]; mass is unchanged

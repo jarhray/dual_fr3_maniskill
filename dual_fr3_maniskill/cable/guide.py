@@ -138,4 +138,8 @@ class SlidingGuide:
         if not np.isfinite(summary).all():
             raise RuntimeError("Non-finite right-guide reaction")
         self.link.add_force_torque(summary[3:6].astype(float)/dt, summary[:3].astype(float)/dt)
+        collector = getattr(getattr(self._cable, "env", None), "force_collector", None)
+        if collector is not None:
+            collector.mpm_reaction(self.link, summary[:6].astype(float),
+                (self.link.pose*self.link.cmass_local_pose).p, source="mpm_ideal_guide_reaction")
         self.begin_step()

@@ -24,6 +24,8 @@
 | `/{left,right}_fr3_arm_controller/controller_state` | `control_msgs/msg/JointTrajectoryControllerState`，目标、实际值和误差 |
 | `/clock` | `rosgraph_msgs/msg/Clock`，按物理步数生成 |
 | `/maniskill/{left,right}_tcp_pose` | `geometry_msgs/msg/PoseStamped`，物理引擎实测 TCP，坐标系 `world` |
+| `/maniskill/forces` | `std_msgs/msg/String`，控制周期内的作用力、峰值、来源与可用性，见[力采集说明](forces.md) |
+| `/maniskill/forces/.../wrench` | `geometry_msgs/msg/WrenchStamped`，末端和各手指的局部作用力/力矩，见[话题列表](forces.md) |
 
 默认带夹爪模型发布 14 个机械臂关节和 4 个手指关节，不用目标值冒充实测反馈。TF 由 `robot_state_publisher` 统一发布。此后端不启动 `controller_manager`，因此用 action 和状态话题检查桥接，而非 `ros2 control list_controllers`。
 

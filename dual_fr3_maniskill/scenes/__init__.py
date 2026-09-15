@@ -46,17 +46,24 @@ def extend_scene_description(description: str, semantic: str, *, scene: str,
         import xml.etree.ElementTree as ET
         config = load_geometry_config(resolve_cable_config(cable_config, scene=scene))
         variant = config["scene"].get("trunking_mesh")
-        if variant is None:
+        variants = {"visual": config["scene"].get("trunking_visual_mesh", variant),
+                    "collision": variant}
+        if not any(variants.values()):
             return description, semantic
         robot = ET.fromstring(description)
         trunking = robot.find("link[@name='trunking']")
         if trunking is None:
-            raise ValueError("scene.trunking_mesh requires a trunking link")
-        filename, origin = {
+            raise ValueError("Trunking mesh selection requires a trunking link")
+        meshes = {
             "original": ("Trunking.STL", "0 0 0"),
             "simplified": ("Trunking_simplify.stl", "0.00014546 -0.00068397 0"),
-        }[variant]
-        for kind in ("visual", "collision"):
+        }
+        for kind, variant in variants.items():
+            if variant is None:
+                continue
+            # Each CAD export has its own origin; visual overrides must not
+            # change the collision mesh or inherit its alignment offset.
+            filename, origin = meshes[variant]
             shapes = trunking.findall(kind)
             if len(shapes) != 1 or shapes[0].find("geometry/mesh") is None:
                 raise ValueError(f"Expected one trunking {kind} mesh")

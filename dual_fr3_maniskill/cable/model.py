@@ -25,8 +25,9 @@ def load_config(path, *, solver="mpm"):
     scene = config.setdefault("scene", {})
     if not isinstance(scene, dict):
         raise ValueError("scene configuration must be a mapping")
-    if "trunking_mesh" in scene and scene["trunking_mesh"] not in ("original", "simplified"):
-        raise ValueError("scene.trunking_mesh must be original or simplified")
+    for key in ("trunking_mesh", "trunking_visual_mesh"):
+        if key in scene and scene[key] not in ("original", "simplified"):
+            raise ValueError(f"scene.{key} must be original or simplified")
     for section in ("usb", "cable"):
         if not isinstance(config.get(section), dict):
             raise ValueError(f"Missing {section} configuration")

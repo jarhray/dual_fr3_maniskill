@@ -324,6 +324,10 @@ class MPMCable:
         if not np.isfinite(impulses).all():
             raise RuntimeError("Non-finite cable contact impulse")
         for actor, impulse in zip(self.actors, impulses):
+            collector = getattr(self.env, "force_collector", None)
+            if collector is not None:
+                origin = actor.pose.p if actor.type == "static" else (actor.pose*actor.cmass_local_pose).p
+                collector.mpm_reaction(actor, impulse, origin)
             if actor.type not in ("static", "kinematic"):
                 actor.add_force_torque(impulse[3:] / dt, impulse[:3] / dt)
         self.contacts.impulse.zero_()
@@ -359,6 +363,10 @@ class MPMCable:
         if self.guide is not None:
             self.guide.apply_reaction(rigid_dt)
         self.plug.add_force_torque(reaction[3:], reaction[:3])
+        collector = getattr(self.env, "force_collector", None)
+        if collector is not None:
+            collector.mpm_reaction(self.plug, reaction*rigid_dt,
+                (self.plug.pose*self.plug.cmass_local_pose).p, source="mpm_attachment_reaction")
         self.last_attachment_force = reaction[3:].copy()
         wp.copy(self.previous_body, self.states[0].body_q)
 

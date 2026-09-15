@@ -69,6 +69,7 @@ class RopeActorCable:
         self.sections = len(self.material_s)
         self.max_section_gap = float(self.lengths.max()+r["constraint_tolerance"])
         self.links, self.joints, self.proxies, self.changed_shapes = [], [], [], []
+        self.fixture_proxies, self.fixture_sources = [], {}
         self.anchor = self.aperture = None
         self._collision_files = None
         self.guide_index = None
@@ -141,7 +142,21 @@ class RopeActorCable:
         if self.plug not in actors:
             actors.append(self.plug)
         self.obstacles = actors.copy()
+        fixture_ids = set()
+        from .fixture_contacts import create_fixture_proxy
+        for source in self.env.fixtures.values():
+            if not any(isinstance(shape.geometry, sapien.NonconvexMeshGeometry)
+                       for shape in source.get_collision_shapes()):
+                continue
+            proxy = create_fixture_proxy(self.scene, source, self.config["rope_actor"]["contact_offset"])
+            fixture_ids.add(source.id)
+            self.fixture_proxies.append((proxy, source))
+            self.fixture_sources[proxy.id] = source
+            self.obstacles.remove(source)
+            self.obstacles.append(proxy)
         for actor in actors:
+            if actor.id in fixture_ids:
+                continue  # Original fixtures keep their robot collision filters and shell.
             for shape in actor.get_collision_shapes():
                 groups = shape.get_collision_groups()
                 self.changed_shapes.append((shape, groups, shape.contact_offset))
@@ -348,6 +363,10 @@ class RopeActorCable:
     def step(self, rigid_dt):
         from .kinematic import advance_proxy
 
+        for proxy, source in getattr(self, "fixture_proxies", ()):
+            pose = source.pose
+            if not (np.array_equal(proxy.pose.p, pose.p) and np.array_equal(proxy.pose.q, pose.q)):
+                proxy.set_pose(pose)
         self._dt = rigid_dt
         self._energy_before_step = self._kinetic_energy()
         self.max_depth = 0.
@@ -452,7 +471,8 @@ class RopeActorCable:
     def _world_obstacle_bounds(self):
         bounds = []
         for actor, local, half in self._obstacle_boxes:
-            pose = actor.pose
+            # Account for scene edits before step() synchronizes static copies.
+            pose = self.fixture_sources.get(actor.id, actor).pose
             rotation = quat2mat(pose.q)
             center, extent = pose.p+rotation @ local, np.abs(rotation) @ half
             bounds.append([center-extent, center+extent])
@@ -477,6 +497,7 @@ class RopeActorCable:
 
     def _collect_contacts(self):
         proxy_links = getattr(self, "proxy_links", {})
+        contact_sources = {**proxy_links, **self.fixture_sources}
         candidates = {}
         self._last_contact_impulse = 0.
         self._last_contact_pair = None
@@ -487,7 +508,7 @@ class RopeActorCable:
             if a.id not in self.link_ids and b.id not in self.link_ids:
                 continue
             other = b if a.id in self.link_ids else a
-            self.contacted_bodies.add(proxy_links.get(other.id, other).name)
+            self.contacted_bodies.add(contact_sources.get(other.id, other).name)
             cable_link = a if a.id in self.link_ids else b
             shape = contact.collision_shape1 if a.id in self.link_ids else contact.collision_shape0
             candidates.setdefault((other, shape), set()).add(cable_link)
@@ -518,7 +539,7 @@ class RopeActorCable:
         # finite capsule contacts run at every adaptive PhysX substep.
         self.max_depth = 0.
         self.max_penetration_contact = None
-        proxy_links = getattr(self, "proxy_links", {})
+        proxy_links = {**getattr(self, "proxy_links", {}), **self.fixture_sources}
         deepest = None
         candidates = {}
         for (other, shape), actors in self._contact_candidates.items():
@@ -557,7 +578,7 @@ class RopeActorCable:
 
     def _penetration_detail(self, other, shape, index, point, depth):
         """Describe a post-solve geometric overlap, not a native impulse point."""
-        body = getattr(self, "proxy_links", {}).get(other.id, other)
+        body = self.fixture_sources.get(other.id, getattr(self, "proxy_links", {}).get(other.id, other))
         pose = body.pose*shape.get_local_pose()
         local = (np.asarray(point)-pose.p) @ quat2mat(pose.q)
         geometry = shape.geometry
@@ -676,7 +697,7 @@ class RopeActorCable:
         excluded = {USB_LINK, *TOUCH_LINKS, "rope_contact_left_fr3_leftfinger", "rope_contact_left_fr3_rightfinger"}
         for actor in self.obstacles:
             for shape in actor.get_collision_shapes():
-                pose = actor.pose*shape.get_local_pose()
+                pose = self.fixture_sources.get(actor.id, actor).pose*shape.get_local_pose()
                 local = (samples-pose.p) @ quat2mat(pose.q)
                 geometry = shape.geometry
                 if isinstance(geometry, sapien.BoxGeometry):
@@ -803,6 +824,10 @@ class RopeActorCable:
             self.scene.remove_actor(actor)
         for actor, _ in self.proxies:
             actor.close()
+        for actor, _ in self.fixture_proxies:
+            self.scene.remove_actor(actor)
+        self.fixture_proxies.clear()
+        self.fixture_sources.clear()
         self.links.clear()
         self.proxies.clear()
         for shape, groups, offset in self.changed_shapes:

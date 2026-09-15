@@ -4,6 +4,9 @@ dual_fr3_maniskill:
     control_freq: 50
     sim_freq: 500
     publish_freq: 25
+    force_enabled: true
+    force_record_path: ""  # Optional new JSONL file; existing files are never overwritten.
+    force_usb_base_names: ""  # Comma-separated names of already loaded fixture actors.
     realtime_factor: 1.0
     path_position_tolerance: 0.2
     goal_position_tolerance: 0.005

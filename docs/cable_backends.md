@@ -8,6 +8,7 @@
 | `rope_actor` | 参考 `temp/Rope-Actor/create_actors.py` 的胶囊刚体、三轴转动关节链 | CPU PhysX + Vulkan |
 
 **验证状态：用户已确认简化线槽 / 2 mm 线缆的完整走线通过。**
+该配置当前保留简化碰撞网格，使用 `scene.trunking_visual_mesh: original` 显示原始线槽外形。
 录制 `run_20260915T113808Z_3scs5omg` 的 65.9 s 内未记录失败；
 相关接触修正见[线缆滑动与边缘接触](debugging_summary.md#contacts)。
 当前默认配置开始原始线槽 / 3 mm 线缆的新试验，孔口初始参考位置沿既有 TCP 局部 +Z 偏移 2.4 mm。
@@ -18,7 +19,7 @@
 
 从早期接触、分段与容差试验，到代理旋转、PGS 步长调度、USB 根部和凸胶囊接触修正，
 结论已合并到[调试总结](debugging_summary.md)。旧实验目录及一次性配置已清理；
-正式配置、诊断工具和三处冻结接触回归样本保留。
+正式配置、诊断工具和冻结接触回归样本保留。
 
 `simulation_backend:=maniskill` 选择机器人仿真环境；`maniskill_scene` 选择场景。
 `cable_solver` 在启动时选择，未知值直接报错，不会自动回退。运行中更换模型需要重启场景。
@@ -135,7 +136,7 @@ USB 与左夹爪仍为固定连接，线缆与槽壁仍有真实碰撞。
 | `inertia_floor` | 转动惯量下限，kg m²，须大于 `1e-8` |
 | `solver_type` | `pgs` 或 `tgs`；MTC 选 PGS，独立 USB 与缺失该字段的旧配置保留 TGS |
 | `solver_iterations` / `solver_velocity_iterations` | PhysX 求解迭代次数；当前配置为 40/10 |
-| `contact_offset` | 同时用于胶囊和手指网格的 PhysX 接触提前检测距离，MTC 为 0.0001 m / 形状；两形状相加。独立于 MPM `cable.contact_margin`、步长预算和穿透容差，静止偏移为零 |
+| `contact_offset` | 用于胶囊、手指网格代理和线缆专用静态三角网格副本的 PhysX 接触提前检测距离，MTC 为 0.0001 m / 形状；两形状相加。独立于 MPM `cable.contact_margin`、步长预算和穿透容差；生产配置的静止偏移为零 |
 | `constraint_tolerance` | 控制步结束时线段连接和 USB 固定端的位置误差上限，m；不限制孔内偏心量 |
 | `max_speed` | 胶囊中心线端点速度异常上限，m/s；包含平移和横向旋转的矢量合成 |
 
@@ -208,6 +209,33 @@ MPM 的 `guide.half_length` 定义理想直孔半长。Rope-Actor 的有限孔�
 运行时在控制步结束检查原生接触对的实际几何、连续性和约束误差；不能把 PhysX 求解前的接触距离直接作为残余穿透。
 右手指附近的完整胶囊还会独立进行三维穿透检查，即使最后一个物理子步没有报告接触也不会跳过。
 资源清理由统一的 `close()` 完成，失败生成会恢复修改的碰撞过滤并清理临时对象。
+
+### 原始线槽 / 3 mm 线缆的接触距离修正
+
+录制 `run_20260915T133352Z_9sszncyq` 在生成线缆后 1.10 s 的双臂下降末段失败：
+第 3 段在槽边穿透 0.148675 mm，超过 0.1 mm 容差，末尾 64 子步该接触对的法向冲量为零。
+胶囊的 `contact_offset` 已为 0.1 mm，但原始线槽仍继承场景的 1 mm 设置。
+在独立场景中固定相同的末态、仅改变线槽的接触距离，可得到以下对照：
+
+| 线槽接触距离 | 原生接触报告的最小 separation |
+| --- | --- |
+| 1 mm（原设置） | +0.192521 mm，未报告槽边重叠 |
+| 0.1 mm（修正） | −0.150150 mm，检出槽边重叠 |
+
+这项对照定位了本次姿态下的接触距离敏感性，尚未确定 PhysX 内部具体分支。
+早期探针已将线槽设为 0.1 mm，不能用它与原运行的差异推断接触缓存失效。
+
+现在为含非凸三角网格的静态场景物体创建线缆专用碰撞副本。副本复用相同网格、
+局部位姿、材料和静止偏移，接触距离使用 `rope_actor.contact_offset`，只与线缆碰撞。
+原物体继续用于机器人接触，保留原有接触距离和过滤设置；箱体等基础形状维持原有路径。
+副本跟随静态物体的显式位姿修改，并在关闭或生成失败时清理。
+原生子步日志中的名称为 `rope_fixture_trunking`，几何报错与 `contacted_bodies` 使用原名 `trunking`。
+
+冻结末态已加入 `test/data/rope_trunking_3mm_20260915.json`，回归检查接触深度、网格一致性、
+机器人碰撞隔离、位姿同步和资源清理。另从录制初态重建场景并执行录制控制输入，
+修正后运行 1.6 s、80 个控制边界检查通过，审计最大穿透为 0.013916 mm。
+超出已录输入后保持最后目标。冷启动未恢复准备阶段和 PhysX 内部缓存，原代码的冷启动基线也未失败，
+因此该结果仅覆盖重建场景；完整 MTC 下降及后续走线仍需重新运行验证。
 
 保留 `/usb_cable_demo/markers`、`/usb_cable_demo/diagnostics`、`/usb_cable_demo/reset`、USB TF 和 MoveIt USB 附着对象。
 诊断 `solver` 给出实际模型；`guide_material_coordinate` 仍表示可带小数的截面索引，Rope-Actor 另报 `guide_arc_length_m`。

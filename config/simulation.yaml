@@ -3,6 +3,9 @@ dual_fr3_maniskill:
     control_freq: 100
     sim_freq: 500
     publish_freq: 50
+    force_enabled: true
+    force_record_path: ""
+    force_usb_base_names: ""
     realtime_factor: 1.0
     path_position_tolerance: 0.2
     goal_position_tolerance: 0.005
