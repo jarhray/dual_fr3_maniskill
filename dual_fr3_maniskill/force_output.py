@@ -72,6 +72,10 @@ class ForceOutput:
             return
         snapshot = copy.deepcopy(snapshot)
         snapshot["failure"] = reason
+        monitor = getattr(self.node.sim.env, "grasp_monitor", None)
+        if monitor is not None:
+            monitor.fail("simulation_failed: "+str(reason))
+            snapshot["usb_grasp"] = monitor.snapshot()
         for value in snapshot["sensors"].values():
             value["available"] = False
             value["reasons"].append("simulation_failed")

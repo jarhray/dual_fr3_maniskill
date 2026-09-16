@@ -30,7 +30,7 @@ def scene_spec(scene: str) -> SceneSpec:
 def resolve_cable_config(path: str | Path | None = None, *, scene="usb_cable") -> str:
     candidate = (Path(path).expanduser() if path else
                  Path(get_package_share_directory("dual_fr3_maniskill")) / "config" /
-                 ("trunking_cable.yaml" if scene == "trunking_cable" else "usb_cable.yaml"))
+                 ("trunking_cable_simplified_2mm.yaml" if scene == "trunking_cable" else "usb_cable.yaml"))
     return str(candidate.resolve(strict=True))
 
 
@@ -77,7 +77,6 @@ def extend_scene_description(description: str, semantic: str, *, scene: str,
                 "package://dual_fr3_moveit_config/meshes/" + filename)
         return ET.tostring(robot, encoding="unicode"), semantic
 
-    share = Path(get_package_share_directory("dual_fr3_maniskill"))
-    return add_usb_description(description, semantic, share / "meshes/USB1.stl",
-                               load_geometry_config(resolve_cable_config(cable_config)),
-                               mesh_uri="package://dual_fr3_maniskill/meshes/USB1.stl")
+    # USB is a dynamic runtime actor. Never add a fixed URDF joint or a TF
+    # derived from the TCP; the bridge publishes the measured actor pose.
+    return description, semantic

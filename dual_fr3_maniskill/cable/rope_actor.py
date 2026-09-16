@@ -120,7 +120,7 @@ class RopeActorCable:
         bends = np.arccos(np.clip(np.sum(frames[:-1, :, 0]*frames[1:, :, 0], axis=1), -1., 1.))
         if np.any(bends > np.deg2rad(self.config["rope_actor"]["bend_limit_deg"])):
             raise ValueError("Initial rope bend exceeds joint limit; increase rope_actor.links or bend_limit_deg")
-        if self.guide is not None:
+        if self.guide is not None and self.guide_observation_active:
             self._guide_crossing(points, initial=True)
         return points
 
@@ -324,9 +324,17 @@ class RopeActorCable:
         crossing = points[index]+(coordinate-index)*(points[index+1]-points[index])
         return index, coordinate, float(np.linalg.norm(crossing-pose.p)), axis
 
+    @property
+    def guide_observation_active(self):
+        # The cable is held at a future hole location before the hand arrives.
+        # Real contacts stay enabled; only the threading assertion is deferred.
+        env = getattr(self, "env", None)
+        return not (getattr(env, "preparation_tcp_poses", {}) and
+                    getattr(env, "support_drive", None) is not None)
+
     def _update_guide(self):
         """Track material passing the hole without applying a guide constraint."""
-        if self.guide is None:
+        if self.guide is None or not self.guide_observation_active:
             return
         index, coordinate, error, axis = self._guide_crossing(self.centerline, initial=self.guide_index is None)
         self.guide.material_coordinate, self.guide.radial_error = coordinate, error
@@ -336,8 +344,15 @@ class RopeActorCable:
         """Measure material flow and native hole loads without constraining it."""
         if self.guide is None:
             return {}
+        if not self.guide_observation_active:
+            return dict(available=False, reason="externally_positioned_waiting_for_gripper_approach")
         coordinate = self.guide.material_coordinate
         index = self.guide_index
+        # Releasing the preparation supports activates observation before the
+        # first physics substep has located the crossing. A control trace can
+        # run in that interval; report unavailable instead of subtracting None.
+        if index is None:
+            return dict(available=False, reason="waiting_for_first_guide_observation")
         arc = float(np.interp(coordinate, np.arange(self.sections), self.material_s))
         points = self.centerline
         crossing = points[index]+(coordinate-index)*(points[index+1]-points[index])
@@ -660,9 +675,24 @@ class RopeActorCable:
             raise RuntimeError("Non-finite Rope-Actor state")
         tolerance = self.config["rope_actor"]["constraint_tolerance"]
         gaps = np.linalg.norm(ends[:-1]-starts[1:], axis=1)
-        if gaps.max() > tolerance or self.attachment_error() > tolerance:
-            raise RuntimeError("Rope-Actor joint/attachment constraint exceeded tolerance")
-        if self.aperture is not None:
+        attachment_error = self.attachment_error()
+        if gaps.max() > tolerance or attachment_error > tolerance:
+            raise RuntimeError("Rope-Actor joint/attachment constraint exceeded tolerance: "
+                               f"joint={gaps.max()*1000:.3f} mm (index={int(gaps.argmax())}), "
+                               f"attachment={attachment_error*1000:.3f} mm, "
+                               f"limit={tolerance*1000:.3f} mm")
+        stretch_limit = self.config["rope_actor"].get("max_stretch_ratio")
+        if stretch_limit is not None:
+            center = np.vstack((starts[0], (ends[:-1]+starts[1:])/2, ends[-1]))
+            length = float(np.linalg.norm(np.diff(center, axis=0), axis=1).sum())
+            rest_length = float(self.material_s[-1])
+            if length > rest_length*(1+stretch_limit):
+                raise RuntimeError("Rope-Actor cumulative stretch exceeded tolerance: "
+                                   f"extension={(length-rest_length)*1000:.3f} mm, "
+                                   f"limit={rest_length*stretch_limit*1000:.3f} mm; "
+                                   "increase constraint resolution; individual joint tolerances "
+                                   "do not bound accumulated cable stretch")
+        if self.aperture is not None and self.guide_observation_active:
             self._check_aperture(self.centerline)
         linear = np.array([link.velocity for link in self.links])
         angular = np.array([link.angular_velocity for link in self.links])
@@ -683,7 +713,7 @@ class RopeActorCable:
         capsule contacts handle segment interiors during adaptive rigid steps.
         """
         import trimesh
-        if self.aperture is not None:
+        if self.aperture is not None and self.guide_observation_active:
             self._check_aperture(points)
         samples, ids = [], []
         spacing = self.radius/2
@@ -765,8 +795,11 @@ class RopeActorCable:
     def diagnostics(self):
         center = self.centerline
         starts, ends = self._endpoints()
-        coordinate = self.guide.material_coordinate if self.guide else None
+        current_length = float(np.linalg.norm(np.diff(center, axis=0), axis=1).sum())
+        stretch = max(0., current_length-float(self.material_s[-1]))
+        coordinate = self.guide.material_coordinate if self.guide and self.guide_observation_active else None
         return dict(solver=self.solver, physx_solver_type=self.config["rope_actor"].get("solver_type", "tgs"),
+                    adaptive_timestep=self.config["rope_actor"].get("adaptive_timestep", True),
                     root_joint=self.root_joint,
                     collision_geometry=self.config["rope_actor"].get("collision_geometry", "capsule"),
                     collision_surface_deficit_bound_m=(.028*self.radius if
@@ -788,22 +821,28 @@ class RopeActorCable:
                     kinetic_energy_before_step_J=self._energy_before_step,
                     last_contact_impulse_Ns=self._last_contact_impulse,
                     last_contact_pair=self._last_contact_pair,
-                    diameter_m=self.radius*2, current_centerline_length_m=float(np.linalg.norm(np.diff(center, axis=0), axis=1).sum()),
+                    diameter_m=self.radius*2, current_centerline_length_m=current_length,
+                    cumulative_stretch_m=stretch,
+                    cumulative_stretch_ratio=stretch/float(self.material_s[-1]),
+                    max_stretch_ratio=self.config["rope_actor"].get("max_stretch_ratio"),
                     max_section_gap_m=float(np.linalg.norm(np.diff(center, axis=0), axis=1).max()),
                     max_joint_gap_m=float(np.linalg.norm(ends[:-1]-starts[1:], axis=1).max()),
                     max_joint_gap_index=int(np.argmax(np.linalg.norm(ends[:-1]-starts[1:], axis=1))),
                     attachment_error_m=self.attachment_error(),
                     guide_material_coordinate=coordinate, guide_material_coordinate_unit="section_index",
-                    guide_arc_length_m=float(np.interp(coordinate, np.arange(self.sections), self.material_s)) if self.guide else None,
-                    guide_radial_error_m=self.guide.radial_error if self.guide else None,
+                    guide_arc_length_m=float(np.interp(coordinate, np.arange(self.sections), self.material_s)) if coordinate is not None else None,
+                    guide_radial_error_m=self.guide.radial_error if coordinate is not None else None,
+                    guide_observation_active=self.guide_observation_active,
                     guide_model="mesh_contact_only" if self.guide else None,
                     guide_inside_aperture=self.aperture.inside if self.aperture else None,
                     guide_plane_wall_distance_m=self.aperture.wall_distance if self.aperture else None,
                     max_rigid_penetration_m=self.max_depth, max_penetration_contact=self.max_penetration_contact,
                     contact_margin_m=self.config["cable"]["contact_margin"],
-                    contact_model=("physx_convex_capsules_adaptive_steps_triangle_finger_proxies" if
+                    contact_model=("physx_convex_capsules" if
                         self.config["rope_actor"].get("collision_geometry") == "convex_capsule" else
-                        "physx_capsules_adaptive_steps_triangle_finger_proxies"),
+                        "physx_capsules") + ("_adaptive_steps" if
+                        self.config["rope_actor"].get("adaptive_timestep", True) else "_fixed_steps") +
+                        "_triangle_finger_proxies",
                     contacted_bodies=sorted(self.contacted_bodies),
                     rigid_steps=self.steps, self_collision=False,
                     guide_measurements=self.guide_diagnostics())

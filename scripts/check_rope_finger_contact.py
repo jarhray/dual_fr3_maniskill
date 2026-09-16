@@ -212,7 +212,7 @@ def main():
     from ament_index_python.packages import get_package_share_directory
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--cable-config", type=Path, default=
-                        Path(get_package_share_directory("dual_fr3_maniskill"))/"config/trunking_cable.yaml")
+                        Path(get_package_share_directory("dual_fr3_maniskill"))/"config/trunking_cable_simplified_2mm.yaml")
     parser.add_argument("--links", type=int, default=13, help="Short chain size; ordinary segment length is retained")
     parser.add_argument("--reference-links", type=int, default=256, help="Full cable segmentation defining segment length")
     parser.add_argument("--coupling", choices=("delayed", "prescribed"), default="delayed")

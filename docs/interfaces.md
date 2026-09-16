@@ -2,15 +2,17 @@
 
 使用方法见 [README](../README.md)，环境与验证见[安装说明](setup.md)。
 
+本阶段接触夹持验收聚焦 `cable_solver:=rope_actor` 与 `load_cable:=false` 的 USB-only；MPM 延后完善，全局默认 `mpm` 保持不变。推荐双模式命令见 [MTC 使用说明](mtc_cable.md#启动)。
+
 ## 场景与配置
 
 | 场景 | 入口 | 默认配置 |
 | --- | --- | --- |
 | `robot` | MoveIt 的 `maniskill.launch.py` | `config/simulation.yaml` |
 | `usb_cable` | MoveIt 的 `usb_cable.launch.py` | `config/simulation_usb_cable.yaml`、`config/usb_cable.yaml` |
-| `trunking_cable` | MTC 的 `mtc_prototype.launch.py simulation_backend:=maniskill` | `config/simulation_usb_cable.yaml`、`config/trunking_cable.yaml` |
+| `trunking_cable` | MTC 的 `mtc_prototype.launch.py simulation_backend:=maniskill` | `config/simulation_usb_cable.yaml`、`config/trunking_cable_simplified_2mm.yaml` |
 
-`maniskill_config` 覆盖桥接参数，`cable_config` 覆盖线缆配置。完整启动编排选择一个场景、一个物理桥接；本包 `sim.launch.py` 只提供桥接，要求调用者传入最终 URDF/SRDF。
+`maniskill_config` 覆盖桥接参数，`cable_config` 覆盖 USB/线缆配置。`load_cable=false` 完全跳过线缆后端初始化和逐帧求解，但保留 USB 创建、接触载荷、TF 和状态监测。完整启动编排选择一个场景、一个物理桥接；本包 `sim.launch.py` 只提供桥接，要求调用者传入最终 URDF/SRDF。
 
 ## 机械臂与夹爪接口
 
@@ -27,13 +29,13 @@
 | `/maniskill/forces` | `std_msgs/msg/String`，控制周期内的作用力、峰值、来源与可用性，见[力采集说明](forces.md) |
 | `/maniskill/forces/.../wrench` | `geometry_msgs/msg/WrenchStamped`，末端和各手指的局部作用力/力矩，见[话题列表](forces.md) |
 
-默认带夹爪模型发布 14 个机械臂关节和 4 个手指关节，不用目标值冒充实测反馈。TF 由 `robot_state_publisher` 统一发布。此后端不启动 `controller_manager`，因此用 action 和状态话题检查桥接，而非 `ros2 control list_controllers`。
+默认带夹爪模型发布 14 个机械臂关节和 4 个手指关节，不用目标值冒充实测反馈。机器人 TF 由 `robot_state_publisher` 发布；动态 USB 的 world TF 由物理桥接按实测刚体位姿发布，没有 URDF TCP 固定关节。此后端不启动 `controller_manager`，因此用 action 和状态话题检查桥接，而非 `ros2 control list_controllers`。
 
 轨迹必须完整包含对应臂的 7 个关节，名称顺序可变。位置点做线性插值，带速度用三次插值，带速度和加速度用五次插值。支持未来开始时间、反馈、取消及路径 / 终点容差。同一臂忙时拒绝新目标，左右臂可并发；取消或失败后保持实际当前位置。
 
 夹爪 `position` 是单指位移，总开口约为两倍。`max_effort=0` 使用配置默认力，正值受上限约束。`reached_goal` 根据实测位置和速度判断；`stalled` 表示目标未达到且持续停止运动，并不直接证明抓住了线缆。
 
-独立 USB 场景拒绝左夹爪动作；MTC 线缆激活后拒绝打开任一夹爪。场景限制见 [USB 说明](usb_cable.md)和 [MTC 说明](mtc_cable.md)。
+两个 USB 场景均允许重新张开。动态 USB 的世界定位、接触门控释放、稳定验证和状态查询分别由 `/maniskill/cable/spawn`、`/maniskill/usb/release`、`/maniskill/usb/verify`、`/maniskill/usb/status`（均 Trigger）提供；`release_manual` 可调试强制释放。`reset` 清理物体与支持后需重新张开、spawn。只有 status 为 stable 时 success=true；message 为 JSON 状态及 reason。场景限制见 [USB 说明](usb_cable.md)和 [MTC 说明](mtc_cable.md)。
 
 ## 模型与物理
 
@@ -56,4 +58,4 @@
 | `cable/ros_bridge.py`、`cable/trunking_bridge.py` | 线缆反馈、重置和延迟生成服务 |
 | `cable/planning_scene.py` | USB 附着碰撞体 |
 
-运行时新增的 MoveIt 障碍物不会自动变为 SAPIEN 刚体。柔性线缆只在物理场景中处理接触，不作为 MoveIt 避障物。材料未标定、无视觉或力控闭环，不能把理想夹持和短时无穿透测试当作实际走线验收。
+运行时新增的 MoveIt 障碍物不会自动变为 SAPIEN 刚体。柔性线缆只在物理场景中处理接触，不作为 MoveIt 避障物。材料未标定、无视觉或力控闭环，不能把短时接触夹持或无穿透测试当作完整走线验收。

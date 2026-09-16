@@ -3,9 +3,10 @@ usb:
   mesh_scale: 1.0
   attachment: [0.0, -0.02, 0.0]
   grip_center: [0.0, 0.0, 0.0]
+  tcp_grip_offset: [0.0, 0.0, 0.012]  # [m], measured grip distinct from guide bore
   mass: 0.015
-  # Fixed mount is intentional: gripper slip is excluded from this experiment.
-  # Per finger: 2 * 0.0037 = 7.4 mm opening for the 7.6 mm USB width.
+  # Legacy nominal half-opening reference [m per finger]. Grasp actions command
+  # 0 m with bounded force and require post-release contact/stability verification.
   finger_position: 0.0037
 cable:
   initial_layout: table_spiral

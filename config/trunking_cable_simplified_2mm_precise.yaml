@@ -1,7 +1,10 @@
-# MTC contact-grasp experiment: original slotted trunking and current 2 mm cable diameter.
+# Higher temporal/contact accuracy: adaptive stepping and strict geometric checks.
+# Select with cable_config:=.../trunking_cable_simplified_2mm_precise.yaml
+# MTC scene: 2 mm cable fits the existing research-finger bore at closed TCP.
 # All dimensions, including USB1.stl coordinates, are metres.
 scene:
-  trunking_mesh: original
+  trunking_mesh: simplified       # 304-triangle trunking-simplified_1.stl replacement.
+  trunking_visual_mesh: original  # Preserve the selected original CAD appearance.
 usb:
   mesh_scale: 1.0
   attachment: [0.0, -0.02, 0.0]
@@ -59,8 +62,6 @@ cable:
 # Used only by the deferred MTC scene (trunking_cable).
 guide:
   routing: usb_to_right  # direct USB exit -> right bore; left bore intentionally unused
-  # Bore centre is about 2.4 mm beyond the existing TCP along local +Z.
-  # This offsets the spawn curve / aperture observer, not the robot TCP or CAD.
   center_offset: [0.0, 0.0, 0.0024]
   half_length: 0.012     # covers the real +/-10.5 mm bore on required hands [m]
   initial_margin: 0.025  # extra straight lead each side; at least 2 discrete segments [m]
@@ -89,14 +90,16 @@ rope_actor:
   # segment, not a rigid strain-relief sleeve fixed in the USB direction.
   root_joint: spherical
   # Use convex/triangle contacts: analytic capsule/triangle PCM missed the
-  # recorded hole and trunking edges. Inscribed surface deficit < 0.042 mm;
-  # geometric guards measure the configured ideal capsule.
+  # recorded hole and trunking edges. Inscribed surface deficit < 0.028 mm;
+  # geometric guards still measure the original 2 mm ideal capsule.
   collision_geometry: convex_capsule
   solver_type: pgs      # preserves joint damping without the reproduced TGS energy burst
   engine_tolerance_length: 0.1
   engine_tolerance_speed: 0.2
-  links: 151            # 7 mm flexible root + 150 regular segments of 9.953 mm
+  links: 101            # 7 mm flexible root + 100 regular segments of 14.93 mm
+  # Preparation timing and contact grasp/drop regression: docs/rope_performance.md.
   frequency: 1000
+  adaptive_timestep: true
   max_contact_travel: 0.00005  # adaptive substep travel cap [m], independent of acceptance tolerance
   # Capsules, finger meshes and cable-only static mesh copies share this shell.
   # Zero rest offset / original CAD; penetration_tolerance stays independent.

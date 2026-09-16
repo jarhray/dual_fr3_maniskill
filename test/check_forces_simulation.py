@@ -24,13 +24,14 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--solver", choices=("rope_actor", "mpm"), default="rope_actor")
     parser.add_argument("--steps", type=int, default=3)
+    parser.add_argument("--usb-only", action="store_true", help="Create USB without any cable backend")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--ros", action="store_true")
     args = parser.parse_args()
     if args.steps < 1:
         parser.error("steps must be positive")
     path = resolve_cable_config(scene="trunking_cable")
-    config = load_config(path, solver=args.solver)
+    config = load_config(path, solver=None if args.usb_only else args.solver)
     description, semantic = build_maniskill_description(scene="trunking_cable", cable_config=path)
     from dual_fr3_maniskill.scenes.trunking_cable import TrunkingCableSimulation
     args.output.parent.mkdir(parents=True, exist_ok=True)
@@ -38,10 +39,11 @@ def main():
         assets = prepare_assets(description, semantic, Path(directory))
         share = Path(get_package_share_directory("dual_fr3_maniskill"))
         assets.initial_positions.update(json.loads((share/"config/profiling_trunking_pose.json").read_text()))
-        for side, width in (("left", config["usb"]["finger_position"]), ("right", 0.)):
+        for side, width in (("left", config["usb"].get("open_finger_position", .02)), ("right", 0.)):
             assets.initial_positions.update({f"{side}_fr3_finger_joint{i}": width for i in (1, 2)})
         sim = TrunkingCableSimulation(assets, cable_config=config, cable_solver=args.solver,
-                                     control_freq=50, sim_freq=500)
+                                     load_cable=not args.usb_only, control_freq=50, sim_freq=500)
+        sensor_key = "fingers/left_fr3_leftfinger/usb" if args.usb_only else "usb/cable"
         output = node = listener = None
         record = None
         received, wrenches = [], []
@@ -61,7 +63,7 @@ def main():
                 subscriptions = [
                     listener.create_subscription(String, "/maniskill/forces",
                         lambda msg: received.append(json.loads(msg.data)), 100),
-                    listener.create_subscription(WrenchStamped, "/maniskill/forces/left/cable/wrench",
+                    listener.create_subscription(WrenchStamped, "/maniskill/forces/"+sensor_key+"/wrench",
                         wrenches.append, 100)]
                 until = time.monotonic()+1.
                 while time.monotonic() < until:
@@ -83,11 +85,15 @@ def main():
             for _ in range(args.steps):
                 sim.step()
                 snapshot = collector.snapshot
-                value = snapshot["sensors"]["left/cable"]
+                value = snapshot["sensors"][sensor_key]
                 assert value["available"], value
                 assert abs(snapshot["duration_s"]-.02) < 1.e-9
                 assert not snapshot["sensors"]["left/usb_base"]["available"]
-                assert not snapshot["sensors"]["fingers/left_fr3_leftfinger/usb"]["available"]
+                assert snapshot["sensors"]["fingers/left_fr3_leftfinger/usb"]["available"]
+                assert snapshot["usb_grasp"]["external_support"]
+                if args.usb_only:
+                    assert sim.env.cable is None and sim.env._cable_engine is None
+                    assert not snapshot["sensors"]["left/cable"]["available"]
                 force_norms.append(float(np.linalg.norm(value["force_N"])))
                 if output:
                     output.publish()
@@ -100,16 +106,17 @@ def main():
                     rclpy.spin_once(listener, timeout_sec=.05)
                 assert len(received) == args.steps+1, len(received)
                 assert len(wrenches) == args.steps, len(wrenches)
-                msg, value = wrenches[-1], received[-1]["sensors"]["left/cable"]
+                msg, value = wrenches[-1], received[-1]["sensors"][sensor_key]
                 np.testing.assert_allclose([msg.wrench.force.x, msg.wrench.force.y, msg.wrench.force.z], value["force_N"])
-                assert msg.header.frame_id == "left_fr3_hand_tcp"
+                assert msg.header.frame_id == value["frame_id"]
                 output.close()
             else:
                 record.close()
             rows = [json.loads(line) for line in args.output.read_text().splitlines()]
             assert len(rows) == args.steps+1
-            print(json.dumps(dict(passed=True, solver=args.solver, ros=args.ros, records=len(rows),
-                left_cable_force_norm_N=force_norms, last_physics_substeps=rows[-1]["physics_substeps"],
+            print(json.dumps(dict(passed=True, solver=args.solver, usb_only=args.usb_only,
+                ros=args.ros, records=len(rows), observed_sensor=sensor_key,
+                force_norm_N=force_norms, last_physics_substeps=rows[-1]["physics_substeps"],
                 output=str(args.output)), indent=2))
         finally:
             if record is not None:

@@ -67,6 +67,10 @@ class LoadWindow:
         if "ideal_guide_load_not_resolved_per_finger" in self.reasons:
             missing.append("ideal_guide_load_not_resolved_per_finger")
         return dict(frame_id=self.frame_id, available=valid,
+                    force_unit="N", torque_unit="N*m", torque_reference="frame_origin",
+                    force_expression="instantaneous_sensor_frame",
+                    torque_interpretation=("moment_of_reported_normal_forces_and_other_named_sources"
+                                           if native else "moment_of_named_interaction_sources"),
                     scope="partial_interaction_wrench" if missing else "reported_model_interaction_wrench",
                     reasons=sorted(self.reasons), sources=sorted(self.sources),
                     missing_components=missing, objects=sorted(self.objects),
@@ -86,12 +90,6 @@ class ForceCollector:
         self.active = False
         self.snapshot = None
         self.constraint_reader = constraint_reader
-        if constraint_reader is None:
-            try:
-                from ._rope_physx import read_pair_constraint
-                self.constraint_reader = read_pair_constraint
-            except ImportError:
-                pass
 
     def begin(self, time):
         self.start_time = float(time)
@@ -102,38 +100,44 @@ class ForceCollector:
         self.active = True
         env = self.env
         self.cable = getattr(env, "cable", None)
-        self.plug = getattr(self.cable, "plug", None)
-        self.solver = getattr(self.cable, "solver", "none")
+        self.plug = (getattr(env, "plug", None) or getattr(self.cable, "plug", None)
+                     or env.agent.links.get(USB_LINK))
+        self.cable_enabled = getattr(env, "load_cable", True)
+        self.solver = getattr(self.cable, "solver", "none" if self.cable_enabled else "disabled")
         self.fixtures = {a.id: a for a in env.fixtures.values()}
         self.rope_ids = getattr(self.cable, "link_ids", set())
         self.proxies = getattr(self.cable, "proxy_links", {})
-        self.plug_held = self.plug is not None and (
-            getattr(env, "mount_drive", None) is not None or
-            env.agent.links.get(USB_LINK) is self.plug)
         self.fingers = {n: a for n, a in env.agent.links.items()
                         if n.endswith(("leftfinger", "rightfinger"))}
+        self.finger_ids = {actor.id: name for name, actor in self.fingers.items()}
         loaded_bases = self.base_names & set(env.fixtures)
         for side in ("left", "right"):
             frame = side+"_fr3_hand_tcp"
             if frame not in env.agent.links:
                 continue
             self.frames[frame] = env.agent.links[frame]
-            for category in ("cable", "fixtures", "usb_base"):
+            for category in ("cable", "fixtures", "usb_base", "usb"):
                 self._new(side+"/"+category, frame, category, loaded_bases)
         for name, actor in self.fingers.items():
             self.frames[name] = actor
             for category in ("cable", "fixtures", "usb"):
                 key = "fingers/"+name+"/"+category
                 self._new(key, name, category, loaded_bases)
-                if category == "usb" and name.startswith("left_") and self.plug_held:
-                    self.windows[key].invalidate("fixed_mount_excludes_usb_finger_contacts")
         if self.plug is not None:
             self.frames[self.plug.name] = self.plug
-            for category in ("fixtures", "usb_base"):
+            for category in ("fixtures", "usb_base", "cable"):
                 self._new("usb/"+category, self.plug.name, category, loaded_bases)
+            for name in self.fingers:
+                self._new("usb/fingers/"+name, self.plug.name, "usb", loaded_bases)
         if self.cable is not None and self.solver == "rope_actor":
-            window = self.windows.get("left/cable")
-            if window is not None and self.plug_held:
+            if self.constraint_reader is None:
+                try:
+                    from ._rope_physx import read_pair_constraint
+                    self.constraint_reader = read_pair_constraint
+                except ImportError:
+                    pass
+            window = self.windows.get("usb/cable")
+            if window is not None:
                 window.sources.add("rope_anchor_constraint")
                 window.normal_known = False
                 if self.constraint_reader is None:
@@ -151,8 +155,12 @@ class ForceCollector:
         if category == "cable" and self.solver == "mpm":
             window.sources.add("mpm_applied_reaction")
             window.normal_known = False
-        if category in ("cable", "usb") and self.cable is None:
+        if category == "cable" and not self.cable_enabled:
+            window.invalidate("cable_disabled")
+        elif category == "cable" and self.cable is None:
             window.invalidate("cable_not_spawned")
+        if category == "usb" and self.plug is None:
+            window.invalidate("usb_not_spawned")
         if category == "usb_base" and not loaded_bases:
             window.invalidate("usb_base_not_configured_or_not_loaded")
         if category == "fixtures" and not self.fixtures:
@@ -165,19 +173,17 @@ class ForceCollector:
         name = receiver.name
         keys = []
         side = None
-        if receiver is self.plug:
-            if category == "fixtures":
-                keys.append("usb/fixtures")
-                if other in self.base_names:
+        if self.plug is not None and receiver.id == self.plug.id:
+            if category in ("fixtures", "cable") or category.startswith("fingers/"):
+                keys.append("usb/"+category)
+                if category == "fixtures" and other in self.base_names:
                     keys.append("usb/usb_base")
-            if self.plug_held:
-                side = "left"
         else:
             for candidate in ("left", "right"):
                 if name in (candidate+"_fr3_hand", candidate+"_fr3_hand_tcp",
                             candidate+"_fr3_leftfinger", candidate+"_fr3_rightfinger"):
                     side = candidate
-        if side and category in ("cable", "fixtures"):
+        if side and category in ("cable", "fixtures", "usb"):
             keys.append(side+"/"+category)
             if category == "fixtures" and other in self.base_names:
                 keys.append(side+"/usb_base")
@@ -210,6 +216,8 @@ class ForceCollector:
                     category, other_name = "fixtures", other.name
                 elif self.plug is not None and other.id == self.plug.id:
                     category, other_name = "usb", other.name
+                elif self.plug is not None and receiver.id == self.plug.id and other.id in self.finger_ids:
+                    category, other_name = "fingers/"+self.finger_ids[other.id], other.name
                 else:
                     continue
                 for point in contact.points:
@@ -217,7 +225,7 @@ class ForceCollector:
                     impulse = sign*np.asarray(point.impulse, dtype=float)
                     self._route(receiver, category, other_name, impulse, point.position,
                                 normal=abs(float(np.dot(impulse, point.normal))))
-        if self.solver == "rope_actor" and self.plug_held and self.constraint_reader is not None:
+        if self.solver == "rope_actor" and self.plug is not None and self.constraint_reader is not None:
             try:
                 load = self.constraint_reader(self.plug._ptr, self.cable.links[0]._ptr)
                 if not load["awake"]:
@@ -226,8 +234,8 @@ class ForceCollector:
                             load["origin"], angular=np.asarray(load["torque"])*dt,
                             source="rope_anchor_constraint")
             except (ValueError, RuntimeError) as exc:
-                if "left/cable" in self.windows:
-                    self.windows["left/cable"].invalidate(str(exc))
+                if "usb/cable" in self.windows:
+                    self.windows["usb/cable"].invalidate(str(exc))
         for window in self.windows.values():
             window.end_step(dt)
         self.duration += dt
@@ -238,14 +246,37 @@ class ForceCollector:
         if not np.isclose(float(time)-self.start_time, self.duration, atol=1.e-9, rtol=1.e-7):
             for window in self.windows.values():
                 window.invalidate("incomplete_physics_sampling_window")
+        frame_poses, invalid_frames = {}, []
+        for name, actor in self.frames.items():
+            pose = actor.pose
+            if not np.isfinite(pose.p).all() or not np.isfinite(pose.q).all():
+                frame_poses[name] = None
+                invalid_frames.append(name)
+                for window in self.windows.values():
+                    if window.frame_id == name:
+                        window.invalidate("nonfinite_sensor_pose")
+            else:
+                frame_poses[name] = dict(position_m=pose.p.tolist(), quaternion_wxyz=pose.q.tolist())
         self.snapshot = dict(schema_version=1, time_s=float(time),
             window_start_s=self.start_time, duration_s=self.duration, physics_substeps=self.substeps,
             solver=self.solver, convention="force_on_sensor_body",
+            cable=dict(enabled=self.cable_enabled, created=self.cable is not None, solver=self.solver),
             aggregation="time_weighted_mean_in_instantaneous_sensor_axes",
             configured_usb_bases=sorted(self.base_names),
             loaded_usb_bases=sorted(self.base_names & set(self.env.fixtures)),
             sensors={key: window.result(self.duration) for key, window in self.windows.items()},
-            frame_poses_world={name: dict(position_m=actor.pose.p.tolist(),
-                                        quaternion_wxyz=actor.pose.q.tolist())
-                               for name, actor in self.frames.items()})
+            frame_poses_world=frame_poses, unavailable_frame_poses=invalid_frames)
+        monitor = getattr(self.env, "grasp_monitor", None)
+        if monitor is not None:
+            self.snapshot["usb_grasp"] = monitor.snapshot()
+        layout = getattr(self.env, "initial_layout_diagnostics", None)
+        self.snapshot["initial_layout"] = layout
+        world_count = len(getattr(self.env, "temporary_supports", ()))
+        world_count += int(getattr(self.env, "support_drive", None) is not None)
+        particle_count = int(getattr(self.cable, "support_count", 0))
+        self.snapshot["temporary_support"] = dict(
+            active=bool(world_count or particle_count), count=world_count+particle_count,
+            world_drive_count=world_count, cable_particle_count=particle_count,
+            material_intervals_m=[] if layout is None else layout.get("support_material_intervals_m", []),
+            scope="temporary_external_positioning_not_gripper_load")
         return self.snapshot

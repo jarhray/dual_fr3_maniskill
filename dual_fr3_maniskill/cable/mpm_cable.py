@@ -79,6 +79,14 @@ def pin_particles(
     affine[p] = spin
 
 
+@wp.kernel
+def temporary_world_support(ids: wp.array(dtype=int), targets: wp.array(dtype=wp.vec3),
+                            positions: wp.array(dtype=wp.vec3), velocities: wp.array(dtype=wp.vec3)):
+    i = wp.tid()
+    positions[ids[i]] = targets[i]
+    velocities[ids[i]] = wp.vec3(0.0)
+
+
 def pose_transform(pose):
     return wp.transform(tuple(pose.p), tuple(pose.q[[1, 2, 3, 0]]))
 
@@ -105,13 +113,47 @@ class MPMCable:
         return self.config["cable"]["particle_spacing"]*2
 
     def close(self):
+        self.remove_temporary_supports()
         self.constraint_graphs.clear()
+        if hasattr(self, "pcd"):
+            self.env._scene.remove_particle_entity(self.pcd)
+            del self.pcd
+
+    def add_temporary_supports(self, intervals):
+        """World positioning on short bore neighborhoods only, until release."""
+        # Retire graphs BEFORE replacing arrays whose raw addresses were
+        # captured. Reconfiguring equal-sized intervals must be safe as well.
+        self.constraint_graphs.clear()
+        s = np.linspace(0., self.config["cable"]["length"], self.sections)
+        selected = np.zeros(self.sections, dtype=bool)
+        for lower, upper in intervals:
+            selected |= (s >= lower) & (s <= upper)
+        ids = np.flatnonzero(np.repeat(selected, 7)).astype(np.int32)
+        self.support_ids = wp.array(ids, dtype=int, device=self.device)
+        self.support_targets = wp.array(self.positions[ids].astype(np.float32), dtype=wp.vec3, device=self.device)
+        self.support_count = len(ids)
+
+    def remove_temporary_supports(self):
+        # Do not alter state, pose or velocity at release. Invalidate graphs
+        # containing support kernels before dropping their backing buffers.
+        self.constraint_graphs.clear()
+        self.support_ids = self.support_targets = None
+        self.support_count = 0
+
+    def _apply_temporary_supports(self):
+        if self.support_count:
+            state = self.states[0].struct
+            wp.launch(temporary_world_support, dim=self.support_count,
+                inputs=[self.support_ids, self.support_targets, state.particle_q, state.particle_qd],
+                device=self.device)
 
     def __init__(self, env, config, *, plug=None, layout=None, guide=None):
         self.env, self.config = env, config
         self.plug = plug if plug is not None else env.agent.links[USB_LINK]
         self.layout = layout or initial_particle_positions
         self.guide = guide
+        self.support_count = 0
+        self.support_ids = self.support_targets = None
         initialize_warp()
         self.device = "cuda"
         self.local, volumes, pinned, self.sections = cable_particles(config)
@@ -384,7 +426,7 @@ class MPMCable:
             signature = (dt, c['axial_iterations'], c['axial_young_modulus'], c['diameter'],
                          self.spacing, self.grid_dims, self.contacts.passes,
                          self.contacts.radius, self.contacts.margin, self.contacts.profile_counts.ptr,
-                         self.guide.config['half_length'] if self.guide else None)
+                         self.guide.config['half_length'] if self.guide else None, self.support_count)
             self.constraint_graphs.run(signature, self.states[0].struct.particle_q.ptr, record)
         if self.guide is not None:
             self.guide._dirty = True
@@ -406,6 +448,7 @@ class MPMCable:
         # Contact is last: the guide's exterior transition must not push the
         # free cable through a nearby trunking wall after collision correction.
         self.contacts.solve(self.states[0], reuse_query_cache=True)
+        self._apply_temporary_supports()
 
     def check_contacts(self, positions=None):
         depths = self.contacts.audit(self.states[0], positions=positions)
@@ -416,6 +459,9 @@ class MPMCable:
                                f"{self.contacts.max_depth*1000:.3f} mm; reset or reduce motion speed")
 
     def reset(self):
+        if self.support_count:
+            raise RuntimeError("Cannot reset MPM cable while temporary world supports are active; "
+                               "use the scene reset to remove USB, cable and supports together")
         r = quat2mat(self.plug.pose.q)
         previous_coordinate = self.guide.material_coordinate if self.guide is not None else None
         # Validate the proposed layout before replacing the running state.

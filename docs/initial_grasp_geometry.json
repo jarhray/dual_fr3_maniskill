@@ -1,0 +1,213 @@
+{
+  "passed": true,
+  "scope": "creation_geometry_only_not_dynamic_grasp_validation",
+  "layout": {
+    "passed": true,
+    "units": "m, deg",
+    "left": {
+      "available": true,
+      "frame": "world",
+      "radial_tolerance_m": 0.0001,
+      "axis_tolerance_deg": 1.0,
+      "required_range_m": [
+        -0.012,
+        0.012
+      ],
+      "passed": true,
+      "reason": "initial_straight_bore_verified",
+      "radial_error_m": 0.0,
+      "axis_error_deg": 0.0,
+      "straight_coverage_range_m": [
+        -0.03780401003561133,
+        0.037695931564208585
+      ]
+    },
+    "right": {
+      "available": true,
+      "frame": "world",
+      "radial_tolerance_m": 0.0001,
+      "axis_tolerance_deg": 1.0,
+      "required_range_m": [
+        -0.012,
+        0.012
+      ],
+      "passed": true,
+      "reason": "initial_straight_bore_verified",
+      "radial_error_m": 0.0,
+      "axis_error_deg": 0.0,
+      "straight_coverage_range_m": [
+        -0.039783860207151855,
+        0.6182159675920201
+      ]
+    },
+    "left_hole_world_m": [
+      0.0,
+      0.0,
+      0.0024
+    ],
+    "right_hole_world_m": [
+      0.0,
+      0.6,
+      0.0024
+    ],
+    "left_axis_world": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "right_axis_world": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "usb_attachment_world_m": [
+      0.02,
+      0.0,
+      0.012
+    ],
+    "left_material_arc_m": 0.21430404506805253,
+    "right_material_arc_m": 0.8817840324079801,
+    "support_material_intervals_m": [
+      [
+        0.18980404506805254,
+        0.23880404506805253
+      ],
+      [
+        0.8572840324079801,
+        0.9062840324079801
+      ]
+    ]
+  },
+  "rigid_chain_layout": {
+    "passed": true,
+    "units": "m, deg",
+    "left": {
+      "available": true,
+      "frame": "world",
+      "radial_tolerance_m": 0.0001,
+      "axis_tolerance_deg": 1.0,
+      "required_range_m": [
+        -0.012,
+        0.012
+      ],
+      "passed": true,
+      "reason": "initial_straight_bore_verified",
+      "radial_error_m": 0.0,
+      "axis_error_deg": 0.0,
+      "straight_coverage_range_m": [
+        -0.034867627186259326,
+        0.03480570614707402
+      ]
+    },
+    "right": {
+      "available": true,
+      "frame": "world",
+      "radial_tolerance_m": 0.0001,
+      "axis_tolerance_deg": 1.0,
+      "required_range_m": [
+        -0.012,
+        0.012
+      ],
+      "passed": true,
+      "reason": "initial_straight_bore_verified",
+      "radial_error_m": 0.0,
+      "axis_error_deg": 0.0,
+      "straight_coverage_range_m": [
+        -0.03533339447827022,
+        0.6215866055217297
+      ]
+    },
+    "left_hole_world_m": [
+      0.0,
+      0.0,
+      0.0024
+    ],
+    "right_hole_world_m": [
+      0.0,
+      0.6,
+      0.0024
+    ],
+    "left_axis_world": [
+      1.0,
+      0.0,
+      0.0
+    ],
+    "right_axis_world": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "usb_attachment_world_m": [
+      0.02,
+      0.0,
+      0.012
+    ],
+    "left_material_arc_m": 0.21430404506805253,
+    "right_material_arc_m": 0.8817840324079801,
+    "support_material_intervals_m": [
+      [
+        0.18980404506805254,
+        0.23880404506805253
+      ],
+      [
+        0.8572840324079801,
+        0.9062840324079801
+      ]
+    ]
+  },
+  "rigid_chain_max_bend_deg": 68.4368913437571,
+  "sampling_step_m": 0.000500000000000167,
+  "clearance_sampling_error_bound_m": 0.0002500000000000835,
+  "cable_radius_m": 0.001,
+  "minimum_surface_clearance_m": {
+    "left_0": 0.00253718927234192,
+    "left_1": 0.0025371962817381842,
+    "right_0": 0.0025371971448260515,
+    "right_1": 0.002537190124007441,
+    "usb_free_cable": 0.0014000001236796383
+  },
+  "old_grip_left_bore_cable_overlap_m": 0.003099500128154021,
+  "finger_hull_usb_vertex_overlap_by_finger_position_m": {
+    "0.0037": 0.00037371471519082007,
+    "0.004": 7.429894161123209e-05,
+    "0.005": -0.0009237536369873926
+  },
+  "finger_cad_tcp_bounds_m": [
+    [
+      [
+        -0.01049999997998972,
+        -0.0010223321801946905,
+        -0.09150000022351742
+      ],
+      [
+        0.010499999736888218,
+        0.027977668818183123,
+        0.014400002419948571
+      ]
+    ],
+    [
+      [
+        -0.01050073013688822,
+        -0.027977668818183123,
+        -0.09150000022351742
+      ],
+      [
+        0.01049926957998972,
+        0.00102233218019469,
+        0.014400002419948571
+      ]
+    ]
+  ],
+  "usb_tcp_bounds_m": [
+    [
+      -0.017900004982948303,
+      -0.003799999598413706,
+      0.004800000123679638
+    ],
+    [
+      0.019999999552965164,
+      0.003800000296905637,
+      0.019200000807642937
+    ]
+  ]
+}

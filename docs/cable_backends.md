@@ -7,13 +7,14 @@
 | `mpm`（默认） | 原有 MPM + 轴向纤维 + GPU 接触和理想滑孔 | CUDA + Vulkan |
 | `rope_actor` | 参考 `temp/Rope-Actor/create_actors.py` 的胶囊刚体、三轴转动关节链 | CPU PhysX + Vulkan |
 
-**验证状态：用户已确认简化线槽 / 2 mm 线缆的完整走线通过。**
-该配置当前保留简化碰撞网格，使用 `scene.trunking_visual_mesh: original` 显示原始线槽外形。
-录制 `run_20260915T113808Z_3scs5omg` 的 65.9 s 内未记录失败；
-相关接触修正见[线缆滑动与边缘接触](debugging_summary.md#contacts)。
-当前默认配置开始原始线槽 / 3 mm 线缆的新试验，孔口初始参考位置沿既有 TCP 局部 +Z 偏移 2.4 mm。
-该组合的验证范围见[原始线槽试验](debugging_summary.md#original-3mm)，
-此前完整通过的结果不能直接代表新组合。Rope-Actor 仍为实验后端，材料和摩擦尚未标定。
+**当前配置：新版 304 面简化线槽 / 2 mm 线缆 / 101 段。**
+碰撞使用新版网格，显示保留当前 `scene.trunking_visual_mesh: original` 选择。
+已通过准备姿态短测及真实接触夹持、释放支撑、张爪下落和清理重置回归。
+日常配置使用固定 500 Hz，精细配置 `_precise.yaml` 使用自适应步长。快速配置已额外通过
+双臂下降 5 cm；完整 MTC 走线尚未重新验证，参数及性能见[性能记录](rope_performance.md)。
+
+历史简化线槽配置曾由用户确认完整走线通过（录制 `run_20260915T113808Z_3scs5omg`）；
+该结论不能直接用于本次新网格与 101 段配置。Rope-Actor 仍为实验后端，材料和摩擦尚未标定。
 
 ### 历史验证
 
@@ -81,14 +82,16 @@ schema 2 在没有审计样本时将汇总穿透写为 `null`；旧版的零次�
 保留参考方法的胶囊形状、关节弯曲/扭转自由度和阻尼。参考代码用两个辅助 link 加三个转动关节表示球形关节；
 这里使用 PhysX 原生 D6 关节，锁定三向平移，保留三个转动自由度。
 这样无需辅助刚体，也不受 SAPIEN 2 单个 articulation 最多 64 个 link 的限制。
-MTC 的 `trunking_cable.yaml` 使用 151 个胶囊：首段 7 mm，其余 150 段各约 9.953 mm。
+MTC 默认的 `trunking_cable_simplified_2mm.yaml` 使用 101 个胶囊：首段 7 mm，其余 100 段各 14.93 mm。
+本次分段调整的测量及验证范围见[性能记录](rope_performance.md)。
 段长指胶囊轴线上两关节之间的距离；包含球形端帽后的胶囊总长还要加上线径。
 MTC 的碰撞几何使用 `collision_geometry: convex_capsule`，通过凸体/三角网格接触路径
 处理孔口和槽边。旧的解析胶囊在已捕获姿态中漏掉最深接触：实际重叠约 0.160 mm，
 原生报告仅约 0.002 mm。凸体对照恢复到约 0.159 mm。
 每个凸体有 194 个顶点，在单位半径下烘焙后按物理半径缩放；直接烘焙毫米尺寸会丢失顶点。
 凸体内接于理想胶囊，2 mm 线径下表面最大内缩界为 0.028 mm。
-视觉、质量/惯量及几何验收仍使用原始理想胶囊；0.1 mm 穿透容差不变。
+视觉、质量/惯量及几何验收仍使用原始理想胶囊；快速模式穿透容差为 0.5 mm，
+精细模式为 0.1 mm。修改验收阈值不会修改碰撞形状。
 缺失该配置的旧 YAML 与独立 USB 演示仍使用解析 `capsule`。
 独立 USB 演示和未配置 `links` 的旧配置仍默认 60 段，最大支持 256 段。
 两个配置启用 PhysX PCM（持续接触流形）。MTC 场景改用 PGS，独立 USB 场景保留 TGS。
@@ -129,15 +132,17 @@ USB 与左夹爪仍为固定连接，线缆与槽壁仍有真实碰撞。
 | `root_joint` | `spherical`：出线点固定、首段可弯转；`fixed`：首段整体固定。MTC 用前者，旧配置默认后者 |
 | `collision_geometry` | `convex_capsule`：内接凸胶囊，MTC 默认；`capsule`：原生解析胶囊，旧配置默认 |
 | `engine_tolerance_length` / `engine_tolerance_speed` | PhysX 内部长度/速度尺度，m、m/s；不是穿透容限，不缩放场景 |
-| `frequency` | PhysX 最低步进频率，必须为桥接 `sim_freq` 的整数倍；按整条链的运动继续细分，ROS 时钟按实际累计步长推进 |
-| `max_contact_travel` | 自适应步进的运动距离上限，默认 0.00005 m；必须为正且不超过半径的一半，独立于穿透验收容差 |
+| `frequency` | PhysX 步进频率，必须为桥接 `sim_freq` 的整数倍；adaptive_timestep=true 时是允许继续细分的基础频率，否则使用固定步长；ROS 时钟按累计步长推进 |
+| `adaptive_timestep` | 是否按接触运动距离细分步长；缺省 true，日常简化配置显式 false，精细配置 true |
+| `max_contact_travel` | 仅 adaptive_timestep=true 时使用的运动距离上限，默认 0.00005 m；必须为正且不超过半径的一半，独立于穿透验收容差 |
 | `joint_stiffness` / `joint_damping` | 关节角弹簧和阻尼，SI 单位 |
 | `twist_limit_deg` / `bend_limit_deg` | 扭转、弯曲关节角限位 |
 | `inertia_floor` | 转动惯量下限，kg m²，须大于 `1e-8` |
 | `solver_type` | `pgs` 或 `tgs`；MTC 选 PGS，独立 USB 与缺失该字段的旧配置保留 TGS |
-| `solver_iterations` / `solver_velocity_iterations` | PhysX 求解迭代次数；当前配置为 40/10 |
+| `solver_iterations` / `solver_velocity_iterations` | PhysX 求解迭代次数，均为 1–255；日常简化配置为 200/10，精细配置为 40/10 |
 | `contact_offset` | 用于胶囊、手指网格代理和线缆专用静态三角网格副本的 PhysX 接触提前检测距离，MTC 为 0.0001 m / 形状；两形状相加。独立于 MPM `cable.contact_margin`、步长预算和穿透容差；生产配置的静止偏移为零 |
 | `constraint_tolerance` | 控制步结束时线段连接和 USB 固定端的位置误差上限，m；不限制孔内偏心量 |
+| `max_stretch_ratio` | 可选的整条中心线累计伸长比例上限，日常配置为 0.01（1.5 m 线长对应 15 mm）；缺失或 null 不检查。只读报警，不校正位置、不增大刚度；单个关节均未超差时也可能触发 |
 | `max_speed` | 胶囊中心线端点速度异常上限，m/s；包含平移和横向旋转的矢量合成 |
 
 MPM 的网格、采样和材料参数不影响 Rope-Actor。两种离散方式的速度和接触误差应分别测量。

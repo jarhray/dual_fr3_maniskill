@@ -29,6 +29,8 @@ install(PROGRAMS
   scripts/check_simulation.py
   scripts/check_cable.py
   scripts/check_rope_finger_contact.py
+  scripts/check_initial_grasp_geometry.py
+  scripts/watch_usb_grasp.py
   scripts/check_mpm.py
   scripts/profile_trunking_cable.py
   DESTINATION lib/${PROJECT_NAME}
@@ -39,12 +41,16 @@ if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
   ament_add_pytest_test(test_trajectory test/test_trajectory.py)
   ament_add_pytest_test(test_forces test/test_forces.py)
+  ament_add_pytest_test(test_usb_grasp test/test_usb_grasp.py)
+  ament_add_pytest_test(test_usb_grasp_services test/test_usb_grasp_services.py)
+  ament_add_pytest_test(test_usb_only test/test_usb_only.py)
   ament_add_pytest_test(test_assets test/test_assets.py)
   ament_add_pytest_test(test_cable_model test/test_cable_model.py)
   ament_add_pytest_test(test_cable_backends test/test_cable_backends.py)
   ament_add_pytest_test(test_rope_finger_contact test/test_rope_finger_contact.py)
   ament_add_pytest_test(test_rope_timestep test/test_rope_timestep.py)
   ament_add_pytest_test(test_threading test/test_threading.py)
+  ament_add_pytest_test(test_initial_grasp_geometry test/test_initial_grasp_geometry.py)
   ament_add_pytest_test(test_sapien_compat test/test_sapien_compat.py)
   ament_add_pytest_test(test_warp_setup test/test_warp_setup.py)
   ament_add_pytest_test(test_cable_profile test/test_cable_profile.py)

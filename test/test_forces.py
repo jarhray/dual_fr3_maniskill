@@ -80,21 +80,66 @@ def test_unavailable_differs_from_no_contact_and_missing_window():
     assert not collector.finish(.02)["sensors"]["left/fixtures"]["available"]
 
 
-def test_proxy_contacts_are_attributed_once_and_fixed_grip_stays_unavailable():
+def test_proxy_contacts_and_usb_anchor_are_separate_load_paths():
     env, contacts, tcp, f1, _, _ = environment()
     plug, rope, proxy = actor("plug", 10), actor("rope_0", 11), actor("finger_proxy", 12)
     env.cable = SimpleNamespace(solver="rope_actor", plug=plug, links=[rope], link_ids={11},
                                proxy_links={12: f1}, root_joint="fixed")
-    env.mount_drive = object()
     contacts.append(contact(rope, proxy, [0, -.004, 0]))
     reader = lambda *_: dict(force=[2., 0, 0], torque=[0, 0, 0], origin=[0, 0, 0], awake=True)
     collector = ForceCollector(env, constraint_reader=reader)
     collector.begin(0.)
     collector.sample(.002)
     result = collector.finish(.002)["sensors"]
-    np.testing.assert_allclose(result["left/cable"]["force_N"], [2., 2., 0])
+    np.testing.assert_allclose(result["left/cable"]["force_N"], [0., 2., 0])
+    np.testing.assert_allclose(result["usb/cable"]["force_N"], [2., 0., 0])
     np.testing.assert_allclose(result["fingers/left_fr3_leftfinger/cable"]["force_N"], [0., 2., 0])
-    assert result["fingers/left_fr3_leftfinger/usb"]["force_N"] is None
+    assert result["fingers/left_fr3_leftfinger/usb"]["force_N"] == [0., 0., 0.]
+
+
+def test_usb_only_contacts_available_without_cable_and_keep_force_on_each_body():
+    from dual_fr3_maniskill.usb_grasp import UsbGraspMonitor
+    env, contacts, tcp, f1, f2, _ = environment()
+    env.plug = actor("plug", 10)
+    env.load_cable = False
+    env.support_drive = object()
+    env.grasp_monitor = UsbGraspMonitor()
+    env.grasp_monitor.created(0.)
+    contacts.extend([contact(f1, env.plug, [0, .01, 0]),
+                     contact(env.plug, f2, [0, .01, 0])])
+    collector = ForceCollector(env)
+    collector.begin(0.)
+    collector.sample(.002)
+    snapshot = collector.finish(.002)
+    result = snapshot["sensors"]
+    assert snapshot["solver"] == "disabled"
+    assert snapshot["usb_grasp"]["external_support"]
+    assert snapshot["temporary_support"]["active"]
+    assert snapshot["temporary_support"]["world_drive_count"] == 1
+    assert snapshot["temporary_support"]["cable_particle_count"] == 0
+    assert snapshot["initial_layout"] is None
+    assert result["left/cable"]["reasons"] == ["cable_disabled"]
+    assert result["usb/cable"]["force_N"] is None
+    assert result["usb/usb_base"]["force_N"] is None
+    assert result["fingers/left_fr3_leftfinger/usb"]["force_N"][1] == pytest.approx(5.)
+    assert result["fingers/left_fr3_rightfinger/usb"]["force_N"][1] == pytest.approx(-5.)
+    assert result["usb/fingers/left_fr3_leftfinger"]["force_N"][1] == pytest.approx(-5.)
+    assert result["usb/fingers/left_fr3_rightfinger"]["force_N"][1] == pytest.approx(5.)
+    np.testing.assert_allclose(result["left/usb"]["force_N"], [0., 0., 0.])
+    json.dumps(snapshot, allow_nan=False)
+
+
+def test_mpm_usb_anchor_is_not_assumed_to_be_transmitted_to_tcp():
+    env, _, tcp, f1, _, _ = environment()
+    env.plug = actor("plug", 10)
+    env.cable = SimpleNamespace(solver="mpm", plug=env.plug, guide=None)
+    collector = ForceCollector(env)
+    collector.begin(0.)
+    collector.mpm_reaction(env.plug, [0, 0, .003, 0, .004, 0], [1, 0, 0])
+    collector.sample(.002)
+    result = collector.finish(.002)["sensors"]
+    np.testing.assert_allclose(result["usb/cable"]["force_N"], [0, 2., 0])
+    np.testing.assert_allclose(result["left/cable"]["force_N"], [0., 0., 0.])
 
 
 def test_mpm_reaction_preserves_spatial_order_and_torque_origin():
@@ -117,6 +162,20 @@ def test_nonfinite_load_is_unavailable_and_json_safe():
     value = window.result(.001)
     assert not value["available"] and value["force_N"] is None
     json.dumps(value, allow_nan=False)
+
+
+def test_nonfinite_sensor_pose_does_not_break_failure_json():
+    env, _, tcp, _, _, _ = environment()
+    tcp.pose.p[0] = np.nan
+    collector = ForceCollector(env)
+    collector.begin(0.)
+    collector.sample(.002)
+    snapshot = collector.finish(.002)
+    assert snapshot["frame_poses_world"][tcp.name] is None
+    assert tcp.name in snapshot["unavailable_frame_poses"]
+    assert not snapshot["sensors"]["left/fixtures"]["available"]
+    assert "nonfinite_sensor_pose" in snapshot["sensors"]["left/fixtures"]["reasons"]
+    json.dumps(snapshot, allow_nan=False)
 
 
 @pytest.fixture

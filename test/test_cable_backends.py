@@ -29,7 +29,7 @@ def test_rope_config_and_geometry_do_not_require_mpm(tmp_path):
     path = tmp_path/"rope.yaml"
     path.write_text(yaml.safe_dump(c))
     assert load_config(path, solver="rope_actor")["rope_actor"]["links"] == 151
-    assert load_geometry_config(path)["cable"]["diameter"] == .003
+    assert load_geometry_config(path)["cable"]["diameter"] == c["cable"]["diameter"]
     with pytest.raises(ValueError, match="Missing mpm"):
         load_config(path)
     prepare_backend("rope_actor", c, 500)
@@ -39,11 +39,16 @@ def test_rope_config_and_geometry_do_not_require_mpm(tmp_path):
 
 @pytest.mark.parametrize("key,value", [("links", 0), ("links", 257), ("links", 2.5),
     ("joint_stiffness", -1.), ("joint_damping", float("nan")), ("bend_limit_deg", 180.),
-    ("solver_iterations", True), ("solver_type", "unknown"), ("root_joint", "unknown"),
+    ("solver_iterations", True), ("solver_iterations", 256),
+    ("solver_velocity_iterations", 256), ("adaptive_timestep", "false"), ("adaptive_timestep", 0),
+    ("solver_type", "unknown"), ("root_joint", "unknown"),
     ("collision_geometry", "unknown"), ("constraint_tolerance", 0.),
     ("max_contact_travel", 0.), ("max_contact_travel", -.00001),
     ("max_contact_travel", True), ("max_contact_travel", float("nan")),
-    ("max_contact_travel", float("inf")), ("max_contact_travel", .00076)])
+    ("max_contact_travel", float("inf")), ("max_contact_travel", .00076),
+    ("max_stretch_ratio", 0.), ("max_stretch_ratio", -0.01),
+    ("max_stretch_ratio", True), ("max_stretch_ratio", float("nan")),
+    ("max_stretch_ratio", float("inf")), ("max_stretch_ratio", 1.1)])
 def test_invalid_rope_settings(tmp_path, key, value):
     c = config()
     c["rope_actor"][key] = value
@@ -176,6 +181,34 @@ def advance(cable, scene, steps):
         cable.step(.002)
         scene.step()
         cable.follow_plug()
+
+
+def test_cumulative_stretch_catches_many_small_joint_errors_without_repairing_state(native_scene):
+    sapien, scene, plug, env = native_scene
+    c = config()
+    c["rope_actor"].update(links=151, constraint_tolerance=.002, max_stretch_ratio=.001)
+
+    def straight(cfg, s, rotation, translation):
+        return translation+np.asarray(s)[:, None]*np.array([1., 0., 0.])
+
+    cable = create_cable(env, c, solver="rope_actor", layout=straight)
+    try:
+        cable._check_constraints()
+        for i, actor in enumerate(cable.links):
+            actor.set_pose(sapien.Pose(actor.pose.p+[i*.00005, 0., 0.], actor.pose.q))
+        before = np.array([actor.pose.p for actor in cable.links])
+        diagnostics = cable.diagnostics()
+        assert diagnostics["max_joint_gap_m"] < .000051
+        assert diagnostics["attachment_error_m"] < .000001
+        assert diagnostics["cumulative_stretch_m"] == pytest.approx(.0075, abs=.000001)
+        with pytest.raises(RuntimeError, match="cumulative stretch"):
+            cable._check_constraints()
+        np.testing.assert_array_equal(before, [actor.pose.p for actor in cable.links])
+        # Omitted/disabled setting preserves legacy per-joint guard behavior.
+        del c["rope_actor"]["max_stretch_ratio"]
+        cable._check_constraints()
+    finally:
+        cable.close()
 
 
 @pytest.mark.parametrize("native_scene", [True], indirect=True)
@@ -457,7 +490,9 @@ def test_substep_trace_refreshes_geometry_and_keeps_bounded_failure_state(native
 
 
 def trace_env(env, cable):
+    from dual_fr3_maniskill.usb_grasp import UsbGraspMonitor
     env.cable = cable
+    env.load_cable = True
     env.rope_trace = None
     env.cable_solver = "rope_actor"
     env._sim_steps_per_control = 2
@@ -466,7 +501,98 @@ def trace_env(env, cable):
     env.agent.before_simulation_step = lambda: None
     env.agent.joints = {}
     env.agent.robot = SimpleNamespace(get_qpos=lambda: np.array([]), get_qvel=lambda: np.array([]))
+    env.grasp_monitor = UsbGraspMonitor()
+    env._grasp_time = 0.
+    # This cable-only fixture has a kinematic USB anchor and no robot fingers.
+    # Advance observer time without fabricating physical grasp observations.
+    def observe_grasp(dt):
+        env._grasp_time += dt
+    env._observe_grasp = observe_grasp
     return env
+
+
+@pytest.mark.parametrize("adaptive", [False, True])
+def test_accuracy_mode_controls_substeps_but_preserves_observations(native_scene, monkeypatch, adaptive):
+    from dual_fr3_maniskill.scenes.usb_cable import UsbCableEnv
+    _, _, _, env = native_scene
+    c = config()
+    c["rope_actor"].update(links=13, adaptive_timestep=adaptive)
+    c["cable"]["length"] = .08
+    cable = create_cable(env, c, solver="rope_actor")
+    trace_env(env, cable)
+    timesteps, observations = [], []
+    native_step, native_follow = cable.step, cable.follow_plug
+
+    def step(dt):
+        timesteps.append(dt)
+        native_step(dt)
+
+    def follow():
+        native_follow()
+        observations.append(cable.steps)
+
+    def limit(maximum):
+        if not adaptive:
+            pytest.fail("Fixed mode must not perform the adaptive proximity scan")
+        return maximum/4
+
+    monkeypatch.setattr(cable, "step", step)
+    monkeypatch.setattr(cable, "follow_plug", follow)
+    monkeypatch.setattr(cable, "suggested_timestep", limit)
+    # A leftover fine timestep must not throttle an explicitly fixed mode.
+    cable._dt = .000125
+    cable.steps = 1
+    try:
+        UsbCableEnv.step_action(env, np.array([]))
+        assert sum(timesteps) == pytest.approx(.004)
+        assert timesteps == pytest.approx([.00025]*16 if adaptive else [.002]*2)
+        assert len(observations) == len(timesteps)
+        assert env._grasp_time == pytest.approx(.004)
+        cable.check_contacts()
+        assert cable.diagnostics()["adaptive_timestep"] is adaptive
+        # Preview mode retains the control-boundary geometry/constraint guard.
+        cable.links[-1].set_pose(type(cable.links[-1].pose)([1., 1., 1.]))
+        with pytest.raises(RuntimeError, match="constraint exceeded tolerance"):
+            cable.check_contacts()
+    finally:
+        cable.close()
+
+
+def test_trace_survives_support_release_before_first_guide_observation(native_scene, tmp_path):
+    from dual_fr3_maniskill.cable.rope_diagnostics import RopeRunRecorder
+    sapien, scene, _, env = native_scene
+    c = config()
+    c["rope_actor"].update(links=13, adaptive_timestep=False)
+    c["cable"]["length"] = .08
+    cable = create_cable(env, c, solver="rope_actor")
+    trace_env(env, cable)
+    # Preparation keeps the crossing observer inactive while the real hand
+    # approaches. Removal of the world support precedes the next native step.
+    tcp = scene.create_actor_builder().build_kinematic("right_fr3_hand_tcp")
+    points = cable.centerline
+    tcp.set_pose(sapien.Pose((points[6]+points[7])/2, [np.sqrt(.5), 0., 0., np.sqrt(.5)]))
+    cable.guide = SlidingGuide(tcp, c, 6.5)
+    env.preparation_tcp_poses = {"right": tcp.pose}
+    env.support_drive = object()
+    errors = []
+    recorder = RopeRunRecorder(tmp_path, metadata={}, on_error=errors.append)
+    try:
+        assert not cable.guide_diagnostics()["available"]
+        recorder.capture("control", env, action=np.array([]))
+        env.support_drive = None
+        before = cable.centerline.copy()
+        recorder.capture("control", env, action=np.array([]))
+        assert not errors
+        assert recorder.last_control["state"]["cable"]["guide"]["reason"] == "waiting_for_first_guide_observation"
+        np.testing.assert_array_equal(cable.centerline, before)
+        cable._update_guide()
+        recorder.capture("control", env, action=np.array([]))
+        assert not errors
+        assert recorder.last_control["state"]["cable"]["guide"]["guide_arc_length_m"] > 0
+    finally:
+        recorder.capture("close")
+        cable.guide = None
+        cable.close()
 
 
 def test_force_observer_keeps_rope_state_and_adaptive_schedule_identical(native_scene):
@@ -476,7 +602,6 @@ def test_force_observer_keeps_rope_state_and_adaptive_schedule_identical(native_
     tcp = scene.create_actor_builder().build_kinematic("left_fr3_hand_tcp")
     tcp.set_pose(plug.pose)
     env.agent.links[tcp.name] = tcp
-    env.mount_drive = object()  # Isolated fixture represents the existing ideal clamp.
     c = config()
     c["rope_actor"]["links"] = 13
     c["cable"]["length"] = .08
@@ -613,10 +738,13 @@ def test_bridge_saves_substep_and_control_failures(native_scene, tmp_path, monke
     recorder = RopeRunRecorder(tmp_path, metadata={}, on_error=errors.append)
     env.rope_trace = recorder
     env._viewer = None
-    logger = SimpleNamespace(error=messages.append)
+    logger = SimpleNamespace(error=messages.append, info=messages.append)
+    grasp_messages = []
     bridge = UsbCableBridge.__new__(UsbCableBridge)
     bridge.__dict__.update(sim=SimpleNamespace(env=env), failure=None, arms={}, grippers={},
-        cable_solver="rope_actor", get_logger=lambda: logger,
+        cable_solver="rope_actor", load_cable=True, _grasp_waiters=[], get_logger=lambda: logger,
+        grasp_pub=SimpleNamespace(publish=lambda value: grasp_messages.append(json.loads(value.data))),
+        _last_grasp_state=None,
         diag_pub=SimpleNamespace(publish=lambda value: None))
     reason = "injected " + failure_point
 
@@ -640,6 +768,7 @@ def test_bridge_saves_substep_and_control_failures(native_scene, tmp_path, monke
     try:
         UsbCableBridge.tick(bridge)
         assert bridge.failure == reason
+        assert grasp_messages[-1]["state"] == "failed"
         report = json.loads((recorder.directory / "failure_001.json").read_text())
         assert report["reason"] == reason and not errors
         assert report["failure_state"]["cable"]["geometry_audited"]

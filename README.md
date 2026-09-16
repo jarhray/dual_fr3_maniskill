@@ -2,20 +2,22 @@
 
 `dual_fr3_maniskill` 使用 ManiSkill2 / SAPIEN 2 执行双 FR3 仿真，线缆可选择 MPM 或 Rope-Actor 建模。ROS 桥接接收机械臂和夹爪动作，发布实测关节状态与仿真时钟，供 MoveIt、MTC 和 RViz 使用。
 
-## 当前状态（2026-09-15）
+## 当前状态（2026-09-16）
 
 支持 `cable_solver:=mpm`（默认）和 `cable_solver:=rope_actor`。
-Rope-Actor 的简化线槽 / 2 mm 线缆已由用户确认完成完整 MTC 走线，配置保存在
+本次接触夹持验收聚焦 **Rope-Actor + USB-only**；MPM 延后完善。默认后端保持不变，使用下面显式指定 `rope_actor` 的命令。
+旧固定夹持版本的 Rope-Actor 简化线槽 / 2 mm 线缆曾由用户确认完成完整 MTC 走线，配置保存在
 [trunking_cable_simplified_2mm.yaml](config/trunking_cable_simplified_2mm.yaml)。
 该配置使用简化线槽做碰撞，ManiSkill / RViz 显示原始线槽模型。
-当前默认配置为原始线槽 / 3 mm 线缆，已有局部验证通过，完整任务验证范围见
+当前默认配置为上述 `trunking_cable_simplified_2mm.yaml`（简化碰撞线槽 / 2 mm 线缆），线缆由 USB 直接连接右孔，不再绕回左孔（`guide.routing: usb_to_right`）。新流程采用动态 USB 接触夹持、定位释放和滑移监测，
+实际验证及范围见[本次验证记录](docs/usb_grasp_validation.md)。历史 3 mm 实验见
 [调试总结](docs/debugging_summary.md)。Rope-Actor 仍为实验后端，材料与摩擦尚未标定。
 参数、模型差异和验证方法见[线缆建模方式](docs/cable_backends.md)。
 `simulation_backend:=maniskill` 选择机器人仿真环境。
 
-MTC 当前默认 1.5 m 长、3 mm 直径、1 mm MPM 采样，MPM 5000 Hz、轴向迭代 6 次、接触迭代 2 次。
+MTC 当前默认 1.5 m 长、2 mm 直径、1 mm MPM 采样，MPM 5000 Hz、轴向迭代 6 次、接触迭代 2 次。
 CUDA Graph 与 GPU 网格检查默认启用；右手导向和碰撞投影也在 GPU 执行。
-材料、采样、迭代和穿透限制的默认值见 [trunking_cable.yaml](config/trunking_cable.yaml)。
+材料、采样、迭代和穿透限制的默认值见 [trunking_cable_simplified_2mm.yaml](config/trunking_cable_simplified_2mm.yaml)。
 
 RTX 3090 上的独立短测约为 89 ms/控制步，包含托板、线槽接触的区间约为 262 ms/控制步；
 每步推进 20 ms 仿真，仍未达到实时。4 次轴向迭代的运动末态偏差约 16.3 mm，因此保留 6 次。
@@ -54,10 +56,10 @@ ros2 launch dual_fr3_moveit_config maniskill.launch.py maniskill_scene:=robot
 ### 独立 USB 线缆演示
 
 ```bash
-ros2 launch dual_fr3_moveit_config usb_cable.launch.py
+ros2 launch dual_fr3_moveit_config usb_cable.launch.py cable_solver:=rope_actor
 ```
 
-启动时将 USB 固定在左 TCP，并生成默认 1.5 m 长、3.5 mm 直径的线缆。移动左臂可观察线缆响应；左夹爪固定，动作请求会被拒绝。模型、参数和重置方法见 [USB 线缆说明](docs/usb_cable.md)。
+启动时创建世界临时定位的动态 USB 和可选线缆；夹爪可以接触闭合、解除定位并重新张开。`load_cable:=false` 只创建 USB，不初始化线缆后端。模型、参数和重置方法见 [USB 线缆说明](docs/usb_cable.md)。
 
 ### MTC 准备与走线
 
@@ -68,25 +70,38 @@ colcon build --symlink-install --packages-up-to dual_fr3_trunking_mtc \
   --cmake-args -DPython3_EXECUTABLE=/usr/bin/python3
 source install/setup.bash
 ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
-  simulation_backend:=maniskill cable_solver:=rope_actor execute:=true
+  simulation_backend:=maniskill cable_solver:=rope_actor load_cable:=true execute:=true
 ```
 
-改成 `cable_solver:=mpm` 可使用原有 MPM；省略此参数也使用 MPM。
+USB-only 快速抓持调试：
 
-此入口选择 `trunking_cable` 场景：完整任务预检通过后执行准备动作，两次夹爪闭合成功才生成 USB 和线缆，随后下降并走线。默认需要终端确认；自动仿真可加 `preparation_interactive:=false`。
+```bash
+ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
+  simulation_backend:=maniskill cable_solver:=rope_actor load_cable:=false \
+  execute:=true preparation_interactive:=false
+```
 
-MTC 当前默认原始线槽 / 3 mm 线缆，初始穿线参考点沿右 TCP 局部 +Z 偏移 2.4 mm。
+省略 `cable_solver` 仍使用 MPM；其本阶段验收延后。
+
+此入口选择 `trunking_cable` 场景：在机械臂接近前按关键点准备目标定位 USB/线缆，再张开接近，再接触闭合、解除定位并验证稳定；验证成功才更新规划附着体、下降和走线。默认需要终端确认；自动仿真可加 `preparation_interactive:=false`。
+
+MTC 当前默认原始线槽 / 2 mm 线缆，两侧孔中心均沿各自 TCP 局部 +Z 偏移 2.4 mm；左右孔均检查初始直线覆盖。
 复用已通过的简化线槽 / 2 mm 基线时，在上面的命令中添加：
 
 ```text
 cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.yaml"
 ```
 
-此配置保持 2 mm 线径和简化碰撞网格，并用 `scene.trunking_visual_mesh: original`
-单独选择原始显示网格；显示和碰撞各自使用对应的 CAD 原点。
+此配置保持 2 mm 线径，使用新版 304 面简化碰撞线槽，显示采用当前选择的原始 CAD
+（`scene.trunking_visual_mesh: original`）；模型尺寸变化见
+[线槽说明](../dual_fr3_moveit_config/docs/trunking_mesh.md)。
+
+日常 Rope-Actor 默认使用固定 500 Hz 快速模式。需要更细的接触时间分辨率时，
+在相同启动命令中指定 `cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm_precise.yaml"`。
+两套参数、速度与验证范围见[性能记录](docs/rope_performance.md)。
 
 左端连接 USB；Rope-Actor 右孔使用真实网格接触与摩擦，MPM 使用理想滑孔。
-`execute:=false` 只规划、不生成线缆，`maniskill_cable:=false` 关闭线缆。详见 [MTC 线缆接口](docs/mtc_cable.md)。
+`execute:=false` 只规划；`load_cable:=false` 不创建线缆，但继续原双臂准备、下降和后续 MTC 运动，仅作为 USB 搬运调试；`maniskill_cable:=false` 关闭整个 USB/线缆场景。详见 [MTC 线缆接口](docs/mtc_cable.md)。
 
 ## 常用设置
 
@@ -99,6 +114,7 @@ cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.
 | `maniskill_python:=/绝对路径/.venv/bin/python` | 覆盖物理桥接解释器 |
 | `maniskill_viewer:=false use_rviz:=false` | 关闭两个窗口；仍需 Vulkan |
 | `cable_solver:=mpm` / `cable_solver:=rope_actor` | 选择线缆模型 |
+| `load_cable:=true` / `load_cable:=false` | 正常 USB+线缆 / USB-only 抓持调试 |
 | `cable_config:=/绝对路径/cable.yaml` | 覆盖线缆材料、尺寸与布局 |
 | `maniskill_config:=/绝对路径/simulation.yaml` | 覆盖桥接频率、容差等参数 |
 
@@ -125,7 +141,7 @@ cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.
 - [调试总结](docs/debugging_summary.md)：历史问题、修复结论、运行摘要和清理范围。
 
 两种线缆模型均为实验模型，材料尚未按真实电缆标定。柔性线缆不参与 MoveIt 避障。
-左端为固定夹持；MPM 右孔为理想滑孔，Rope-Actor 右孔由实际手指网格碰撞和摩擦导向。
+左端为真实接触夹持，定位释放后靠实际接触保留 USB；MPM 右孔为理想滑孔，Rope-Actor 右孔由实际手指网格碰撞和摩擦导向。
 
 ## Git 同步与本地产物
 

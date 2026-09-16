@@ -52,7 +52,10 @@ def load_config(path, *, solver="mpm"):
             if not isinstance(config[section][key], int):
                 raise ValueError(f"{section}.{key} must be an integer")
 
-    config["usb"].setdefault("tcp_grip_offset", [0., 0., .0075])
+    config["usb"].setdefault("tcp_grip_offset", [0., 0., .012])
+    config["usb"].setdefault("contact_offset", .0002)
+    config["usb"].setdefault("finger_contact_offset", .0001)
+    positive("usb", ("contact_offset", "finger_contact_offset"))
     for key in ("attachment", "grip_center", "tcp_grip_offset"):
         vector = np.asarray(config["usb"].get(key), dtype=float)
         if vector.shape != (3,) or not np.isfinite(vector).all():
@@ -78,12 +81,24 @@ def load_config(path, *, solver="mpm"):
     guide = config.setdefault("guide", {})
     if not isinstance(guide, dict):
         raise ValueError("guide configuration must be a mapping")
+    guide.setdefault("routing", "both_guides")
+    if guide["routing"] not in ("both_guides", "usb_to_right"):
+        raise ValueError("guide.routing must be both_guides or usb_to_right")
     guide.setdefault("half_length", .012)
     guide.setdefault("center_offset", [0., 0., 0.])
+    guide.setdefault("initial_margin", .025)
+    guide.setdefault("left_loop_clearance", .040)
+    guide.setdefault("radial_tolerance", .0001)
+    guide.setdefault("axis_tolerance_deg", 1.)
     offset = np.asarray(guide["center_offset"], dtype=float)
     if offset.shape != (3,) or not np.isfinite(offset).all():
         raise ValueError("guide.center_offset must have three finite coordinates")
-    positive("guide", ("half_length",))
+    positive("guide", ("half_length", "initial_margin", "left_loop_clearance",
+                       "radial_tolerance", "axis_tolerance_deg"))
+    if guide["axis_tolerance_deg"] >= 90:
+        raise ValueError("guide.axis_tolerance_deg must be smaller than 90 degrees")
+    if guide["radial_tolerance"] >= c["diameter"]/2:
+        raise ValueError("guide.radial_tolerance must be smaller than the cable radius")
     display = config.setdefault("display", {})
     if not isinstance(display, dict):
         raise ValueError("display configuration must be a mapping")
@@ -116,7 +131,7 @@ def load_config(path, *, solver="mpm"):
         r = config.setdefault("rope_actor", {})
         if not isinstance(r, dict):
             raise ValueError("rope_actor configuration must be a mapping")
-        defaults = dict(links=60, frequency=1000, contact_offset=.00002, inertia_floor=1.1e-8,
+        defaults = dict(links=60, frequency=1000, adaptive_timestep=True, contact_offset=.00002, inertia_floor=1.1e-8,
                         solver_type="tgs", root_joint="fixed", collision_geometry="capsule",
                         max_contact_travel=.00005,
                         engine_tolerance_length=.1, engine_tolerance_speed=.2,
@@ -127,6 +142,8 @@ def load_config(path, *, solver="mpm"):
                         constraint_tolerance=0.001, max_speed=10.0)
         for key, value in defaults.items():
             r.setdefault(key, value)
+        if not isinstance(r["adaptive_timestep"], bool):
+            raise ValueError("rope_actor.adaptive_timestep must be boolean")
         if r["solver_type"] not in ("pgs", "tgs"):
             raise ValueError("rope_actor.solver_type must be pgs or tgs")
         if r["root_joint"] not in ("fixed", "spherical"):
@@ -134,10 +151,21 @@ def load_config(path, *, solver="mpm"):
         if r["collision_geometry"] not in ("capsule", "convex_capsule"):
             raise ValueError("rope_actor.collision_geometry must be capsule or convex_capsule")
         integer("rope_actor", ("links", "frequency", "solver_iterations", "solver_velocity_iterations"))
+        # PhysX rigid-body iteration counts are limited to 8 bits. Reject
+        # larger values before SAPIEN can pass an unsupported count through.
+        for key in ("solver_iterations", "solver_velocity_iterations"):
+            if r[key] > 255:
+                raise ValueError(f"rope_actor.{key} must be between 1 and 255")
         if not 6 <= r["links"] <= 256:
             raise ValueError("rope_actor.links must be between 6 and 256")
         positive("rope_actor", ("twist_limit_deg", "bend_limit_deg", "constraint_tolerance", "max_speed", "contact_offset", "inertia_floor", "engine_tolerance_length", "engine_tolerance_speed"))
         positive("rope_actor", ("max_contact_travel",))
+        # Optional whole-cable guard: small errors at many joints can add up
+        # to visible stretching while every individual joint still passes.
+        if r.get("max_stretch_ratio") is not None:
+            positive("rope_actor", ("max_stretch_ratio",))
+            if r["max_stretch_ratio"] > 1:
+                raise ValueError("rope_actor.max_stretch_ratio must not exceed 1")
         if r["max_contact_travel"] > c["diameter"]/4:
             raise ValueError("rope_actor.max_contact_travel must not exceed half the cable radius")
         if r["inertia_floor"] <= 1.e-8:

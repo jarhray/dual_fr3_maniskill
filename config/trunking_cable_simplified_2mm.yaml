@@ -1,25 +1,46 @@
+# Daily preview preset; higher-accuracy counterpart: trunking_cable_simplified_2mm_precise.yaml
 # MTC scene: 2 mm cable fits the existing research-finger bore at closed TCP.
 # All dimensions, including USB1.stl coordinates, are metres.
 scene:
-  trunking_mesh: simplified       # Collision geometry retains the filled slots.
-  trunking_visual_mesh: original  # Render the original CAD at its own origin.
+  trunking_mesh: simplified       # 304-triangle trunking-simplified_1.stl replacement.
+  trunking_visual_mesh: original  # Preserve the selected original CAD appearance.
 usb:
   mesh_scale: 1.0
   attachment: [0.0, -0.02, 0.0]
   grip_center: [0.0, 0.0, 0.0]
-  # Physical grip relative to the guide-hole TCP, in TCP coordinates [m].
-  # +Z points away from the palm: 7.5 mm downward with the task's roll=pi.
-  tcp_grip_offset: [0.0, 0.0, 0.0075]
-  mass: 0.015
-  # Fixed mount is intentional: gripper slip is excluded from this experiment.
-  # Per finger: 2 * 0.0037 = 7.4 mm opening for the 7.6 mm USB width.
+  # Grip centre is distinct from the bore centre. CAD proof and reproduction:
+  # docs/initial_grasp_geometry.md. At Z=12 mm the USB clears the left bore.
+  tcp_grip_offset: [0.0, 0.0, 0.012]
+  mass: 0.015  # kg
+  friction: 0.5  # dimensionless, shared static/dynamic USB material coefficient
+  open_finger_position: 0.02  # m per finger, total opening 40 mm
+  contact_offset: 0.0002  # m; USB early contact detection, not penetration allowance
+  finger_contact_offset: 0.0001  # m; real left finger early contact detection
+  # Legacy nominal half-opening reference [m]. Contact-grasp actions command
+  # 0 m with a bounded drive force; real contact stops closure before the target.
   finger_position: 0.0037
+# Observation thresholds: simulation truth + independent finger normal loads.
+# These never increase grip force. All durations are simulation seconds.
+grasp:
+  contact_min_force_N: 0.10  # N on EACH finger
+  contact_hold_s: 0.10
+  close_timeout_s: 5.0
+  verification_min_s: 0.35
+  stable_hold_s: 0.25
+  verification_timeout_s: 3.0
+  slip_translation_m: 0.002  # m relative to TCP, baseline at support release
+  slip_rotation_rad: 0.14
+  slip_hold_s: 0.10
+  drop_translation_m: 0.035
+  drop_rotation_rad: 1.05
+  drop_hold_s: 0.10
+  contact_loss_hold_s: 0.25
 cable:
   initial_layout: table_spiral
   length: 1.5
   diameter: 0.002
   particle_spacing: 0.001
-  pin_length: 0.007
+  pin_length: 0.005
   # Effective mass estimate: measured 2 m / 45 g includes both connectors.
   # Keep the modelled USB at its existing 15 g estimate; distribute the other
   # 30 g over 2 m, including the unmodelled far connector. Reweigh to refine.
@@ -31,16 +52,24 @@ cable:
   axial_iterations: 6
   poisson_ratio: 0.3
   yield_stress: 1000000000.0
-  friction: 0.5
+  # Low-drag visual preview for pulling through the bore and over fixture rims.
+  # Applies to cable and its finger proxies; USB grasp friction stays 0.5.
+  # This is an approximation, not a measured cable/surface coefficient.
+  friction: 0.1
   # Finite-radius contact after each axial iteration, independent of grid size.
   contact_margin: 0.00002
   contact_iterations: 2
-  # Pause the demo if the measured tube/rigid overlap exceeds 0.1 mm.
-  penetration_tolerance: 0.0001
+  # User-selected overlap audit tolerance; native collision shapes are unchanged.
+  penetration_tolerance: 0.0008
 # Used only by the deferred MTC scene (trunking_cable).
 guide:
-  center_offset: [0.0, 0.0, 0.0]
-  half_length: 0.012     # straight guided length on each side of the right TCP [m]
+  routing: usb_to_right  # direct USB exit -> right bore; left bore intentionally unused
+  center_offset: [0.0, 0.0, 0.0024]
+  half_length: 0.012     # covers the real +/-10.5 mm bore on required hands [m]
+  initial_margin: 0.025  # extra straight lead each side; at least 2 discrete segments [m]
+  left_loop_clearance: 0.040  # both_guides only: exterior return apex along TCP +Z [m]
+  radial_tolerance: 0.0001  # initial centreline radial tolerance [m], not a runtime force
+  axis_tolerance_deg: 1.0  # initial segment/bore-axis angle tolerance [degree]
 mpm:
   # Disable individually when comparing another machine or debugging kernels.
   cuda_graph: true
@@ -57,9 +86,9 @@ mpm:
   marker_stride: 1
 
 # Selected by cable_solver:=rope_actor; MPM settings above are then unused.
-# Capsule chain with spherical D6 joints, PGS and aligned adaptive substeps.
+# Capsule chain with spherical D6 joints, PGS and fixed preview substeps.
 rope_actor:
-  # Direct flexible cable at the USB exit; the first 7 mm is a simulated
+  # Direct flexible cable at the USB exit; the first 5 mm is a simulated
   # segment, not a rigid strain-relief sleeve fixed in the USB direction.
   root_joint: spherical
   # Use convex/triangle contacts: analytic capsule/triangle PCM missed the
@@ -69,9 +98,14 @@ rope_actor:
   solver_type: pgs      # preserves joint damping without the reproduced TGS energy burst
   engine_tolerance_length: 0.1
   engine_tolerance_speed: 0.2
-  links: 151            # 7 mm flexible root + 150 regular segments of 9.953 mm
+  links: 151            # 5 mm flexible root + 150 regular segments of 9.967 mm
+  # Preparation timing and contact grasp/drop regression: docs/rope_performance.md.
+  # Recorded stage-09 pull-through: 500 Hz / 40 iterations stretched by 70 mm.
+  # Fixed 1 ms / 200 iterations resolves feeding without the much finer
+  # contact-motion adaptive schedule. Evidence: docs/rope_feed_fix.md.
   frequency: 1000
-  max_contact_travel: 0.00005  # adaptive substep travel cap [m], independent of acceptance tolerance
+  adaptive_timestep: false  # Fixed 1 ms steps; no motion-bound refinement in preview mode.
+  max_contact_travel: 0.00005  # used only when adaptive_timestep=true [m]
   # Capsules, finger meshes and cable-only static mesh copies share this shell.
   # Zero rest offset / original CAD; penetration_tolerance stays independent.
   contact_offset: 0.0001  # per-shape contact generation distance [m]
@@ -83,7 +117,8 @@ rope_actor:
   joint_damping: 0.001    # N m s/rad
   linear_damping: 1.0
   angular_damping: 1.0
-  solver_iterations: 40
+  solver_iterations: 200
   solver_velocity_iterations: 10
-  constraint_tolerance: 0.001  # segment joint/USB attachment error limit [m]
+  constraint_tolerance: 0.002  # preview joint/USB attachment error limit [m]
+  max_stretch_ratio: 0.01     # whole-cable extension guard: 15 mm for 1.5 m
   max_speed: 10.0             # centerline endpoint speed guard [m/s]

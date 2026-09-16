@@ -264,7 +264,7 @@ def write_summary(report, path):
 def main():
     share = Path(get_package_share_directory('dual_fr3_maniskill'))
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--cable-config', type=Path, default=share / 'config/trunking_cable.yaml')
+    parser.add_argument('--cable-config', type=Path, default=share / 'config/trunking_cable_simplified_2mm.yaml')
     parser.add_argument('--simulation-config', type=Path, default=share / 'config/simulation_usb_cable.yaml')
     parser.add_argument('--initial-positions', type=Path, default=share / 'config/profiling_trunking_pose.json')
     parser.add_argument('--steps', type=int, default=3)

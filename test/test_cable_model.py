@@ -28,7 +28,7 @@ def test_cable_dimensions_mass_and_attachment(length):
     assert np.linalg.norm(np.diff(center, axis=0), axis=1).sum() == pytest.approx(length)
 
 
-@pytest.mark.parametrize("filename", ["usb_cable.yaml", "trunking_cable.yaml"])
+@pytest.mark.parametrize("filename", ["usb_cable.yaml", "trunking_cable.yaml", "trunking_cable_simplified_2mm.yaml"])
 def test_reference_total_mass_and_shortened_cable(tmp_path, filename):
     cfg = load_config(ROOT/"config"/filename, solver="rope_actor")
     # 45 g at 2 m, retaining the existing unweighed 15 g USB estimate.

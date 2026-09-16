@@ -1,103 +1,133 @@
-# MTC 准备阶段的线缆
+# MTC 的 USB 接触夹持与可选线缆
 
-先按[环境安装与验证](setup.md)安装依赖并构建任务包。加载 ROS 和工作区后，在工作区根目录启动：
+当前范围是 USB 端头接触夹持、接触载荷采集，以及稳定、滑移和脱落监测。没有连续闭环力调节、自动增力、自动恢复、插接基座或插入动作。基座载荷保持 `unavailable`。
+
+本次验收范围为 **Rope-Actor + USB-only**，MPM 后续完善。全局默认仍保留 `mpm`；下面的推荐命令显式选择 `rope_actor`。
+
+## 启动
+
+在工作区根目录加载环境后，两种模式可直接运行；不传 `cable_config` 时统一加载 `trunking_cable_simplified_2mm.yaml`，其中已显式列出 `usb` 和 `grasp` 的夹持参数：
 
 ```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+# 正常模式：USB + Rope-Actor 线缆。
 ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
-  simulation_backend:=maniskill cable_solver:=rope_actor execute:=true \
+  simulation_backend:=maniskill load_cable:=true cable_solver:=rope_actor \
+  execute:=true preparation_interactive:=false \
+  maniskill_python:="$PWD/.venv/bin/python"
+
+# 快速调试：仅 USB；夹持验证后继续原双臂下降和后续 MTC 轨迹。
+ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
+  simulation_backend:=maniskill load_cable:=false cable_solver:=rope_actor execute:=true \
+  preparation_interactive:=false maniskill_python:="$PWD/.venv/bin/python"
+```
+
+`load_cable:=false` 从 launch 传到 ROS 节点和仿真构造，不创建线缆后端、粒子、胶囊链、连接关节、代理、guide，也不初始化线缆 Warp/CUDA 内核或逐帧求解。机器人自身渲染初始化仍保留。USB、实际姿态 TF、世界临时定位、手指碰撞、载荷和监测全部保留，独立创建 USB 不依赖右臂；MTC 入口仍执行原双臂准备，以保持后续轨迹一致。`maniskill_cable:=false` 是旧的**关闭整个 USB/线缆场景**开关，与 USB-only 不同；USB-only 要保留 `maniskill_cable:=true`。
+
+也可只启动物理和 MoveIt，手动调试：
+
+```bash
+ros2 launch dual_fr3_moveit_config usb_cable.launch.py load_cable:=false cable_solver:=rope_actor \
   maniskill_python:="$PWD/.venv/bin/python"
 ```
 
-MTC 仍先预检准备阶段和正式任务的完整规划。`execute:=false` 只做规划，
-不会在仿真里生成线缆。`preparation_interactive` 保留原有的三个确认点。
-Rope-Actor 当前为实验后端。用户已确认“简化线槽 + 2 mm 线缆”完成整套任务；
-录制 `run_20260915T113808Z_3scs5omg` 共 3295 个控制步、65.9 s，未记录失败。
-该基线保存在 `config/trunking_cable_simplified_2mm.yaml`。
-当前默认改为“原始线槽 + 实测 3 mm 线径”的新试验，验证范围见
-[原始线槽与 3 mm 线缆](debugging_summary.md#original-3mm)。
+独立 `usb_cable` 自动创建世界临时定位的动态 USB；MTC `trunking_cable` 延迟至 `/maniskill/cable/spawn` 创建。`execute:=false` 仅规划，不会替 MTC 创建物体。默认交互确认仍可保留；无终端时使用上面明确的自动执行设置。
 
-执行顺序为：两臂到初始关键点上方 → 左夹爪闭合 → 右夹爪闭合 →
-`SimulationCable` 阶段生成 USB/线缆 → 双臂同步下降 → 正式任务。
-创建失败时停止下降；后续动作重规划只处理未完成阶段，不重复生成线缆。
+## 准备和执行顺序
 
-仅 `simulation_backend:=maniskill` 且 `maniskill_cable:=true`（默认）启用。
-关闭线缆可设置 `maniskill_cable:=false`。启用时要求准备阶段、左右 Franka
-手爪和默认的 leader=left / follower=right TCP 映射。
+正常模式完整预检后：两侧张开 → 按关键点准备目标 `spawn` 并固定 → 张开接近准备位姿 → 左夹爪接触闭合 → 右孔闭合 → `release` → `verify` → 更新规划附着体 → 下降/布线。USB-only 保留同一套双臂准备、下降和后续 MTC 轨迹，只禁用线缆创建/求解；日志明确标记为 USB 轨迹调试，不声称完成真实线缆布线。
 
-## 两端约束和模型
+左夹爪闭合目标为每指 0 m，使用用户夹爪 profile 的有限驱动力上限；真实物体阻挡手指。`stalled` 或 `reached_goal` 仅表示动作终止，不能证明抓持成功。`release` 等待两侧实际接触持续满足门限，移除世界约束和所有局部临时线缆支撑；`verify` 再等待无外部支撑的稳定观察窗口。失败、超时、缺少服务时停止后续搬运。ManiSkill 夹爪结果按 profile 的仿真秒数等待，另有 `max(120, 30 × profile.timeout)` 墙钟秒上限，避免慢速 Rope-Actor 被原 10 秒墙钟等待提前取消，也防止仿真停钟后无限等待。每个下降或正式搬运阶段前还会检查 `/maniskill/usb/status`，非 `stable` 不继续。
 
-- 左手：准备宽度使用 `2 * usb.finger_position`，默认总开口 7.4 mm。
-  闭合后生成独立 USB 刚体，用六自由度锁定的 SAPIEN drive 固定到左 TCP。
-  STL 的 +Y 插头方向由 `leader_orientation_direction` 决定：`forward` 对应 TCP +X，
-  `reverse`（默认）对应 TCP -X，使插头始终朝向路径前进方向。
-  抓取中心通过 `usb.tcp_grip_offset: [0, 0, 0.0075]` 放在 TCP 局部 +Z 方向
-  7.5 mm 处；夹爪向下（roll=π）时即孔中心下方。偏移随夹爪旋转，TCP 定义不变。
-  仿真刚体、线缆固定端和 MoveIt 附着碰撞体共用这一安装位姿。
-- 右手：总开口为 0，TCP X 为孔轴方向。当前 CAD 孔内的宽敞位置位于既有 TCP
-  的局部 +Z 方向约 2.4 mm，使用 `guide.center_offset: [0, 0, 0.0024]`。
-  偏移随手爪旋转，只改变初始穿线与孔口观测参考点；TCP 定义、机器人路径和手指 CAD 不变。
-  Rope-Actor 仅靠真实孔壁接触、摩擦约束线缆，没有人工居中力。
-  MPM 才使用理想滑孔约束，`guide.half_length` 指定其直线段半长，默认 12 mm。
-- 初始布局：从 USB 尾部直线出线，随后弯向右孔；穿孔段和自由尾段沿孔轴
-  直线伸出。此曲线只用于生成和重置，后续由所选模型及其接触求解。
-  Rope-Actor 默认 `root_joint: spherical`，直接连接柔性线缆：出线点固定，
-  第一段 7 mm 可以弯转，不再作为刚性胶套。MPM 保留原有固定段模型。
-- 保留现有 `research_finger/finger1.STL`、TCP、URDF 和 SRDF。
-  MPM 对四个指尖使用原始碰撞网格，避免 SAPIEN 关节碰撞凸包填平孔洞。
-  CAD 中闭合壳体共边的情况用有向边平衡验证，不补孔、不忽略整只右手的碰撞。
+USB 使用实际 STL 的凸包碰撞、15 g 质量，材料摩擦系数 `usb.friction` 默认为 `0.5`；`usb.contact_offset` 为 `0.0002 m`，`usb.finger_contact_offset` 为 `0.0001 m`；静止偏移不变，没有屏蔽其碰撞。USB 距离用于提前检测下降过程中的 USB—线缆接触，未放宽 `0.1 mm` 穿透保护阈值。`usb.open_finger_position` 默认每指 `0.02 m`，驱动力上限采用 profile（本次验证为每指 10 N）。这些参数未按实物标定。
 
-MTC 默认配置是 `dual_fr3_maniskill/config/trunking_cable.yaml`，线长 1.5 m、
-线径 3 mm、MPM 采样间隔 1 mm。旧 TCP 轴线到孔壁最小距离约为 1.27 mm；
-上述偏移后，沿 24 mm 轴向采样的最小距离约为 3.537 mm，3 mm 线缆表面余量约 2.037 mm。
-线密度仍为 15 g/m 的现有估算，线身质量为 22.5 g。
-可用 `cable_config:=/绝对路径/config.yaml`
-同时传入 MTC 和仿真。线长不足或初始线缆穿入刚体时，创建会返回失败。
+创建位置来自 `initial_leader_index` / `initial_follower_index` 指定的关键点、`preparation_height`、路径朝向和 `tool_roll/tool_pitch`，与准备 MoveTo 使用同一个目标。MTC 在接近前通过参数 `usb_preparation_poses` 将左右 TCP 目标送到仿真；spawn 在仿真步边界将关键点坐标系变换到 world，再加 USB 抓取偏移和各孔中心偏移。不会从尚未到位的当前 TCP 猜测创建位置。规划世界物体同样在接近前加入。
 
-默认 YAML 中 `scene.trunking_mesh: original` 为原始有齿缝网格；`simplified` 为简化网格。
-`scene.trunking_visual_mesh` 可单独指定显示网格；省略时显示跟随 `trunking_mesh`。
-两者各自使用对应的局部原点，最终 URDF 共用于 MoveIt、MTC、RViz 和 ManiSkill。
-原始线槽测得一段侧壁齿缝约 8 mm，3 mm 线径仍可能进入，不能用加粗代替避开卡口的路径验证。
-回到已完成的基线，只需在原启动命令中增加：
+当前 `guide.routing: usb_to_right`：USB 出线后平滑接到右孔，不穿左孔，也不创建左孔临时支撑。提前定位期间，右孔附近的短线段由世界支撑保持；右臂尚未接近时，后端将“已经穿入真实右孔”的断言标为等待，而所有真实碰撞保持开启。正常释放前确认右孔已经对准定位线缆；释放后恢复真实孔内检查。此提前定位路径目前仅验收 `rope_actor`，带线缆的 MPM 路径会明确拒绝。
+
+USB 始终是动态刚体，世界定位只在创建时计算一次，不随机械臂运动。解除定位只移除约束，不瞬移、不清速度、不焊回 TCP。USB—线缆物理连接继续保留。允许重新张开夹爪并观察滑移/脱落。
+
+MoveIt `attached_collision_object` 只在 release/verify 成功后提交，它是规划表示，不是 SAPIEN 固定约束。生成阶段使用 status 提供的实际 `world_pose` 创建世界碰撞物体，因此重复 spawn 后即使 TCP 已移动，规划物体仍留在真实位置。确认抓持时使用实测 `relative_pose` 附着；无效或失稳状态阻止规划更新。重试生成先移除旧规划附着体。完整预检可预测后续附着几何，但不会提前执行物理附着。
+
+## 服务和手动调试
+
+以下接口均为 `std_srvs/srv/Trigger`，操作在单线程仿真步边界串行执行。等待条件使用仿真时间；物理慢于实时时，墙上耗时可能更长。
+
+| 服务 | 行为 |
+| --- | --- |
+| `/maniskill/cable/spawn` | 张开且空闲时创建 USB/可选线缆；已创建时幂等返回，不重复生成 |
+| `/maniskill/usb/release` | 等待持续双指接触后解除定位；接触不足/超时返回失败 |
+| `/maniskill/usb/release_manual` | 调试用强制解除定位；不把无接触释放视为成功抓持 |
+| `/maniskill/usb/verify` | 等待释放后的稳定窗口；仍受支撑、滑移/脱落/超时报失败 |
+| `/maniskill/usb/status` | `message` 为 JSON 快照；只有 `stable` 时 `success=true` |
+| `/usb_cable_demo/reset` | 空闲时清理 USB、线缆、全部支撑和观察基准；重新张开后再 spawn |
 
 ```bash
-cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.yaml"
+ros2 service call /maniskill/usb/status std_srvs/srv/Trigger '{}'
+ros2 service call /maniskill/usb/release_manual std_srvs/srv/Trigger '{}'
+ros2 action send_goal /left_franka_gripper/gripper_cmd control_msgs/action/GripperCommand \
+  '{command: {position: 0.02, max_effort: 10.0}}'
+ros2 topic echo /maniskill/forces
 ```
 
-该简化版配置已设置：
+## 状态与阈值
 
-```yaml
-scene:
-  trunking_mesh: simplified
-  trunking_visual_mesh: original
+| 状态 | 含义 |
+| --- | --- |
+| `not_created` | 尚未创建或已 reset |
+| `supported` | 世界定位/局部临时支撑仍存在 |
+| `contact_ready` | 持续双指接触满足释放条件，仍有外部支撑 |
+| `verifying` | 已解除定位，正在观察 |
+| `stable` | 无外部支撑，接触与相对位姿满足稳定时长 |
+| `slipping` | 相对位置/朝向持续偏离基准或接触不足 |
+| `dropped` | 持续显著位姿偏离或丢失接触 |
+| `failed` | 操作或验证失败；`reason` 指出原因 |
+
+`grasp` YAML 段的全部量均采用 SI 单位。默认双指门限每指 `contact_min_force_N=0.10 N`，持续 `contact_hold_s=0.10 s`；闭合超时 `close_timeout_s=5.0 s`。验证最少 `verification_min_s=0.35 s`、稳定连续 `stable_hold_s=0.25 s`，超时 `verification_timeout_s=3.0 s`。滑移门限 `slip_translation_m=0.002 m` / `slip_rotation_rad=0.14 rad`，持续 `slip_hold_s=0.10 s`；脱落门限 `drop_translation_m=0.035 m` / `drop_rotation_rad=1.05 rad`，持续 `drop_hold_s=0.10 s`，接触丢失去抖 `contact_loss_hold_s=0.25 s`。
+
+释放后记录 `inverse(T_tcp) * T_usb` 基准，因此共同刚体运动不会直接算滑移。相对位姿和速度来自仿真真值，不能声称仅凭力反馈就检测全部滑移。状态、各手指载荷与关键位姿观测复用 `/maniskill/forces` JSON 和可选 JSONL，保留原有 WrenchStamped；法向接触、表达坐标系和力矩参考点详见[力接口](forces.md)。USB-only 的线缆分量显式 disabled/unavailable，不伪填有效零值。
+
+## 几何和验证边界
+
+当前默认 `trunking_cable_simplified_2mm.yaml` 使用新版 304 面简化碰撞线槽及原始 CAD 显示、1.5 m 线长和 **2 mm 线径**；默认后端仍为 MPM，本阶段命令显式指定 Rope-Actor；旧文档中的 3 mm 是历史实验描述。USB 夹持中心、出线点、左右孔中心分开建模，当前 TCP 夹持偏移为 `[0, 0, 0.012] m`。当前默认直连右孔，右孔内部和余量内的中心线沿真实孔轴，弯曲在孔外；`guide.routing: both_guides` 可显式恢复旧双孔回弯布局；完整 CAD 计算、左侧绕行及覆盖检查见 [USB 几何说明](usb_cable.md)。最小范围的局部线缆支撑只维持准备初态，随定位一起释放，后续形态由物理解算。
+
+离线回归覆盖参数传递、左右布局、MTC 顺序、服务失败不附着/不搬运、状态判断和无后端路径；这不等同真实抓持成功。早期仅执行五阶段的 USB-only 历史结果见[本次验证记录](usb_grasp_validation.md)，复现使用 `test/check_usb_grasp_simulation.py` 和 `test/check_usb_grasp_ros.py`。不能用旧固定夹持完成整套走线的历史记录代替新流程的验收。未添加插接基座，也未验证插入或连续闭环力控制。
+
+## 实时观察两种偏移
+
+```bash
+# 简洁终端显示：默认每 0.5 秒一行，状态变化立即显示。
+ros2 run dual_fr3_maniskill watch_usb_grasp.py
+# 完整 JSON 状态流；即使 force_enabled=false 仍发布。
+ros2 topic echo /maniskill/usb/grasp_state
 ```
 
-碰撞使用简化模型，显示使用原始模型；线径保持该配置的 2 mm。
+`/maniskill/usb/grasp_state` 是 `std_msgs/String`，内容与既有 `/maniskill/forces` 的 `usb_grasp` 对象相同，按控制周期发布；后者的 JSONL 仍记录这些观测。状态变化同时写入节点日志。现有 WrenchStamped 不变。
 
-`cable_solver:=rope_actor` 使用胶囊/三轴关节链；`cable_solver:=mpm` 或省略参数使用原有 MPM。
-两者保留相同的准备和生成时序。Rope-Actor 的右孔由原始手指网格碰撞与摩擦实现，不锁定线缆位置和朝向；
-MTC 默认使用内接凸胶囊参与碰撞，修正捕获的孔口及线槽边缘漏检；线缆理想外形和验收容差保持原值。
-穿孔观察器按真实孔口检查偏心运动，
-具体物理参数和模型差异见[线缆建模方式](cable_backends.md)。原有 MPM 参数和性能基线保留。
+| 字段 | 基准和用途 |
+| --- | --- |
+| `creation_world_pose` | spawn 时 USB 的世界位姿，创建后固定不变 |
+| `world_displacement_m` / `world_translation_m` | 当前 USB 减创建位置的 world XYZ 向量 / 长度，观察搬运总位移，不参与滑移判断 |
+| `world_rotation_rad` | 相对创建世界朝向的转角，不参与滑移判断 |
+| `release_baseline` | 解除定位时 `inverse(T_tcp) * T_usb`，滑移基准 |
+| `relative_displacement_m` / `relative_translation_m` | 当前与释放基准在 TCP 坐标中的相对位置差向量 / 长度，参与滑移判断 |
+| `relative_rotation_rad` | 相对释放基准的夹爪内转角，参与滑移判断 |
+| `finger_normal_loads_N` | 两根真实手指的独立 USB 法向载荷 |
 
-## 接口和行为边界
+所以机械臂搬运 USB 100 mm 可以同时满足 `world_translation_m≈0.1`、`relative_translation_m≈0`，状态仍为 stable。位移/转角越限还必须持续达到门限；接触丢失也有去抖。基准未建立时字段为 null，仍受世界支撑时不会认定抓稳。
 
-- `/maniskill/cable/spawn`：`std_srvs/Trigger`，必须两次闭合动作成功且没有活动动作。
-  重复调用保持现有线缆；首次构造同步完成后才返回。
-- `/apply_planning_scene`：MTC 执行端在仿真成功创建后添加 USB 附着碰撞体。
-  规划阶段也包含同一网格、同一 TCP 相对位姿和允许接触的左手链接。
-- `/usb_cable_demo/markers`、`/usb_cable_demo/diagnostics`：沿用已有线缆反馈。
-  新诊断包含 `guide_material_coordinate` 和 `guide_radial_error_m`。
-- `/usb_cable_demo/reset`：在当前两端位姿重新生成线缆，不移动双臂。
-  准备前不能用此服务绕过闭合顺序。
+提前定位、正常 MTC 衔接和状态流的实际结果见[本次增量验证](usb_preposition_validation.md)。当前 simplified 默认场景已通过提前定位和释放后的稳定夹持，但完整原路径在双臂下降时触发线缆—线槽数值速度保护；正式布线未通过，不能把启动命令理解为完整任务成功保证。
 
-左端采用固定夹持；右孔在 MPM 中为理想滑孔，在 Rope-Actor 中为孔壁碰撞与摩擦。
-尚不支持执行中松开任一夹爪、交接 USB 或重新穿孔。
-柔性线缆不作为 MoveIt 的刚性碰撞物；MTC 检查机器人及 USB，线缆接触由仿真检查。
-材料和力并未标定，MPM 运行速度可能显著慢于墙上时间。数值异常会暂停仿真并使
-正在执行的动作失败，不会继续执行后面的下降或走线。
+夹持位姿精度和固定驱动力/刚度的真实对照见 [USB 夹持精度测量](usb_grasp_precision.md)。当前 stable 不等于满足精密定位公差；精度阈值按用户要求暂不修改。
 
-## 验证入口
 
-离线检查重点是 `test_threading.py`、`test_simulation_cable.py` 和场景启动测试；GPU 接触及完整 MTC 运行方法见[环境安装与验证](setup.md)。`validate_integration.sh --mode mtc` 会自动执行当前任务并检查完成日志。
+## USB-only 原 MTC 轨迹验证（2026-09-16 更新）
 
-单独生成线缆或下降若干物理步只能验证局部行为，不能替代完整走线执行。材料、接触和滑孔参数仍需按实际任务验证。
+根据用户澄清，`load_cable:=false` 现在只关闭线缆物理，不截断 MTC：仍执行双臂准备、USB 接触夹持/释放验证、双臂下降以及全部原正式运动阶段。无需额外开关，重新启动同一条命令即可。早期“五阶段结束”的记录是已替换行为。
+
+实际无界面 ROS/ManiSkill 运行通过：当前关键点任务执行至 stage 13，所有缓存运动完成。末态 USB 为 stable，世界位移约 316.882 mm，相对释放基准的 TCP 内位移约 0.0600 mm、转角约 1.657°。这些数值不代表满足精密定位公差。末态两指法向载荷各约 3.62 N；线缆输出 disabled/null、缺失基座 unavailable。随后开爪检测到 dropped，重置到 not_created。
+
+218 项 MTC 回归及 65 项无后端/启动集成检查通过。回归明确比较 true/false 生成的完整 MTC 阶段完全相同，同时保留物理层 USB-only 不初始化线缆后端的独立检查。原始记录位于 `artifacts/usb_only_motion_20260916/`。
+
+当前直连右孔布局及初态对比见 [USB 直连右孔](usb_direct_routing.md)。

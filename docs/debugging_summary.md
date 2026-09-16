@@ -10,7 +10,7 @@
 | 组合 | 配置 | 已有证据 |
 | --- | --- | --- |
 | 简化线槽 / 2 mm 线缆 | [trunking_cable_simplified_2mm.yaml](../config/trunking_cable_simplified_2mm.yaml) | 历史记录注明用户确认完整任务通过；录制共 65.9 s、3295 个控制步、223217 个线缆子步、0 次失败 |
-| 原始线槽 / 3 mm 线缆（当前默认） | [trunking_cable.yaml](../config/trunking_cable.yaml) | 从生成开始的 3.2 s 局部验证通过；后续现场录制只有生成后约 0.850 s，0 次失败，尚不足以确认完整任务 |
+| 原始线槽 / 3 mm 线缆（历史实验） | [trunking_cable.yaml](../config/trunking_cable.yaml) | 从生成开始的 3.2 s 局部验证通过；后续现场录制只有生成后约 0.850 s，0 次失败，尚不足以确认完整任务 |
 
 两份配置均使用 1.5 m 线长、151 段内接凸胶囊、PGS、PCM、可弯转的 USB 根部连接和自适应步长。
 穿透验收保持 0.1 mm，接触运动预算为 0.05 mm，端点速度保护为 10 m/s。
