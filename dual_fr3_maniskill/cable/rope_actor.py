@@ -329,6 +329,8 @@ class RopeActorCable:
         # The cable is held at a future hole location before the hand arrives.
         # Real contacts stay enabled; only the threading assertion is deferred.
         env = getattr(self, "env", None)
+        if getattr(self, "guide_release_started", False):
+            return False
         return not (getattr(env, "preparation_tcp_poses", {}) and
                     getattr(env, "support_drive", None) is not None)
 
@@ -345,7 +347,8 @@ class RopeActorCable:
         if self.guide is None:
             return {}
         if not self.guide_observation_active:
-            return dict(available=False, reason="externally_positioned_waiting_for_gripper_approach")
+            return dict(available=False, reason=("terminal_guide_opening_or_released"
+                if getattr(self, "guide_release_started", False) else "externally_positioned_waiting_for_gripper_approach"))
         coordinate = self.guide.material_coordinate
         index = self.guide_index
         # Releasing the preparation supports activates observation before the

@@ -1,0 +1,237 @@
+{
+  "scope": "native PhysX component probe, no robot, no MTC",
+  "checks": {
+    "actual_imported_cavity_open_at_target": true,
+    "back_wall_resistance_sign": true,
+    "full_reaction_includes_axial_friction": true,
+    "hole_reference_torque": true,
+    "other_actor_load_invalidates_sensor": true,
+    "37_convex_shapes_no_global_hull": true
+  },
+  "samples": [
+    {
+      "depth": 0.01,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "push": null,
+      "force": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "torque": [
+        0.0,
+        0.0,
+        0.0
+      ],
+      "normal": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "reasons": [],
+      "final_pose": [
+        0.007899999618530273,
+        0.017500000074505806,
+        0.06859999895095825
+      ],
+      "shape_types": [
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry"
+      ]
+    },
+    {
+      "depth": 0.0109,
+      "offset": [
+        0,
+        0,
+        0
+      ],
+      "push": [
+        -1.0,
+        0,
+        0
+      ],
+      "force": [
+        0.9999950699011599,
+        4.9933072221513564e-05,
+        1.9204712783157497e-05
+      ],
+      "torque": [
+        -1.1281808116396147e-07,
+        1.7744720738728712e-06,
+        2.2552846362300645e-05
+      ],
+      "normal": [
+        0.9999950907379384,
+        2.9771449881762253e-13,
+        -1.925509762789687e-12,
+        5.489203334603509e-16,
+        1.5647892384029863e-06,
+        2.3097184703153748e-05
+      ],
+      "reasons": [],
+      "final_pose": [
+        0.006903447210788727,
+        0.017478080466389656,
+        0.06860199570655823
+      ],
+      "shape_types": [
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry"
+      ]
+    },
+    {
+      "depth": 0.005,
+      "offset": [
+        0,
+        0.0003,
+        0
+      ],
+      "push": [
+        -0.2,
+        1.0,
+        0.0
+      ],
+      "force": [
+        0.19996967998070705,
+        -0.9998909417785962,
+        6.215179351446805e-05
+      ],
+      "torque": [
+        -7.58900210331606e-05,
+        -2.0853101608149457e-05,
+        -0.013316114902333023
+      ],
+      "normal": [
+        0.5036828012167643,
+        0.8038263832421336,
+        0.003454257637612996,
+        0.020683804238531427,
+        0.0006438117980085257,
+        0.0012394269117749373
+      ],
+      "reasons": [],
+      "final_pose": [
+        0.012829039245843887,
+        0.020388584583997726,
+        0.06847142428159714
+      ],
+      "shape_types": [
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry",
+        "ConvexMeshGeometry"
+      ]
+    }
+  ]
+}

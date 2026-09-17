@@ -1,0 +1,94 @@
+{
+  "unit": "m",
+  "visual_bounds": [
+    [
+      -0.10430000722408295,
+      0.0,
+      -3.2477560640842285e-09
+    ],
+    [
+      -2.1855576376461627e-11,
+      0.030000001192092896,
+      0.08879999816417694
+    ]
+  ],
+  "collision_bounds": [
+    [
+      -0.07480001449584961,
+      0.0,
+      -3.2696119145469993e-09
+    ],
+    [
+      0.0,
+      0.030000001192092896,
+      0.08879999816417694
+    ]
+  ],
+  "usb_bounds": [
+    [
+      -0.003800000296905637,
+      -0.019999999552965164,
+      -0.007200000807642937
+    ],
+    [
+      0.003799999598413706,
+      0.017900004982948303,
+      0.007199999876320362
+    ]
+  ],
+  "socket_origin": "CAD bottom plane z=0; front x=0",
+  "hole_center_given_m": [
+    0.0,
+    0.0175,
+    0.0686
+  ],
+  "cad_hole_center_m": [
+    0.0,
+    0.01745,
+    0.06856
+  ],
+  "outward_normal": [
+    1,
+    0,
+    0
+  ],
+  "insertion_axis": [
+    -1,
+    0,
+    0
+  ],
+  "original_aperture_m": [
+    0.0049,
+    0.0122
+  ],
+  "stem_cross_section_m": [
+    0.00445,
+    0.012
+  ],
+  "original_clearance_at_given_center_m": [
+    [
+      0.000275,
+      0.000175
+    ],
+    [
+      0.00014,
+      6e-05
+    ]
+  ],
+  "adjusted_aperture_m": [
+    0.00525,
+    0.0128
+  ],
+  "adjusted_per_side_clearance_m": [
+    0.0004,
+    0.0004
+  ],
+  "cavity_depth_m": 0.011,
+  "metal_length_m": 0.012,
+  "end_clearance_m": 0.001,
+  "target_depth_m": 0.009999999999999998,
+  "shoulder_to_mouth_at_target_m": 0.002000000000000001,
+  "socket_convex_shape_count": 37,
+  "usb_convex_shape_count": 2,
+  "note": "Geometry evidence only; PhysX import and motion require separate validation"
+}

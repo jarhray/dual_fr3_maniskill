@@ -31,6 +31,41 @@ def load_config(path, *, solver="mpm"):
     for section in ("usb", "cable"):
         if not isinstance(config.get(section), dict):
             raise ValueError(f"Missing {section} configuration")
+    insertion = config.get("insertion", {})
+    if insertion:
+        from ..insertion import InsertionLimits
+        InsertionLimits.read(insertion)
+        for name in ("enabled", "retain_after_success", "release_after_retention", "return_after_release"):
+            if name in insertion and not isinstance(insertion[name], bool):
+                raise ValueError("insertion."+name+" must be boolean")
+        for name, size in (("xy_m", 2), ("hole_center_m", 3), ("quaternion_wxyz", 4), ("clearance_yz_m", 2)):
+            if name in insertion:
+                value = np.asarray(insertion[name], dtype=float)
+                if value.shape != (size,) or not np.isfinite(value).all():
+                    raise ValueError("Invalid insertion."+name)
+        if "clearance_yz_m" in insertion and not all(0 < x <= .001 for x in insertion["clearance_yz_m"]):
+            raise ValueError("Insertion per-side clearance must be in (0, 1 mm]")
+        if insertion.get("rest_offset_m", 0.) != 0.:
+            raise ValueError("Rigid insertion requires zero rest offset")
+        if not 0 < insertion.get("contact_offset_m", .0001) <= .0002:
+            raise ValueError("Socket contact offset must be in (0, 0.2 mm]")
+        for key, default in (("planning_timeout_s", 15.), ("retreat_m", .05)):
+            if not np.isfinite(insertion.get(key, default)) or insertion.get(key, default) <= 0:
+                raise ValueError("insertion."+key+" must be positive finite")
+        attempts = insertion.get("planning_attempts", 10)
+        if not isinstance(attempts, int) or isinstance(attempts, bool) or attempts < 1:
+            raise ValueError("insertion.planning_attempts must be a positive integer")
+        for side, width, minimum in (("left", .08, .035), ("right", .03, .014)):
+            width = insertion.get("release_width_m", {}).get(side, width)
+            minimum = insertion.get("release_min_half_width_m", {}).get(side, minimum)
+            if not 0 < width <= .08 or not (.005 if side == "left" else .003) <= minimum <= width/2:
+                raise ValueError("Insertion release opening must clear USB/split bore and fit gripper travel")
+        if config["usb"].get("mesh_scale", 1.) != 1.:
+            raise ValueError("Insertion CAD and USB must use metres without scaling")
+        if np.linalg.norm(insertion.get("quaternion_wxyz", [1.,0,0,0])) < 1e-8:
+            raise ValueError("Socket quaternion must be nonzero")
+        if abs(insertion.get("hole_center_m", [0.,.0175,.0686])[0]) > 1e-8:
+            raise ValueError("Socket mouth must remain on CAD X=0")
     c = config["cable"]
     c.setdefault("contact_margin", 0.00002)
     c.setdefault("contact_iterations", 2)

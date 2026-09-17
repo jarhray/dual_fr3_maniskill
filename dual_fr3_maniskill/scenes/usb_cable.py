@@ -28,6 +28,7 @@ class UsbCableEnv(DualFR3Env):
     def __init__(self, assets, *, cable_config, cable_solver="mpm", load_cable=True, **kwargs):
         self.load_cable = bool(load_cable)
         self.cable = self.plug = self.support_drive = None
+        self.insertion = None
         # Compatibility attribute: never create a USB-to-TCP physical mount.
         self.mount_drive = None
         self.cable_config = cable_config
@@ -64,6 +65,9 @@ class UsbCableEnv(DualFR3Env):
                 raise ValueError("Preparation requires a left TCP target")
             if self.preparation_tcp_poses and self.load_cable and self.cable_solver != "rope_actor":
                 raise ValueError("Pre-positioning before approach currently requires cable_solver:=rope_actor")
+            if self.cable_config.get("insertion", {}).get("enabled", False) and self.insertion is None:
+                from ..insertion_scene import SocketInsertion
+                self.insertion = SocketInsertion(self)
             self._create_positioned_usb()
             self.grasp_monitor.created(self._grasp_time, self.plug.pose)
         except Exception as exc:
@@ -89,7 +93,14 @@ class UsbCableEnv(DualFR3Env):
         self._usb_collision_cache = tempfile.TemporaryDirectory(prefix="usb_contact_mesh_")
         collision_mesh = Path(self._usb_collision_cache.name)/mesh.name
         shutil.copyfile(mesh, collision_mesh)
-        builder.add_collision_from_file(str(collision_mesh), scale=scale, material=material)
+        if config.get("insertion", {}).get("enabled", False):
+            from ..insertion_geometry import usb_parts
+            for index, part in enumerate(usb_parts(mesh)):
+                part_path = Path(self._usb_collision_cache.name)/f"usb_part_{index}.stl"
+                part.export(part_path)
+                builder.add_collision_from_file(str(part_path), scale=scale, material=material)
+        else:
+            builder.add_collision_from_file(str(collision_mesh), scale=scale, material=material)
         if self._renderer is not None:
             visual_material = self._renderer.create_material()
             visual_material.base_color = [.08, .25, .65, 1.]
@@ -161,6 +172,10 @@ class UsbCableEnv(DualFR3Env):
         if self.cable is not None:
             self.cable.close()
             self.cable = None
+        # Rope restores source collision groups while the socket still exists.
+        if self.insertion is not None:
+            self.insertion.close()
+            self.insertion = None
         for shape, offset in self._usb_shape_offsets:
             shape.contact_offset = offset
         self._usb_shape_offsets.clear()
@@ -179,6 +194,8 @@ class UsbCableEnv(DualFR3Env):
 
     def _observe_grasp(self, dt):
         self._grasp_time += dt
+        if self.insertion is not None:
+            self.insertion.sample(dt)
         if self.plug is not None:
             loads = read_usb_finger_normal_loads(self, self.plug, dt)
             self.grasp_monitor.observe(self._grasp_time, self.agent.links[LEFT_TCP].pose,
@@ -204,11 +221,20 @@ class UsbCableEnv(DualFR3Env):
             config.enable_pcm = True
             config.solver_iterations = self.cable_config["rope_actor"]["solver_iterations"]
             config.solver_velocity_iterations = self.cable_config["rope_actor"]["solver_velocity_iterations"]
+        if self.cable_config.get("insertion", {}).get("enabled", False):
+            config.enable_pcm = True
+            config.solver_iterations = max(config.solver_iterations, 200)
+            config.solver_velocity_iterations = max(config.solver_velocity_iterations, 10)
         return config
 
     def _configure_cable_timestep(self):
         self.rigid_substeps = (self.cable_config["rope_actor"]["frequency"] // self.sim_freq
                                if self.load_cable and self.cable_solver == "rope_actor" else 1)
+        if self.cable_config.get("insertion", {}).get("enabled", False):
+            frequency = int(self.cable_config["insertion"].get("rigid_frequency_hz", 1000))
+            if frequency < self.sim_freq or frequency % self.sim_freq:
+                raise ValueError("Insertion rigid_frequency_hz must be a multiple of sim_freq")
+            self.rigid_substeps = max(self.rigid_substeps, frequency//self.sim_freq)
         self._scene.set_timestep(self.sim_timestep/self.rigid_substeps)
 
     def step_action(self, action):
@@ -217,14 +243,15 @@ class UsbCableEnv(DualFR3Env):
             self.rope_trace.capture("control", self, action=action)
         if self.cable is None:
             # USB-only never imports/schedules/steps a cable solver.
-            self._scene.set_timestep(self.sim_timestep)
-            for _ in range(self._sim_steps_per_control):
+            dt = self.sim_timestep/self.rigid_substeps
+            self._scene.set_timestep(dt)
+            for _ in range(self._sim_steps_per_control*self.rigid_substeps):
                 self.agent.before_simulation_step()
                 self._scene.step()
-                self._observe_grasp(self.sim_timestep)
-                DualFR3Env._sample_forces(self, self.sim_timestep)
+                self._observe_grasp(dt)
+                DualFR3Env._sample_forces(self, dt)
                 if self.rope_trace is not None:
-                    self.rope_trace.capture("rigid_step", dt=self.sim_timestep)
+                    self.rope_trace.capture("rigid_step", dt=dt)
             return
         if self.load_cable and self.cable_solver == "rope_actor":
             from ..cable.timestep import RopeStepSchedule
@@ -308,7 +335,15 @@ class UsbCableSimulation(Simulation):
         self.env.spawn_cable()
 
     def step(self):
+        insertion = getattr(self.env, "insertion", None)
+        if insertion is not None:
+            insertion.begin_window()
         super().step()
+        if insertion is not None:
+            insertion.finish_window()
+            collector = getattr(self.env, "force_collector", None)
+            if collector is not None and collector.snapshot is not None:
+                collector.snapshot["usb_insertion"] = insertion.policy.snapshot()
         if self.cable is None:
             return
         self.cable.check_contacts()
@@ -318,6 +353,10 @@ class UsbCableSimulation(Simulation):
             guide = self.env.cable_config["guide"]
             alignment = {}
             for side, name in (("left", LEFT_TCP), ("right", RIGHT_TCP)):
+                if side == "right" and getattr(self.cable, "guide_release_started", False):
+                    alignment[side] = dict(available=False, required=False, passed=None,
+                        reason="socket_supported_guide_opening_or_released")
+                    continue
                 if side == "left" and guide.get("routing", "both_guides") == "usb_to_right":
                     alignment[side] = dict(available=False, required=False, passed=None,
                         reason="disabled_usb_to_right_routing", radial_error_m=None,

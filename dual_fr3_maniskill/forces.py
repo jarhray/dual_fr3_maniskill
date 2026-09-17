@@ -269,6 +269,10 @@ class ForceCollector:
         monitor = getattr(self.env, "grasp_monitor", None)
         if monitor is not None:
             self.snapshot["usb_grasp"] = monitor.snapshot()
+        if (getattr(self.env, "cable_config", {}).get("insertion", {}).get("enabled", False)
+                and getattr(self.env, "insertion", None) is None):
+            from .insertion import InsertionPolicy
+            self.snapshot["usb_insertion"] = InsertionPolicy(self.env.cable_config["insertion"]).snapshot()
         layout = getattr(self.env, "initial_layout_diagnostics", None)
         self.snapshot["initial_layout"] = layout
         world_count = len(getattr(self.env, "temporary_supports", ()))

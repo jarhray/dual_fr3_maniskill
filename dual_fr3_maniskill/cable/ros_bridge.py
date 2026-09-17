@@ -22,6 +22,13 @@ class UsbCableBridge(ManiSkillBridge):
     def __init__(self):
         super().__init__()
         self._grasp_waiters = []
+        from ..insertion_bridge import InsertionBridge
+        self.insertion_control = InsertionBridge(self)
+        self._planning_reset = None
+        self._planning_reset_client = None
+        if self.cable_config.get("insertion", {}).get("enabled", False):
+            from moveit_msgs.srv import ApplyPlanningScene
+            self._planning_reset_client = self.create_client(ApplyPlanningScene, "/apply_planning_scene")
         self.declare_parameter("usb_preparation_poses", "")
         self.grasp_pub = self.create_publisher(String, "/maniskill/usb/grasp_state", 10)
         self._last_grasp_state = None
@@ -62,7 +69,7 @@ class UsbCableBridge(ManiSkillBridge):
             control_freq=self.config["control_freq"], sim_freq=self.config["sim_freq"], viewer=self.config["viewer"])
 
     def accept_gripper(self, side, goal):
-        if self.failure or self._grasp_waiters:
+        if self.failure or self._grasp_waiters or getattr(getattr(self, "insertion_control", None), "owner", False):
             return GoalResponse.REJECT
         if side == "left" and self.sim.env.support_drive is not None:
             index = self.sim.indices["left_fr3_finger_joint1"]
@@ -74,6 +81,13 @@ class UsbCableBridge(ManiSkillBridge):
         return super().accept_gripper(side, goal)
 
     def start_gripper(self, side, handle):
+        insertion = getattr(self.sim.env, "insertion", None)
+        if side == "right" and insertion is not None and (insertion.policy.retention_active or insertion.policy.state == 'right_releasing'):
+            minimum = insertion.config.get("release_min_half_width_m", {}).get("right", .014)
+            if handle.request.command.position >= minimum and self.sim.env.cable is not None:
+                # The two physical half-bores now separate. Keep contacts and
+                # USB/cable joint; only retire the closed-hole threading assertion.
+                self.sim.env.cable.guide_release_started = True
         if side == "left" and self.sim.env.support_drive is not None:
             index = self.sim.indices["left_fr3_finger_joint1"]
             if handle.request.command.position < self.sim.positions[index]:
@@ -90,6 +104,12 @@ class UsbCableBridge(ManiSkillBridge):
         return super().start_gripper(side, handle)
 
     def spawn_cable(self, request, response):
+        pending = getattr(self, "_planning_reset", None)
+        if pending is not None:
+            if not pending.done() or pending.exception() or not pending.result().success:
+                response.success, response.message = False, "Planning scene reset pending or failed; retry reset"
+                return response
+            self._planning_reset = None
         if self.failure:
             response.success, response.message = False, self.failure
         elif self.sim.env.plug is not None:
@@ -215,7 +235,7 @@ class UsbCableBridge(ManiSkillBridge):
         return response
 
     def accept_arm(self, side, goal):
-        if self.failure or self._grasp_waiters:
+        if self.failure or self._grasp_waiters or getattr(getattr(self, "insertion_control", None), "owner", False):
             self.get_logger().warning("Reset the cable after the numerical error before executing another plan")
             return GoalResponse.REJECT
         return super().accept_arm(side, goal)
@@ -229,13 +249,24 @@ class UsbCableBridge(ManiSkillBridge):
             if self.sim.env._viewer is not None:
                 self.sim.env._viewer.render()
             self.publish_grasp_state()
+            if hasattr(self, "insertion_control"):
+                self.insertion_control.publish()
             return
         try:
+            if hasattr(self, "insertion_control"):
+                self.insertion_control.before_tick()
             super().tick()
+            if hasattr(self, "insertion_control"):
+                self.insertion_control.publish()
             self._complete_grasp_waiters()
             self.publish_grasp_state()
         except RuntimeError as exc:
             self.failure = str(exc)
+            if hasattr(self, "insertion_control"):
+                self.insertion_control.relinquish()
+            if getattr(self.sim.env, "insertion", None) is not None:
+                self.sim.env.insertion.policy.stop("feedback_unavailable", self.failure)
+                self.insertion_control.publish()
             self.sim.env.grasp_monitor.fail(self.failure, self.sim.env._grasp_time)
             self.publish_grasp_state()
             self._complete_grasp_waiters()
@@ -254,6 +285,14 @@ class UsbCableBridge(ManiSkillBridge):
             self.diag_pub.publish(DiagnosticArray(status=[DiagnosticStatus(
                 name="usb_cable_demo/" + ("MPM" if self.cable_solver == "mpm" else self.cable_solver), level=DiagnosticStatus.ERROR, message=self.failure)]))
 
+    def close(self):
+        if hasattr(self, "insertion_control"):
+            if self.insertion_control.owner and self.sim.env.insertion is not None:
+                self.sim.env.insertion.policy.stop("cancelled", "simulation_node_shutdown")
+                self.insertion_control.publish()
+            self.insertion_control.relinquish()
+        super().close()
+
     def reset_cable(self, request, response):
         if self.reserved or self._grasp_waiters:
             response.success, response.message = False, "Wait for or cancel active operations before resetting"
@@ -263,6 +302,25 @@ class UsbCableBridge(ManiSkillBridge):
         except (RuntimeError, ValueError) as exc:
             response.success, response.message = False, str(exc)
             return response
+        collector = getattr(self.sim.env, "force_collector", None)
+        if collector is not None:
+            collector.active = False
+            collector.snapshot = None
+        client = getattr(self, "_planning_reset_client", None)
+        if client is not None:
+            from moveit_msgs.msg import PlanningScene, CollisionObject, AttachedCollisionObject
+            from moveit_msgs.srv import ApplyPlanningScene
+            scene = PlanningScene(is_diff=True)
+            scene.robot_state.is_diff = True
+            scene.robot_state.attached_collision_objects = [AttachedCollisionObject(
+                object=CollisionObject(id=USB_LINK, operation=CollisionObject.REMOVE))]
+            scene.world.collision_objects = [CollisionObject(id=name, operation=CollisionObject.REMOVE)
+                                             for name in (USB_LINK, "usb_socket")]
+            if not client.service_is_ready():
+                response.success, response.message = False, "Physics cleared; MoveIt unavailable, retry reset for planning cleanup"
+                self.failure = "planning_scene_reset_required"
+                return response
+            self._planning_reset = client.call_async(ApplyPlanningScene.Request(scene=scene))
         self.failure = None
         self.publish_grasp_state()
         self.marker_pub.publish(MarkerArray(markers=[Marker(action=Marker.DELETEALL)]))
@@ -271,6 +329,17 @@ class UsbCableBridge(ManiSkillBridge):
 
     def publish_state(self, q, v):
         super().publish_state(q, v)
+        insertion = getattr(self.sim.env, "insertion", None)
+        if insertion is not None:
+            from ..sapien_compat import sapien
+            for name, pose in (("usb_socket", insertion.base.pose),
+                               ("usb_socket_hole", insertion.base.pose*sapien.Pose(insertion.hole))):
+                transform = TransformStamped(child_frame_id=name)
+                transform.header.frame_id, transform.header.stamp = "world", stamp(self.sim.time)
+                xyz, quat = transform.transform.translation, transform.transform.rotation
+                xyz.x, xyz.y, xyz.z = map(float, pose.p)
+                quat.w, quat.x, quat.y, quat.z = map(float, pose.q)
+                self.usb_tf.sendTransform(transform)
         if self.sim.env.plug is not None:
             pose = self.sim.env.plug.pose
             transform = TransformStamped(child_frame_id=USB_LINK)

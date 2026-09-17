@@ -122,3 +122,53 @@ rope_actor:
   constraint_tolerance: 0.002  # preview joint/USB attachment error limit [m]
   max_stretch_ratio: 0.01     # whole-cable extension guard: 15 mm for 1.5 m
   max_speed: 10.0             # centerline endpoint speed guard [m/s]
+
+# Opt-in terminal insertion; launch insertion_enabled:=true selects this section.
+insertion:
+  enabled: false
+  visual_mesh: meshes/usb_base_visual.stl
+  collision_mesh: meshes/usb_base_collision.stl
+  xy_frame: left_fr3_link0
+  xy_m: [0.37, -0.07]
+  height_frame: trunking
+  height_m: 0.010  # CAD bottom/origin in trunking frame, not relative to wall top
+  quaternion_wxyz: [1.0, 0.0, 0.0, 0.0]
+  # CAD opening is at X=0, cavity extends to X=-0.011; insert along -X.
+  hole_center_m: [0.0, 0.0175, 0.0686]
+  clearance_yz_m: [0.0004, 0.0004]  # per side; aperture 5.25 x 12.8 mm
+  contact_offset_m: 0.0001
+  rest_offset_m: 0.0
+  preinsert_m: 0.008
+  end_clearance_m: 0.001
+  target_depth_m: 0.010  # 11 mm CAD depth minus 1 mm back-wall clearance
+  max_advance_m: 0.022
+  speed_m_s: 0.001
+  acceleration_m_s2: 0.002
+  resistance_gain_m_N_s: 0.0004
+  filter_tau_s: 0.04
+  axial_limit_N: 5.0
+  lateral_limit_N: 2.0
+  torque_limit_Nm: 0.04
+  lateral_tolerance_m: 0.00025
+  angle_tolerance_rad: 0.025
+  depth_tolerance_m: 0.00015
+  hold_s: 0.3
+  retention_speed_m_s: 0.001
+  retention_angular_rad_s: 0.03
+  blocked_s: 1.5
+  progress_epsilon_m: 0.0001
+  timeout_s: 45.0
+  wall_watchdog_s: 10.0
+  joint_speed_rad_s: 0.10
+  tracking_limit_m: 0.001
+  retain_after_success: true
+  # Right arm always opens/returns before insertion; these switches govern the left arm.
+  release_after_retention: true
+  return_after_release: true
+  retreat_m: 0.05
+  approach_lift_m: 0.0  # optional staged approach; direct OMPL retries by default
+  planning_attempts: 10
+  planning_timeout_s: 15.0
+  rigid_frequency_hz: 1000
+  release_width_m: {left: 0.08, right: 0.03}
+  release_min_half_width_m: {left: 0.035, right: 0.014}

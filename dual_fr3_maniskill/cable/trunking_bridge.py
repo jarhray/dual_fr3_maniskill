@@ -13,6 +13,9 @@ class TrunkingCableBridge(UsbCableBridge):
         self.cable_solver = self.declare_parameter("cable_solver", "mpm").value
         self.load_cable = self.declare_parameter("load_cable", True).value
         self.cable_config = load_config(path, solver=self.cable_solver if self.load_cable else None)
+        self.cable_config.setdefault("insertion", {})["enabled"] = self.declare_parameter("insertion_enabled", False).value
+        if self.cable_config["insertion"]["enabled"] and self.load_cable and self.cable_solver != "rope_actor":
+            raise ValueError("Insertion with cable requires rope_actor; MPM deferred")
         self.cable_config["usb"]["orientation_direction"] = self.declare_parameter(
             "leader_orientation_direction", "reverse").value
         task_usb_mount(self.cable_config)

@@ -155,3 +155,5 @@ cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.
 新调试输出放在已忽略的 `artifacts/` 或 `/tmp`；需要录制时显式设置 `cable_trace_dir`。
 `.venv`、`.deps`、`build`、`install`、`log` 和 Python 缓存由本地重新生成，不应上传。
 重新安装环境请使用本仓库安装脚本，不复制另一台电脑编译出的 Warp 二进制。
+
+末端插入现可通过 `insertion_enabled:=true` 启用；几何、反馈、保持、双臂释放回位、参数及实际验收边界见 [USB 插入说明](docs/usb_insertion.md)。早期验证记录中“未实现插入”的说明仅适用于当时版本。

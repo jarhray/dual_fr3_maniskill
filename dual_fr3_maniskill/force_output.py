@@ -16,6 +16,8 @@ class ForceOutput:
         self.normal_publishers = {}
         self.record = None
         names = [name.strip() for name in node.config["force_usb_base_names"].split(",") if name.strip()]
+        if getattr(node.sim.env, "cable_config", {}).get("insertion", {}).get("enabled", False):
+            names.append("usb_socket")
         self.collector = ForceCollector(node.sim.env, names)
         node.sim.env.force_collector = self.collector
         self.summary = node.create_publisher(String, "/maniskill/forces", 10)
@@ -37,7 +39,9 @@ class ForceOutput:
     def _publish(self, snapshot):
         snapshot = dict(snapshot)
         snapshot["activity"] = {
-            side: dict(arm="trajectory" if side in self.node.arms else "hold",
+            side: dict(arm=("insertion" if side == "left" and
+                           getattr(getattr(self.node, "insertion_control", None), "owner", False) else
+                           "trajectory" if side in self.node.arms else "hold"),
                        gripper="moving" if side in self.node.grippers else "hold")
             for side in ("left", "right")}
         payload = json.dumps(snapshot, ensure_ascii=False, allow_nan=False, separators=(",", ":"))
@@ -49,6 +53,17 @@ class ForceOutput:
                 self.node.get_logger().error(f"Force recording stopped: {exc}")
                 self.record.close()
                 self.record = None
+        insertion = snapshot.get("usb_insertion", {}).get("observation", {}).get("wrench", {})
+        if insertion.get("available"):
+            key = "usb/socket_reaction"
+            if key not in self.publishers:
+                self.publishers[key] = self.node.create_publisher(WrenchStamped, "/maniskill/forces/"+key+"/wrench", 10)
+            message = WrenchStamped()
+            message.header.frame_id = "usb_socket_hole"
+            message.header.stamp = self.stamp(snapshot["time_s"])
+            message.wrench.force.x, message.wrench.force.y, message.wrench.force.z = insertion["force_N"]
+            message.wrench.torque.x, message.wrench.torque.y, message.wrench.torque.z = insertion["torque_Nm"]
+            self.publishers[key].publish(message)
         for key, value in snapshot["sensors"].items():
             if not value["available"]:
                 continue
@@ -76,6 +91,9 @@ class ForceOutput:
         if monitor is not None:
             monitor.fail("simulation_failed: "+str(reason))
             snapshot["usb_grasp"] = monitor.snapshot()
+        insertion = getattr(self.node.sim.env, "insertion", None)
+        if insertion is not None:
+            snapshot["usb_insertion"] = insertion.policy.snapshot()
         for value in snapshot["sensors"].values():
             value["available"] = False
             value["reasons"].append("simulation_failed")

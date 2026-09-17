@@ -62,3 +62,7 @@ class TrunkingCableSimulation(UsbCableSimulation):
         Simulation.__init__(self, assets,
             env_factory=partial(TrunkingCableEnv, cable_config=cable_config,
                                 cable_solver=cable_solver, load_cable=load_cable), **kwargs)
+
+        if cable_config.get("insertion", {}).get("enabled", False):
+            from ..insertion_scene import SocketInsertion
+            self.env.insertion = SocketInsertion(self.env)

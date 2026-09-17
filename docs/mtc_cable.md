@@ -131,3 +131,5 @@ ros2 topic echo /maniskill/usb/grasp_state
 218 项 MTC 回归及 65 项无后端/启动集成检查通过。回归明确比较 true/false 生成的完整 MTC 阶段完全相同，同时保留物理层 USB-only 不初始化线缆后端的独立检查。原始记录位于 `artifacts/usb_only_motion_20260916/`。
 
 当前直连右孔布局及初态对比见 [USB 直连右孔](usb_direct_routing.md)。
+
+末端插入现可通过 `insertion_enabled:=true` 启用；几何、反馈、保持、双臂释放回位、参数及实际验收边界见 [USB 插入说明](usb_insertion.md)。早期验证记录中“未实现插入”的说明仅适用于当时版本。

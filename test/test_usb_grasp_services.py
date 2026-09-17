@@ -109,3 +109,15 @@ def test_grasp_stream_does_not_require_force_output_and_logs_only_changes(bridge
     bridge.sim.env.grasp_monitor.fail("injected_failure")
     bridge.publish_grasp_state()
     assert messages[-1]["state"] == "failed" and len(logs) == 2
+
+
+@pytest.mark.parametrize('state,opening,expected', [
+    ('right_releasing',.015,True), ('not_started',.015,False), ('right_releasing',0.,False)])
+def test_terminal_right_open_retires_threading_assertion_before_insertion(bridge, monkeypatch, state, opening, expected):
+    bridge.sim.env.insertion = NS(policy=NS(retention_active=False,state=state),config={})
+    bridge.sim.env.cable = NS(guide_release_started=False)
+    calls=[]
+    monkeypatch.setattr(ManiSkillBridge,'start_gripper',lambda *args: calls.append(args))
+    bridge.start_gripper('right',NS(request=goal(opening)))
+    assert bridge.sim.env.cable.guide_release_started is expected
+    assert len(calls)==1

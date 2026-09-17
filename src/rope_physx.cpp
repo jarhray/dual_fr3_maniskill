@@ -58,6 +58,46 @@ PYBIND11_MODULE(_rope_physx, module) {
     result["awake"] = awake;
     return result;
   });
+  // Isolated socket mounting reaction; null actor is the world, not USB.
+  module.def("read_world_constraint", [](py::capsule receiver) {
+    auto* a = static_cast<sapien::SActorBase*>(receiver.get_pointer());
+    if (!a) throw py::value_error("Actor required");
+    auto* pa = a->getPxActor();
+    std::vector<physx::PxConstraint*> constraints(pa->getNbConstraints());
+    auto count = pa->getConstraints(constraints.data(), constraints.size());
+    physx::PxConstraint* found = nullptr;
+    bool first = false;
+    for (unsigned i=0; i<count; ++i) {
+      physx::PxRigidActor *p0, *p1;
+      constraints[i]->getActors(p0, p1);
+      if ((p0 == pa && !p1) || (p1 == pa && !p0)) {
+        if (found) throw py::value_error("Ambiguous world support");
+        found = constraints[i]; first = p0 == pa;
+      }
+    }
+    if (!found) throw py::value_error("Missing world support");
+    physx::PxU32 owner;
+    auto* ref = found->getExternalReference(owner);
+    if (owner != physx::PxConstraintExtIDs::eJOINT) throw py::value_error("Not a joint");
+    auto* joint = static_cast<physx::PxJoint*>(ref);
+    auto local = joint->getLocalPose(first ? physx::PxJointActorIndex::eACTOR0 : physx::PxJointActorIndex::eACTOR1);
+    auto origin = (pa->getGlobalPose()*local).p;
+    physx::PxVec3 f, t; found->getForce(f, t);
+    float sign = first ? 1.f : -1.f;
+    py::dict result;
+    result["force"] = std::array<float,3>{sign*f.x, sign*f.y, sign*f.z};
+    result["torque"] = std::array<float,3>{sign*t.x, sign*t.y, sign*t.z};
+    result["origin"] = std::array<float,3>{origin.x, origin.y, origin.z};
+    auto* body = pa->is<physx::PxRigidDynamic>();
+    result["awake"] = body && !body->isSleeping();
+    return result;
+  });
+  module.def("disable_gravity", [](py::capsule capsule) {
+    auto* actor = static_cast<sapien::SActorBase*>(capsule.get_pointer());
+    auto* body = actor ? actor->getPxActor()->is<physx::PxRigidDynamic>() : nullptr;
+    if (!body) throw py::value_error("Dynamic actor required");
+    body->setActorFlag(physx::PxActorFlag::eDISABLE_GRAVITY, true);
+  });
   module.def("set_max_depenetration_velocity", [](py::capsule capsule, float speed) {
     auto* actor = static_cast<sapien::SActorBase*>(capsule.get_pointer());
     auto* body = actor ? actor->getPxActor()->is<physx::PxRigidBody>() : nullptr;

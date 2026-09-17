@@ -8,7 +8,7 @@ from .scenes import resolve_cable_config, scene_spec
 
 def create_bridge_node(*, scene, robot_description, robot_description_semantic,
                        python, viewer, simulation_config="", cable_config="", cable_solver="mpm",
-                       cable_trace_dir="", leader_orientation_direction="reverse", load_cable=True):
+                       cable_trace_dir="", leader_orientation_direction="reverse", load_cable=True, insertion_enabled=False):
     validate_solver(cable_solver)
     if cable_trace_dir and (scene not in ("usb_cable", "trunking_cable") or cable_solver != "rope_actor"):
         raise ValueError("cable_trace_dir requires a cable scene and cable_solver:=rope_actor")
@@ -20,6 +20,7 @@ def create_bridge_node(*, scene, robot_description, robot_description_semantic,
         options["cable_config"] = resolve_cable_config(cable_config, scene=scene)
         options["cable_trace_dir"] = ParameterValue(cable_trace_dir, value_type=str)
     if scene == "trunking_cable":
+        options["insertion_enabled"] = ParameterValue(insertion_enabled, value_type=bool)
         options["leader_orientation_direction"] = ParameterValue(
             leader_orientation_direction, value_type=str)
     return Node(

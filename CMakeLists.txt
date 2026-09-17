@@ -30,7 +30,9 @@ install(PROGRAMS
   scripts/check_cable.py
   scripts/check_rope_finger_contact.py
   scripts/check_initial_grasp_geometry.py
+  scripts/check_insertion_geometry.py
   scripts/watch_usb_grasp.py
+  scripts/watch_usb_insertion.py
   scripts/check_mpm.py
   scripts/profile_trunking_cable.py
   DESTINATION lib/${PROJECT_NAME}
@@ -39,6 +41,7 @@ install(DIRECTORY launch config meshes docs DESTINATION share/${PROJECT_NAME})
 install(FILES README.md requirements-maniskill2.txt DESTINATION share/${PROJECT_NAME})
 if(BUILD_TESTING)
   find_package(ament_cmake_pytest REQUIRED)
+  ament_add_pytest_test(test_insertion test/test_insertion.py)
   ament_add_pytest_test(test_trajectory test/test_trajectory.py)
   ament_add_pytest_test(test_forces test/test_forces.py)
   ament_add_pytest_test(test_usb_grasp test/test_usb_grasp.py)

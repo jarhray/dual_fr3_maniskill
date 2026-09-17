@@ -102,6 +102,8 @@ class UsbGraspMonitor:
         self.relative_linear_velocity = self.relative_angular_speed = None
         self.ever_stable = False
         self.manual_release = False
+        self.supported_by_socket = False
+        self.pre_retention_snapshot = None
         self.history = []
 
     def _transition(self, state, reason, time_s):
@@ -161,6 +163,11 @@ class UsbGraspMonitor:
         self._transition("verifying", "world_support_released_verifying_contact", time_s)
         return True
 
+    def socket_supported(self, time_s):
+        self.pre_retention_snapshot = self.snapshot()
+        self.supported_by_socket = True
+        self._transition("socket_supported", "explicit_socket_retention_active", time_s)
+
     def fail(self, reason, time_s=None):
         self._transition("failed", str(reason), self.time_s if time_s is None else time_s)
 
@@ -205,6 +212,10 @@ class UsbGraspMonitor:
         if self._baseline is not None:
             self.translation_m = float(np.linalg.norm(self._relative[0]-self._baseline[0]))
             self.rotation_rad = _rotation_angle(self._baseline[1].T @ self._relative[1])
+        if self.supported_by_socket:
+            self._transition("gripper_released" if no_contacts else "socket_supported",
+                             "supported_by_socket", now)
+            return self.snapshot()
         if self.state in ("failed", "dropped"):
             return self.snapshot()
         if self.external_support:
@@ -251,6 +262,7 @@ class UsbGraspMonitor:
         baseline = None if self._baseline is None else dict(
             position_m=self._baseline[0].tolist(), quaternion_wxyz=mat2quat(self._baseline[1]).tolist())
         return dict(state=self.state, reason=self.reason, external_support=self.external_support,
+            supported_by_socket=self.supported_by_socket, pre_retention_snapshot=self.pre_retention_snapshot,
             stable=self.state == "stable" and not self.external_support,
             ready_to_release=self.ready_to_release, time_s=self.time_s,
             created_at_s=self.created_at, closing_at_s=self.closing_at, released_at_s=self.released_at,
