@@ -53,6 +53,9 @@ def load_config(path, *, solver="mpm"):
             if not np.isfinite(insertion.get(key, default)) or insertion.get(key, default) <= 0:
                 raise ValueError("insertion."+key+" must be positive finite")
         attempts = insertion.get("planning_attempts", 10)
+        ratio = insertion.get("max_path_length_ratio", 1.5)
+        if isinstance(ratio, bool) or not isinstance(ratio, (int, float)) or not np.isfinite(ratio) or ratio < 1.:
+            raise ValueError("insertion.max_path_length_ratio must be finite and >= 1.0")
         if not isinstance(attempts, int) or isinstance(attempts, bool) or attempts < 1:
             raise ValueError("insertion.planning_attempts must be a positive integer")
         for side, width, minimum in (("left", .08, .035), ("right", .03, .014)):

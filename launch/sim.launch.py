@@ -7,13 +7,16 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch_ros.parameter_descriptions import ParameterValue
 
-from dual_fr3_maniskill.launch_support import create_bridge_node
+from dual_fr3_maniskill.launch_support import create_bridge_node, perception_arguments, perception_nodes, validate_perception, perception_camera_config
 from dual_fr3_maniskill.cable.backends import CABLE_SOLVERS
 from dual_fr3_maniskill.scenes import SCENES
 
 
 def launch_setup(context):
-    return [create_bridge_node(
+    enabled = validate_perception(context, "maniskill", LaunchConfiguration("maniskill_scene").perform(context))
+    return [*perception_nodes(context), create_bridge_node(
+        perception_enabled=enabled,
+        camera_config=perception_camera_config(context, LaunchConfiguration("maniskill_scene").perform(context)) if enabled else "",
         scene=LaunchConfiguration("maniskill_scene").perform(context),
         robot_description={"robot_description": ParameterValue(LaunchConfiguration("robot_description"), value_type=str)},
         robot_description_semantic={"robot_description_semantic": ParameterValue(
@@ -31,6 +34,7 @@ def launch_setup(context):
 def generate_launch_description():
     python = os.environ.get("MANISKILL_PYTHON", str(Path.cwd() / ".venv/bin/python"))
     return LaunchDescription([
+        *perception_arguments(),
         DeclareLaunchArgument("robot_description"),
         DeclareLaunchArgument("robot_description_semantic"),
         DeclareLaunchArgument("maniskill_scene", default_value="robot", choices=SCENES),

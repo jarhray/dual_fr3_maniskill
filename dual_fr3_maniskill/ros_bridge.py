@@ -75,6 +75,7 @@ class ManiSkillBridge(Node):
             "gripper_speed": 0.04, "gripper_force": 40.0,
             "gripper_goal_tolerance": 0.001, "gripper_stall_timeout": 0.5,
             "gripper_timeout": 5.0,
+            "perception_enabled": False,
             "force_enabled": True, "force_record_path": "", "force_usb_base_names": "",
         }
         self.config = {name: self.declare_parameter(name, default).value
@@ -92,6 +93,10 @@ class ManiSkillBridge(Node):
         self.cache = tempfile.TemporaryDirectory(prefix="dual_fr3_maniskill_")
         self.assets = prepare_assets(c["robot_description"], c["robot_description_semantic"], Path(self.cache.name))
         self.sim = self.create_simulation(self.assets)
+        self.perception_camera = None
+        if c["perception_enabled"]:
+            from .perception_camera import CameraPublisher
+            self.perception_camera = CameraPublisher(self)
         self.dt = 1.0 / c["control_freq"]
         self.arm_names = {side: [f"{side}_fr3_joint{i}" for i in range(1, 8)] for side in SIDES}
         self.arm_indices = {side: [self.sim.indices[name] for name in names]
@@ -300,6 +305,8 @@ class ManiSkillBridge(Node):
                 self.finish_gripper(side)
         if self.sim.steps % (self.config["control_freq"] // self.config["publish_freq"]) == 0:
             self.publish_state(q, v)
+        if self.perception_camera is not None:
+            self.perception_camera.publish_if_due(stamp(self.sim.time))
 
     def publish_state(self, q, v):
         now = stamp(self.sim.time)

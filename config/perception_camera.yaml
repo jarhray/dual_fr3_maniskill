@@ -1,0 +1,12 @@
+dual_fr3_maniskill:
+  ros__parameters:
+    camera_width: 1280
+    camera_height: 960
+    camera_fovy: 0.82
+    camera_near: 0.02
+    camera_far: 5.0
+    camera_eye: [0.55, 0.65, 1.45]
+    camera_target: [0.52, 0.65, 0.04]
+    camera_up: [0.0, 1.0, 0.0]
+    camera_frequency: 2.0
+    camera_frame: cable_camera_optical_frame

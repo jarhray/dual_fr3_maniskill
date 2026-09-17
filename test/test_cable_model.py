@@ -114,3 +114,13 @@ def test_invalid_config(tmp_path, section, key, value):
     path.write_text(yaml.safe_dump(config))
     with pytest.raises(ValueError):
         load_config(path)
+
+
+@pytest.mark.parametrize('ratio',[0.99,0.,-1.,float('nan'),float('inf'),True,'2'])
+def test_terminal_path_length_ratio_rejects_invalid_configuration(tmp_path, ratio):
+    config=yaml.safe_load((ROOT/'config/trunking_cable_simplified_2mm.yaml').read_text())
+    config['insertion']['max_path_length_ratio']=ratio
+    path=tmp_path/'invalid_path_ratio.yaml'
+    path.write_text(yaml.safe_dump(config))
+    with pytest.raises(ValueError,match='insertion.max_path_length_ratio'):
+        load_config(path,solver=None)
