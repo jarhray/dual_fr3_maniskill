@@ -2,10 +2,10 @@
 
 `dual_fr3_maniskill` 使用 ManiSkill2 / SAPIEN 2 执行双 FR3 仿真，线缆可选择 MPM 或 Rope-Actor 建模。ROS 桥接接收机械臂和夹爪动作，发布实测关节状态与仿真时钟，供 MoveIt、MTC 和 RViz 使用。
 
-## 当前状态（2026-09-16）
+## 当前入口与历史验证
 
-支持 `cable_solver:=mpm`（默认）和 `cable_solver:=rope_actor`。
-本次接触夹持验收聚焦 **Rope-Actor + USB-only**；MPM 延后完善。默认后端保持不变，使用下面显式指定 `rope_actor` 的命令。
+支持 `cable_solver:=mpm` 和 `cable_solver:=rope_actor`。推荐 MTC 入口默认 rope_actor；独立物理入口保留 mpm 默认。
+本次接触夹持验收聚焦 **Rope-Actor + USB-only**；MPM 延后完善。历史验证对应当时显式指定 `rope_actor` 的命令。
 旧固定夹持版本的 Rope-Actor 简化线槽 / 2 mm 线缆曾由用户确认完成完整 MTC 走线，配置保存在
 [trunking_cable_simplified_2mm.yaml](config/trunking_cable_simplified_2mm.yaml)。
 该配置使用简化线槽做碰撞，ManiSkill / RViz 显示原始线槽模型。
@@ -13,6 +13,10 @@
 实际验证及范围见[本次验证记录](docs/usb_grasp_validation.md)。历史 3 mm 实验见
 [调试总结](docs/debugging_summary.md)。Rope-Actor 仍为实验后端，材料与摩擦尚未标定。
 参数、模型差异和验证方法见[线缆建模方式](docs/cable_backends.md)。
+插入动作、孔几何、反馈与失败处理的修改位置和有效默认值见 [插入调参说明](docs/insertion_parameters.md)。
+当前推荐完整入口为 `dual_fr3_trunking_mtc/mtc_prototype.launch.py`，该入口默认开启插入；
+使用 `simulation_backend:=maniskill cable_solver:=rope_actor insertion_enabled:=true` 明确复现配置，
+USB-only 追加 `load_cable:=false`。本轮重构与验证见 [2026-09-17 记录](docs/insertion_refactor_validation.md)。
 `simulation_backend:=maniskill` 选择机器人仿真环境。
 
 MTC 当前默认 1.5 m 长、2 mm 直径、1 mm MPM 采样，MPM 5000 Hz、轴向迭代 6 次、接触迭代 2 次。
@@ -70,7 +74,8 @@ colcon build --symlink-install --packages-up-to dual_fr3_trunking_mtc \
   --cmake-args -DPython3_EXECUTABLE=/usr/bin/python3
 source install/setup.bash
 ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
-  simulation_backend:=maniskill cable_solver:=rope_actor load_cable:=true execute:=true
+  simulation_backend:=maniskill cable_solver:=rope_actor load_cable:=true execute:=true \
+  maniskill_python:="$PWD/.venv/bin/python"
 ```
 
 USB-only 快速抓持调试：
@@ -81,11 +86,11 @@ ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
   execute:=true preparation_interactive:=false
 ```
 
-省略 `cable_solver` 仍使用 MPM；其本阶段验收延后。
+本节 MTC 入口省略 `cable_solver` 使用 Rope-Actor；独立物理 launch 仍使用 MPM 缺省。
 
-此入口选择 `trunking_cable` 场景：在机械臂接近前按关键点准备目标定位 USB/线缆，再张开接近，再接触闭合、解除定位并验证稳定；验证成功才更新规划附着体、下降和走线。默认需要终端确认；自动仿真可加 `preparation_interactive:=false`。
+此入口选择 `trunking_cable` 场景：在机械臂接近前按关键点准备目标定位 USB/线缆，再张开接近，再接触闭合、解除定位并验证稳定；验证成功才更新规划附着体、下降和走线。解除固定并验证抓持后，重新规划到孔前的剩余路径，通过后只等待一次 Enter 开始任务；自动仿真可加 `preparation_interactive:=false`。
 
-MTC 当前默认原始线槽 / 2 mm 线缆，两侧孔中心均沿各自 TCP 局部 +Z 偏移 2.4 mm；左右孔均检查初始直线覆盖。
+MTC 当前默认简化碰撞线槽、原始显示 CAD 和 2 mm 线缆；`guide.routing=usb_to_right` 从 USB 连接右孔，孔中心沿 TCP 局部 +Z 偏移 2.4 mm。
 复用已通过的简化线槽 / 2 mm 基线时，在上面的命令中添加：
 
 ```text
@@ -157,3 +162,5 @@ cable_config:="$PWD/src/dual_fr3_maniskill/config/trunking_cable_simplified_2mm.
 重新安装环境请使用本仓库安装脚本，不复制另一台电脑编译出的 Warp 二进制。
 
 末端插入现可通过 `insertion_enabled:=true` 启用；几何、反馈、保持、双臂释放回位、参数及实际验收边界见 [USB 插入说明](docs/usb_insertion.md)。早期验证记录中“未实现插入”的说明仅适用于当时版本。
+
+模块修改路径见 [ARCHITECTURE](ARCHITECTURE.md)；全部参数作用、单位、代码位置及验证见 [参数索引](docs/parameters.md)。本轮结果见 [结构整理验证](docs/structure_validation.md)。

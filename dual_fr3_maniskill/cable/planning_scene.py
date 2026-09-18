@@ -11,8 +11,8 @@ from geometry_msgs.msg import Point, Pose
 from moveit_msgs.msg import AttachedCollisionObject, CollisionObject, PlanningScene
 from shape_msgs.msg import Mesh, MeshTriangle
 
-from .model import USB_LINK, load_geometry_config
-from .threading import LEFT_TCP, TOUCH_LINKS, task_usb_mount
+from dual_fr3_maniskill.cable.model import USB_LINK, load_geometry_config
+from dual_fr3_maniskill.cable.threading import LEFT_TCP, TOUCH_LINKS, task_usb_mount
 
 
 def usb_mesh_path():

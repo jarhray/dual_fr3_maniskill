@@ -8,7 +8,7 @@ from dataclasses import dataclass, field
 import numpy as np
 from transforms3d.quaternions import quat2mat
 
-from .cable.model import USB_LINK
+from dual_fr3_maniskill.cable.model import USB_LINK
 
 
 @dataclass
@@ -132,7 +132,7 @@ class ForceCollector:
         if self.cable is not None and self.solver == "rope_actor":
             if self.constraint_reader is None:
                 try:
-                    from ._rope_physx import read_pair_constraint
+                    from dual_fr3_maniskill._rope_physx import read_pair_constraint
                     self.constraint_reader = read_pair_constraint
                 except ImportError:
                     pass
@@ -271,7 +271,7 @@ class ForceCollector:
             self.snapshot["usb_grasp"] = monitor.snapshot()
         if (getattr(self.env, "cable_config", {}).get("insertion", {}).get("enabled", False)
                 and getattr(self.env, "insertion", None) is None):
-            from .insertion import InsertionPolicy
+            from dual_fr3_maniskill.usb.insertion import InsertionPolicy
             self.snapshot["usb_insertion"] = InsertionPolicy(self.env.cable_config["insertion"]).snapshot()
         layout = getattr(self.env, "initial_layout_diagnostics", None)
         self.snapshot["initial_layout"] = layout

@@ -15,7 +15,7 @@ def load_config(path, *, solver="mpm"):
     ``solver=None`` is for MoveIt geometry consumers, which do not run physics.
     The launch/ROS parameter is the single source of solver selection.
     """
-    from .backends import validate_solver
+    from dual_fr3_maniskill.cable.backends import validate_solver
     if solver is not None:
         validate_solver(solver)
     with open(path, encoding="utf-8") as stream:
@@ -33,7 +33,7 @@ def load_config(path, *, solver="mpm"):
             raise ValueError(f"Missing {section} configuration")
     insertion = config.get("insertion", {})
     if insertion:
-        from ..insertion import InsertionLimits
+        from dual_fr3_maniskill.usb.insertion import InsertionLimits
         InsertionLimits.read(insertion)
         for name in ("enabled", "retain_after_success", "release_after_retention", "return_after_release"):
             if name in insertion and not isinstance(insertion[name], bool):

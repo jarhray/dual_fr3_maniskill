@@ -11,8 +11,8 @@ from scipy.spatial.transform import Rotation
 import xacro
 from ament_index_python.packages import get_package_share_directory
 
-from dual_fr3_maniskill.assets import origin_matrix, prepare_assets
-from dual_fr3_maniskill.simulation import Simulation
+from dual_fr3_maniskill.robot.assets import origin_matrix, prepare_assets
+from dual_fr3_maniskill.robot.simulation import Simulation
 
 
 def forward_kinematics(description, positions):

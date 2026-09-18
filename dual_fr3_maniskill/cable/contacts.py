@@ -8,7 +8,7 @@ after position constraints, and again after the SAPIEN bodies move.
 import numpy as np
 import trimesh
 import warp as wp
-from .mesh_contacts import closed_oriented_shells
+from dual_fr3_maniskill.cable.mesh_contacts import closed_oriented_shells
 
 
 @wp.func

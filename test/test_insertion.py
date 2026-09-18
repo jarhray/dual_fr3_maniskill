@@ -32,6 +32,22 @@ def test_actual_grasp_transform_and_direction():
     np.testing.assert_allclose(goal[:3,3]-outside[:3,3], [-.018,0,0], atol=1e-15)
 
 
+def test_shared_wall_adjustment_preserves_other_geometry_and_uses_original_sides():
+    # Shift beyond an original wall so classifying against the new centre would
+    # invert a side. Both consumers must still use the CAD centre for selection.
+    vertices = np.array([[0., .015, .06246], [-.011, .0199, .07466],
+                         [0., .01, .05], [-.0748, .03, .0888]])
+    original = vertices.copy()
+    hole = np.array([0., .020, .070])
+    clearance = [.0002, .0007]
+    adjusted = adjust_hole_vertices(vertices, clearance, hole)
+    np.testing.assert_array_equal(vertices, original)
+    np.testing.assert_array_equal(adjusted[:, 0], original[:, 0])
+    np.testing.assert_array_equal(adjusted[2:], original[2:])
+    np.testing.assert_allclose(adjusted[:2, 1:] - hole[1:],
+                               [[-.002425, -.0067], [.002425, .0067]], atol=1e-17)
+
+
 def test_prisms_do_not_seal_hole_and_preserve_back():
     from scipy.spatial import ConvexHull
     root = Path(__file__).parents[1]/'meshes'

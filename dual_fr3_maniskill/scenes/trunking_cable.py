@@ -3,13 +3,18 @@ from functools import partial
 
 import numpy as np
 from transforms3d.quaternions import quat2mat
-from ..sapien_compat import sapien
+from dual_fr3_maniskill.engine.sapien_compat import sapien
 
-from ..simulation import Simulation
-from ..cable.threading import RIGHT_TCP, threaded_positions, threaded_centerline, initial_layout_report
-from ..cable.guide import SlidingGuide
-from ..cable.backends import create_cable, prepare_backend
-from .usb_cable import UsbCableEnv, UsbCableSimulation
+from dual_fr3_maniskill.robot.simulation import Simulation
+from dual_fr3_maniskill.cable.threading import (
+    RIGHT_TCP,
+    threaded_positions,
+    threaded_centerline,
+    initial_layout_report,
+)
+from dual_fr3_maniskill.cable.guide import SlidingGuide
+from dual_fr3_maniskill.cable.backends import create_cable, prepare_backend
+from dual_fr3_maniskill.scenes.usb_cable import UsbCableEnv, UsbCableSimulation
 
 
 class TrunkingCableEnv(UsbCableEnv):
@@ -64,5 +69,5 @@ class TrunkingCableSimulation(UsbCableSimulation):
                                 cable_solver=cable_solver, load_cable=load_cable), **kwargs)
 
         if cable_config.get("insertion", {}).get("enabled", False):
-            from ..insertion_scene import SocketInsertion
+            from dual_fr3_maniskill.usb.scene import SocketInsertion
             self.env.insertion = SocketInsertion(self.env)

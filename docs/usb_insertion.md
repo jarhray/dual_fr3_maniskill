@@ -1,8 +1,10 @@
 # 已知孔位 USB 插入（仿真）
 
-`insertion_enabled:=true` 在原双臂 MTC 全部运动成功结束后执行末端插入。关闭时保留原流程和原 USB 整体凸包。默认仍使用 `trunking_cable_simplified_2mm.yaml`；带线缆须显式选择 `rope_actor`，其他场景默认求解器没有改变。USB-only 不导入、初始化或步进线缆后端。
+`insertion_enabled:=true` 在原双臂 MTC 全部运动成功结束后执行末端插入。当前 `mtc_prototype.launch.py` 已默认开启，复现命令仍显式传入。关闭时保留原流程和原 USB 整体凸包。默认仍使用 `trunking_cable_simplified_2mm.yaml`；MTC 已默认选择 `rope_actor`，其他场景默认求解器没有改变。USB-only 不导入、初始化或步进线缆后端。
 
 本功能是已知孔位、低速刚体装配；不模拟 USB 弹片、卡扣、电气连接，不自动搜孔、增大夹持力或重新抓取。保持约束是显式仿真机构，不是自然卡紧的证据。实际验收结果见 [验证记录](usb_insertion_validation.md)，启动命令本身不表示该工况已通过。
+
+模块修改位置、参数单位/坐标、YAML→launch→ROS 的实际覆盖关系见 [调参说明](insertion_parameters.md)。
 
 ## 几何依据
 
@@ -37,11 +39,13 @@ USB 启用插入时拆为塑料壳凸体和金属段凸体，保留视觉网格�
 
 ## 控制、载荷和保持
 
-原 MTC 完成 → 检查左臂真实抓持 → 右爪打开并验证两指开度 → 右臂沿 TCP -Z 退出 50 mm → 右臂回 `ready` 并验证停稳 → 重新检查左臂抓持 → 左臂 MoveIt 接近 → 按实测夹持再次对齐 → MoveIt 预检完整插入直线 → 交接给局部控制器。预检只在任务自己的规划场景中允许 USB—插座这一对预期接触；不放开手指—插座等碰撞；该预检本身不修改 PhysX 碰撞组。
+规划分两次检查：准备候选必须连同运输末态到孔前的连续路径可解；实际闭爪、解除固定和稳定验证后，再以实测抓姿重规划整个剩余路径，保留已选锚点关节末态与笛卡尔终点，通过后只等待一次 Enter。完整插入直线的碰撞预检也提前完成。
+
+执行顺序：原 MTC 运输完成 → 检查左臂真实抓持 → 右爪打开并验证两指开度 → 右臂沿 TCP -Z 退出 50 mm → 右臂回 `ready` 并验证停稳 → 重新检查左臂抓持 → 左臂按缓存 MoveIt 轨迹接近 → start 根据实际 USB 位姿检查原对齐阈值 → 交接给局部控制器。末尾不再临时重规划微小对齐；实际漂移超限仍停止，不能把计划到达当作真实到达。预检只在任务自己的规划场景中允许 USB—插座这一对预期接触；不放开手指—插座等碰撞；该预检本身不修改 PhysX 碰撞组。
 
 孔前规划、回位使用最多 10 次独立任务重建/求解，以处理 MoveIt 随机采样失败；只有有效解才执行。执行失败不会盲目重放一段已经部分执行的轨迹。
 
-新增 `insertion.max_path_length_ratio`（默认 1.5，可改为 2.0）限制每一段末端 MoveIt 运动的 TCP 累计路程：`路径长度 ≤ 比例 × 实际起点到请求目标点的直线距离`。覆盖右臂退出/回位、左臂接近/对齐、插入直线预检以及左臂退出/回位。使用与原 anchor 规划相同的密集 FK 采样检查（关节插值步长最多 0.005 rad），超限解以无限代价拒绝并继续现有规划重试，日志输出实际长度、上限和接受/拒绝结果。`ready` 的目标位置由命名关节姿态 FK 得到；退出动作由起始 TCP 和退出向量确定，不使用不完整轨迹的终点放宽预算。该比例约束的是 TCP 平移路程，不是关节空间距离，也不限制工具旋转角。
+新增 `insertion.max_path_length_ratio`（推荐 YAML 为 **3.0**，未配置时的代码缺省为 **1.5**）限制每一段末端 MoveIt 运动的 TCP 累计路程：`路径长度 ≤ 比例 × 实际起点到请求目标点的直线距离`。覆盖右臂退出/回位、左臂接近、插入直线预检以及左臂退出/回位。使用与原 anchor 规划相同的密集 FK 采样检查（关节插值步长最多 0.005 rad），超限解以无限代价拒绝并继续现有规划重试，日志输出实际长度、上限和接受/拒绝结果。`ready` 的目标位置由命名关节姿态 FK 得到；退出动作由起始 TCP 和退出向量确定，不使用不完整轨迹的终点放宽预算。该比例约束的是 TCP 平移路程，不是关节空间距离，也不限制工具旋转角。
 
 此参数独立于原流程的 `anchor_max_path_length_ratio`；按每一段 MoveIt 规划分别检查，开启 `approach_lift_m` 时两段接近也分别检查。局部反馈插入仍由速度、载荷、深度和 `max_advance_m` 控制。
 
@@ -69,7 +73,7 @@ USB 启用插入时拆为塑料壳凸体和金属段凸体，保留视觉网格�
 
 状态依次为 `not_started`、`right_releasing`、`right_returning`、`right_ready`、`approach`、`aligned`、`feedback_advance`、`success_verification`、`inserted_unretained`、`retained`、`grippers_released`、`returning`、`complete`。失败为 `right_release_failed`、`right_return_failed`、`blocked`、`overload`、`slip_or_drop`、`timeout`、`feedback_unavailable`、`cancelled`、`retention_failed`、`release_failed`、`return_failed`，详因在 `reason`。
 
-以下字段均位于默认 YAML 的 `insertion` 段；ROS 开关 `insertion_enabled` 控制是否启用。孔中心与 CAD 孔口 X=0 一致，配置只允许有限局部间隙，不接受非零 rest offset。
+以下字段均位于默认 YAML 的 `insertion` 段，表中数值以当前文件为准；ROS 开关 `insertion_enabled` 控制是否启用。孔中心与 CAD 孔口 X=0 一致，配置只允许有限局部间隙，不接受非零 rest offset。
 
 | 参数 | 默认值 | 含义 |
 | --- | --- | --- |
@@ -93,7 +97,7 @@ USB 启用插入时拆为塑料壳凸体和金属段凸体，保留视觉网格�
 | `joint_speed_rad_s`, `tracking_limit_m` | `.1`, `.001` | IK 指令变化/跟踪偏差保护 |
 | `retain_after_success`, `release_after_retention`, `return_after_release` | 均 true | 插入后固定、左爪释放、左臂回位开关；右臂先行释放回位始终执行 |
 | `retreat_m`, `approach_lift_m` | `.05`, `0` | 开爪退出距离/可选孔上方中间点 |
-| `max_path_length_ratio` | `1.5` | 每段末端 MoveIt 的 TCP 路程上限比例，可设为 `2.0` |
+| `max_path_length_ratio` | `3.0`（代码缺省 `1.5`） | 每段末端 MoveIt 的 TCP 路程上限比例 |
 | `planning_attempts`, `planning_timeout_s` | `10`, `15` | 独立规划次数/每次超时 |
 | `rigid_frequency_hz` | `1000` | 插入模式的刚体子步频率 |
 | `release_width_m` | left `.08`, right `.03` | 总开口 m |
@@ -140,4 +144,16 @@ ros2 service call /maniskill/usb/insertion/status std_srvs/srv/Trigger '{}'
 ros2 service call /maniskill/usb/insertion/cancel std_srvs/srv/Trigger '{}'
 ```
 
-`/maniskill/usb/insertion/{right_release,right_released,right_returned,target,start,status,heartbeat,cancel,retained,released,returning,returned}` 使用 Trigger；通常由 MTC 终末执行器调用，不要在有轨迹运行时手动 start。独立状态流不依赖 `force_enabled`；力/JSONL 仍使用既有输出体系。
+`/maniskill/usb/insertion/{right_release,right_released,right_returned,target,start,status,heartbeat,cancel,retained,released,returning,returned,fail_right_release,fail_right_return,fail_release,fail_return}` 使用 Trigger；通常由 MTC 终末执行器调用，不要在有轨迹运行时手动 start。独立状态流不依赖 `force_enabled`；力/JSONL 仍使用既有输出体系。
+
+## 独立调用
+
+完整任务和独立入口共用 `TerminalInsertion`。先启动原完整任务，追加 `run_insertion:=false`，使运输完成后留下已启用的插座与稳定抓持；不要用 `insertion_enabled:=false` 替代，因为后者会关闭物理插座。等待 MTC 输出完成且进程退出后，在已 source 环境的同一 ROS 域另开终端：
+
+```bash
+ros2 launch dual_fr3_trunking_mtc insertion_skill.launch.py
+```
+
+独立入口从实测 CurrentState 和抓姿重新规划右臂退出/回位、左臂接近及插入碰撞预检，然后复用原插入/固定/释放/回位服务顺序。它不启动场景、不生成 USB、不重新夹持、不等待 Enter。自定义场景须传入同一 `cable_config:=...`；`execute:=false` 仅规划。MoveGroup 需要 `move_group/ExecuteTaskSolutionCapability`，原 MTC launch 已加载。完成后重复调用无新动作，忙或失败状态拒绝重放；reset 后需重新准备夹持。
+
+本入口是 ROS 命令调用的机器人 skill，使用原 Trigger 协议，没有新增 action 消息类型。局部推进期间取消仍调用 `/maniskill/usb/insertion/cancel`；MoveIt 运动的取消由原轨迹 action 处理。

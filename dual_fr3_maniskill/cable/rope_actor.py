@@ -7,8 +7,8 @@ SAPIEN 2's 64-link articulation limit. Physics and contacts run in PhysX.
 import numpy as np
 from transforms3d.quaternions import mat2quat, quat2mat
 
-from ..sapien_compat import sapien
-from .model import USB_LINK, initial_centerline
+from dual_fr3_maniskill.engine.sapien_compat import sapien
+from dual_fr3_maniskill.cable.model import USB_LINK, initial_centerline
 
 
 def segment_frames(points):
@@ -93,7 +93,7 @@ class RopeActorCable:
             points = self._initial_points()
             self._configure_contacts()
             if self.guide is not None:
-                from .aperture import MeshAperture
+                from dual_fr3_maniskill.cable.aperture import MeshAperture
                 self._guide_sources = [(link, shape) for proxy, link in self.proxies
                     if link.name.startswith("right_") for shape in proxy.get_collision_shapes()]
                 if not self._guide_sources:
@@ -132,10 +132,10 @@ class RopeActorCable:
         The proxies collide only with the cable and have no visual geometry.
         """
         import xml.etree.ElementTree as ET
-        from ..assets import origin_matrix, pose_values
+        from dual_fr3_maniskill.robot.assets import origin_matrix, pose_values
 
         fingers = {n for n in self.env.agent.links if n.endswith(("leftfinger", "rightfinger"))}
-        from .threading import TOUCH_LINKS
+        from dual_fr3_maniskill.cable.threading import TOUCH_LINKS
         mount_links = {USB_LINK, *TOUCH_LINKS}
         use_proxies = self.guide is not None
         actors = list(self.env.agent.links.values()) + list(self.env.fixtures.values())
@@ -143,7 +143,7 @@ class RopeActorCable:
             actors.append(self.plug)
         self.obstacles = actors.copy()
         fixture_ids = set()
-        from .fixture_contacts import create_fixture_proxy
+        from dual_fr3_maniskill.cable.fixture_contacts import create_fixture_proxy
         for source in self.env.fixtures.values():
             if not any(isinstance(shape.geometry, sapien.NonconvexMeshGeometry)
                        for shape in source.get_collision_shapes()):
@@ -167,7 +167,7 @@ class RopeActorCable:
                                            else groups[0] | (2 if actor.name in mount_links else 6), *groups[1:])
         if not use_proxies or not fingers:
             return
-        from .kinematic import KinematicContactProxy, load_kinematic_target
+        from dual_fr3_maniskill.cable.kinematic import KinematicContactProxy, load_kinematic_target
         self._set_kinematic_target = load_kinematic_target()
         root = ET.parse(self.env.assets.urdf_path).getroot()
         for name in sorted(fingers):
@@ -206,7 +206,7 @@ class RopeActorCable:
         if convex:
             import tempfile
             from pathlib import Path
-            from .capsule_mesh import write_capsule, validate_cooked_capsule
+            from dual_fr3_maniskill.cable.capsule_mesh import write_capsule, validate_cooked_capsule
             self._collision_files = tempfile.TemporaryDirectory(prefix="rope_convex_")
         for i, length in enumerate(self.lengths):
             builder = self.scene.create_actor_builder()
@@ -379,7 +379,7 @@ class RopeActorCable:
                     guide_force_report_scope="normal_impulses_only")
 
     def step(self, rigid_dt):
-        from .kinematic import advance_proxy
+        from dual_fr3_maniskill.cable.kinematic import advance_proxy
 
         for proxy, source in getattr(self, "fixture_proxies", ()):
             pose = source.pose
@@ -726,7 +726,7 @@ class RopeActorCable:
             ids.extend([i]*len(row))
         samples, ids = np.asarray(samples), np.asarray(ids)
         radius = np.sqrt(self.radius**2+(spacing/2)**2)
-        from .threading import TOUCH_LINKS
+        from dual_fr3_maniskill.cable.threading import TOUCH_LINKS
         excluded = {USB_LINK, *TOUCH_LINKS, "rope_contact_left_fr3_leftfinger", "rope_contact_left_fr3_rightfinger"}
         for actor in self.obstacles:
             for shape in actor.get_collision_shapes():

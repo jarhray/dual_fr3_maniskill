@@ -48,7 +48,7 @@ class MeshAperture:
     """
     def __init__(self, tcp, sources, radius, tolerance):
         import trimesh
-        from ..sapien_compat import sapien
+        from dual_fr3_maniskill.engine.sapien_compat import sapien
 
         self.tcp, self.radius, self.tolerance = tcp, radius, tolerance
         self.sources = []

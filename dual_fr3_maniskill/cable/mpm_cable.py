@@ -9,7 +9,7 @@ from pathlib import Path
 import shlex
 import sys
 
-from ..sapien_compat import sapien
+from dual_fr3_maniskill.engine.sapien_compat import sapien
 
 import numpy as np
 from transforms3d.quaternions import quat2mat
@@ -19,13 +19,18 @@ from mani_skill2.envs.mpm.base_env import MPMModelBuilder
 from warp.sim.model import Mesh
 import warp as wp
 
-from .model import USB_LINK, cable_particles, grid_layout, initial_particle_positions
-from .solver import CableMPMSimulator
-from .fibers import AxialFibers
-from .execution import DeviceBounds, ConstraintGraphs
-from .contacts import CableContacts
+from dual_fr3_maniskill.cable.model import (
+    USB_LINK,
+    cable_particles,
+    grid_layout,
+    initial_particle_positions,
+)
+from dual_fr3_maniskill.cable.solver import CableMPMSimulator
+from dual_fr3_maniskill.cable.fibers import AxialFibers
+from dual_fr3_maniskill.cable.execution import DeviceBounds, ConstraintGraphs
+from dual_fr3_maniskill.cable.contacts import CableContacts
 from mpm.mpm_model import MPMModelStruct, MPMStateStruct
-from .mesh_contacts import finger_collision_meshes
+from dual_fr3_maniskill.cable.mesh_contacts import finger_collision_meshes
 
 
 @wp.kernel

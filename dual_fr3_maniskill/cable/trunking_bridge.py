@@ -1,14 +1,14 @@
 """MTC deferred creation, sharing serialized contact-grasp services with USB demo."""
-from ..ros_bridge import main as bridge_main
-from ..scenes import resolve_cable_config
-from .model import load_config
-from .ros_bridge import UsbCableBridge
-from .threading import task_usb_mount
+from dual_fr3_maniskill.ros.bridge import main as bridge_main
+from dual_fr3_maniskill.scenes import resolve_cable_config
+from dual_fr3_maniskill.cable.model import load_config
+from dual_fr3_maniskill.cable.ros_bridge import UsbCableBridge
+from dual_fr3_maniskill.cable.threading import task_usb_mount
 
 
 class TrunkingCableBridge(UsbCableBridge):
     def create_simulation(self, assets):
-        from ..scenes.trunking_cable import TrunkingCableSimulation
+        from dual_fr3_maniskill.scenes.trunking_cable import TrunkingCableSimulation
         path = self.declare_parameter("cable_config", resolve_cable_config(scene="trunking_cable")).value
         self.cable_solver = self.declare_parameter("cable_solver", "mpm").value
         self.load_cable = self.declare_parameter("load_cable", True).value

@@ -16,8 +16,8 @@ import time
 import numpy as np
 from transforms3d.quaternions import quat2mat
 
-from dual_fr3_maniskill.sapien_compat import sapien
-from dual_fr3_maniskill.assets import prepare_assets
+from dual_fr3_maniskill.engine.sapien_compat import sapien
+from dual_fr3_maniskill.robot.assets import prepare_assets
 from dual_fr3_maniskill.cable.kinematic import load_kinematic_target
 from dual_fr3_maniskill.cable.model import USB_LINK, load_config
 from dual_fr3_maniskill.cable.rope_actor import RopeActorCable

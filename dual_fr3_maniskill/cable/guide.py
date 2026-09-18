@@ -14,7 +14,7 @@ class SlidingGuide:
     @property
     def pose(self):
         """Physical hole reference in the existing TCP's local frame."""
-        from ..sapien_compat import sapien
+        from dual_fr3_maniskill.engine.sapien_compat import sapien
         return self.link.pose * sapien.Pose(self.config.get("center_offset", [0., 0., 0.]))
 
     def bind(self, cable):
@@ -22,7 +22,7 @@ class SlidingGuide:
         # ManiSkill selects its matching Warp before the MPM cable is created.
         # Keep imports lazy so geometry/configuration tools stay CUDA-independent.
         import warp as wp
-        from . import guide_cuda as kernels
+        from dual_fr3_maniskill.cable import guide_cuda as kernels
         if self._cable is not None:
             if self._cable is not cable:
                 raise ValueError("A sliding guide cannot be shared between cables")

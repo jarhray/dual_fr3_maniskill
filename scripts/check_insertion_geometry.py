@@ -4,7 +4,7 @@ import argparse
 import json
 from pathlib import Path
 from ament_index_python.packages import get_package_share_directory
-from dual_fr3_maniskill.insertion_geometry import geometry_report
+from dual_fr3_maniskill.usb.geometry import geometry_report
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

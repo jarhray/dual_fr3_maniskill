@@ -23,7 +23,7 @@ def shader_directory(solver):
     if solver == "mpm":
         from pathlib import Path
         import mani_skill2
-        from .mpm_cable import initialize_warp
+        from dual_fr3_maniskill.cable.mpm_cable import initialize_warp
         initialize_warp()
         return str(Path(mani_skill2.__file__).parent / "envs/mpm/shader/point")
     return "ibl"
@@ -32,7 +32,7 @@ def shader_directory(solver):
 def create_cable(env, config, *, solver="mpm", **kwargs):
     validate_solver(solver)
     if solver == "mpm":
-        from .mpm_cable import MPMCable
+        from dual_fr3_maniskill.cable.mpm_cable import MPMCable
         return MPMCable(env, config, **kwargs)
-    from .rope_actor import RopeActorCable
+    from dual_fr3_maniskill.cable.rope_actor import RopeActorCable
     return RopeActorCable(env, config, **kwargs)

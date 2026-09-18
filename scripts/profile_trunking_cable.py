@@ -24,7 +24,7 @@ import yaml
 from ament_index_python.packages import get_package_share_directory
 
 # Import the project's SAPIEN compatibility layer before ManiSkill/Warp.
-from dual_fr3_maniskill.assets import prepare_assets
+from dual_fr3_maniskill.robot.assets import prepare_assets
 from dual_fr3_maniskill.scenes.trunking_cable import TrunkingCableSimulation
 from dual_fr3_maniskill.cable.model import load_config
 from dual_fr3_moveit_config.maniskill_resources import build_maniskill_description

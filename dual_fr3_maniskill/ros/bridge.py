@@ -24,8 +24,8 @@ from rosgraph_msgs.msg import Clock
 from sensor_msgs.msg import JointState
 from trajectory_msgs.msg import JointTrajectoryPoint
 
-from .assets import prepare_assets
-from .trajectory import Trajectory, seconds, tolerances
+from dual_fr3_maniskill.robot.assets import prepare_assets
+from dual_fr3_maniskill.robot.trajectory import Trajectory, seconds, tolerances
 
 
 SIDES = ("left", "right")
@@ -95,7 +95,7 @@ class ManiSkillBridge(Node):
         self.sim = self.create_simulation(self.assets)
         self.perception_camera = None
         if c["perception_enabled"]:
-            from .perception_camera import CameraPublisher
+            from dual_fr3_maniskill.sensing.camera import CameraPublisher
             self.perception_camera = CameraPublisher(self)
         self.dt = 1.0 / c["control_freq"]
         self.arm_names = {side: [f"{side}_fr3_joint{i}" for i in range(1, 8)] for side in SIDES}
@@ -121,7 +121,7 @@ class ManiSkillBridge(Node):
         self.actions = []
         self.force_output = None
         if c["force_enabled"]:
-            from .force_output import ForceOutput
+            from dual_fr3_maniskill.sensing.force_output import ForceOutput
             self.force_output = ForceOutput(self, stamp)
         group = ReentrantCallbackGroup()
         for side in SIDES:
@@ -145,7 +145,7 @@ class ManiSkillBridge(Node):
     def create_simulation(self, assets):
         """Allow isolated experiments to reuse measured-state ROS execution."""
         try:
-            from .simulation import Simulation
+            from dual_fr3_maniskill.robot.simulation import Simulation
         except ImportError as exc:
             raise RuntimeError("Use maniskill_python pointing to the ManiSkill2 / SAPIEN 2 venv; source ROS Humble first") from exc
         return Simulation(assets, control_freq=self.config["control_freq"],

@@ -40,7 +40,7 @@ def extend_scene_description(description: str, semantic: str, *, scene: str,
     scene_spec(scene)
     if scene == "robot":
         return description, semantic
-    from ..cable.model import add_usb_description, load_geometry_config
+    from dual_fr3_maniskill.cable.model import add_usb_description, load_geometry_config
 
     if scene == "trunking_cable":
         import xml.etree.ElementTree as ET

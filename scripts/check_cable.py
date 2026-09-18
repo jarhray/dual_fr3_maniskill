@@ -13,7 +13,7 @@ import time
 import numpy as np
 from ament_index_python.packages import get_package_share_directory
 
-from dual_fr3_maniskill.assets import prepare_assets
+from dual_fr3_maniskill.robot.assets import prepare_assets
 from dual_fr3_maniskill.cable.backends import CABLE_SOLVERS
 from dual_fr3_maniskill.cable.model import load_config
 from dual_fr3_maniskill.scenes import resolve_cable_config
@@ -60,7 +60,7 @@ def main():
         sim = factory(assets, cable_config=config, cable_solver=args.cable_solver, control_freq=50, sim_freq=500)
         times = []
         try:
-            from dual_fr3_maniskill.sapien_compat import sapien
+            from dual_fr3_maniskill.engine.sapien_compat import sapien
             pinocchio = sim.env.agent.robot.create_pinocchio_model()
             robot_links = sim.env.agent.robot.get_links()
 

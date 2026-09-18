@@ -2,8 +2,8 @@
 from launch_ros.actions import Node
 from launch_ros.parameter_descriptions import ParameterValue
 
-from .cable.backends import validate_solver
-from .scenes import resolve_cable_config, scene_spec
+from dual_fr3_maniskill.cable.backends import validate_solver
+from dual_fr3_maniskill.scenes import resolve_cable_config, scene_spec
 
 
 def create_bridge_node(*, scene, robot_description, robot_description_semantic,

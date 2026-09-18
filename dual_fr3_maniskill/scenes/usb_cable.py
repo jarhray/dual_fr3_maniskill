@@ -7,7 +7,7 @@ import tempfile
 from ament_index_python.packages import get_package_share_directory
 
 # Initialize SAPIEN compatibility before ManiSkill imports its renderer.
-from ..simulation import DualFR3Env, Simulation
+from dual_fr3_maniskill.robot.simulation import DualFR3Env, Simulation
 
 import numpy as np
 from mani_skill2.sensors.camera import CameraConfig
@@ -15,13 +15,18 @@ from mani_skill2.utils import sapien_utils
 from transforms3d.euler import quat2euler
 from transforms3d.quaternions import mat2quat, quat2mat
 
-from ..assets import convert_stl_to_glb
-from ..cable.model import USB_LINK
-from ..cable.threading import LEFT_TCP, task_usb_mount
-from ..usb_grasp import UsbGraspMonitor, read_usb_finger_normal_loads
+from dual_fr3_maniskill.robot.assets import convert_stl_to_glb
+from dual_fr3_maniskill.cable.model import USB_LINK
+from dual_fr3_maniskill.cable.threading import LEFT_TCP, task_usb_mount
+from dual_fr3_maniskill.usb.grasp import UsbGraspMonitor, read_usb_finger_normal_loads
 
-from ..cable.backends import create_cable, prepare_backend, shader_directory, validate_solver
-from ..sapien_compat import sapien
+from dual_fr3_maniskill.cable.backends import (
+    create_cable,
+    prepare_backend,
+    shader_directory,
+    validate_solver,
+)
+from dual_fr3_maniskill.engine.sapien_compat import sapien
 
 
 class UsbCableEnv(DualFR3Env):
@@ -66,7 +71,7 @@ class UsbCableEnv(DualFR3Env):
             if self.preparation_tcp_poses and self.load_cable and self.cable_solver != "rope_actor":
                 raise ValueError("Pre-positioning before approach currently requires cable_solver:=rope_actor")
             if self.cable_config.get("insertion", {}).get("enabled", False) and self.insertion is None:
-                from ..insertion_scene import SocketInsertion
+                from dual_fr3_maniskill.usb.scene import SocketInsertion
                 self.insertion = SocketInsertion(self)
             self._create_positioned_usb()
             self.grasp_monitor.created(self._grasp_time, self.plug.pose)
@@ -94,7 +99,7 @@ class UsbCableEnv(DualFR3Env):
         collision_mesh = Path(self._usb_collision_cache.name)/mesh.name
         shutil.copyfile(mesh, collision_mesh)
         if config.get("insertion", {}).get("enabled", False):
-            from ..insertion_geometry import usb_parts
+            from dual_fr3_maniskill.usb.geometry import usb_parts
             for index, part in enumerate(usb_parts(mesh)):
                 part_path = Path(self._usb_collision_cache.name)/f"usb_part_{index}.stl"
                 part.export(part_path)
@@ -137,7 +142,7 @@ class UsbCableEnv(DualFR3Env):
         if not manual and not self.grasp_monitor.ready_to_release:
             raise RuntimeError("Sustained contact on both USB fingers is required")
         if not manual and self.load_cable and self.preparation_tcp_poses:
-            from ..cable.threading import RIGHT_TCP, bore_alignment
+            from dual_fr3_maniskill.cable.threading import RIGHT_TCP, bore_alignment
             pose = self.agent.links[RIGHT_TCP].pose
             r = quat2mat(pose.q)
             guide = self.cable_config["guide"]
@@ -254,7 +259,7 @@ class UsbCableEnv(DualFR3Env):
                     self.rope_trace.capture("rigid_step", dt=dt)
             return
         if self.load_cable and self.cable_solver == "rope_actor":
-            from ..cable.timestep import RopeStepSchedule
+            from dual_fr3_maniskill.cable.timestep import RopeStepSchedule
 
             period = self._sim_steps_per_control*self.sim_timestep
             maximum = self.sim_timestep/self.rigid_substeps
@@ -349,7 +354,7 @@ class UsbCableSimulation(Simulation):
         self.cable.check_contacts()
         center = self.cable.centerline
         if self.cable.guide is not None:
-            from ..cable.threading import bore_alignment, RIGHT_TCP
+            from dual_fr3_maniskill.cable.threading import bore_alignment, RIGHT_TCP
             guide = self.env.cable_config["guide"]
             alignment = {}
             for side, name in (("left", LEFT_TCP), ("right", RIGHT_TCP)):

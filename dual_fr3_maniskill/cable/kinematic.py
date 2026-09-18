@@ -2,7 +2,7 @@
 import numpy as np
 from transforms3d.quaternions import qmult
 
-from ..sapien_compat import sapien
+from dual_fr3_maniskill.engine.sapien_compat import sapien
 
 
 class KinematicContactProxy:
@@ -30,7 +30,7 @@ class KinematicContactProxy:
 
 def load_kinematic_target():
     try:
-        from .._rope_physx import set_kinematic_target
+        from dual_fr3_maniskill._rope_physx import set_kinematic_target
     except ImportError as exc:
         raise RuntimeError(
             "Rope-Actor finger contacts require the _rope_physx extension. "

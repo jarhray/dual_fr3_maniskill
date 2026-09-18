@@ -1,7 +1,7 @@
 """ManiSkill2 / SAPIEN 2 environment and measured state for the ROS bridge."""
 from __future__ import annotations
 
-from .sapien_compat import sapien
+from dual_fr3_maniskill.engine.sapien_compat import sapien
 
 import numpy as np
 from mani_skill2.agents.base_agent import AgentConfig, BaseAgent
@@ -11,8 +11,8 @@ from mani_skill2.sensors.camera import CameraConfig
 from mani_skill2.utils import sapien_utils
 from transforms3d.euler import quat2euler
 
-from .assets import SceneAssets, origin_matrix, pose_values
-from .collision import collision_cliques
+from dual_fr3_maniskill.robot.assets import SceneAssets, origin_matrix, pose_values
+from dual_fr3_maniskill.robot.collision import collision_cliques
 
 
 class DualFR3Agent(BaseAgent):

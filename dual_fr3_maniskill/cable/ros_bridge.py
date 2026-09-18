@@ -13,16 +13,16 @@ from rclpy.action import GoalResponse
 from std_srvs.srv import Trigger
 from visualization_msgs.msg import Marker, MarkerArray
 
-from dual_fr3_maniskill.ros_bridge import ManiSkillBridge, main as bridge_main, stamp
+from dual_fr3_maniskill.ros.bridge import ManiSkillBridge, main as bridge_main, stamp
 from dual_fr3_maniskill.scenes import resolve_cable_config
-from .model import load_config, USB_LINK
+from dual_fr3_maniskill.cable.model import load_config, USB_LINK
 
 
 class UsbCableBridge(ManiSkillBridge):
     def __init__(self):
         super().__init__()
         self._grasp_waiters = []
-        from ..insertion_bridge import InsertionBridge
+        from dual_fr3_maniskill.usb.bridge import InsertionBridge
         self.insertion_control = InsertionBridge(self)
         self._planning_reset = None
         self._planning_reset_client = None
@@ -45,7 +45,7 @@ class UsbCableBridge(ManiSkillBridge):
         if trace_dir and self.load_cable:
             if self.cable_solver != "rope_actor":
                 raise ValueError("cable_trace_dir requires cable_solver:=rope_actor")
-            from .rope_diagnostics import RopeRunRecorder
+            from dual_fr3_maniskill.cable.rope_diagnostics import RopeRunRecorder
             self.sim.env.rope_trace = RopeRunRecorder(trace_dir,
                 metadata=dict(scene=type(self.sim.env).__name__, cable_config=self.cable_config,
                               bridge_config=self.config), on_error=self.get_logger().error)
@@ -60,7 +60,7 @@ class UsbCableBridge(ManiSkillBridge):
                                f"Cable backend: {self.cable_solver if self.load_cable else 'disabled'}")
 
     def create_simulation(self, assets):
-        from ..scenes.usb_cable import UsbCableSimulation
+        from dual_fr3_maniskill.scenes.usb_cable import UsbCableSimulation
         config_path = self.declare_parameter("cable_config", resolve_cable_config()).value
         self.cable_solver = self.declare_parameter("cable_solver", "mpm").value
         self.load_cable = self.declare_parameter("load_cable", True).value
@@ -136,7 +136,7 @@ class UsbCableBridge(ManiSkillBridge):
 
     def _preparation_targets(self, payload):
         """Resolve keypoint frames once, at the serialized spawn boundary."""
-        from ..sapien_compat import sapien
+        from dual_fr3_maniskill.engine.sapien_compat import sapien
         required = {"left", "right"} if self.load_cable else {"left"}
         if not isinstance(payload, dict) or not required.issubset(payload):
             raise ValueError("Missing preparation TCP poses: "+str(sorted(required)))
@@ -331,7 +331,7 @@ class UsbCableBridge(ManiSkillBridge):
         super().publish_state(q, v)
         insertion = getattr(self.sim.env, "insertion", None)
         if insertion is not None:
-            from ..sapien_compat import sapien
+            from dual_fr3_maniskill.engine.sapien_compat import sapien
             for name, pose in (("usb_socket", insertion.base.pose),
                                ("usb_socket_hole", insertion.base.pose*sapien.Pose(insertion.hole))):
                 transform = TransformStamped(child_frame_id=name)

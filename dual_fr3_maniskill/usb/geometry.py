@@ -11,9 +11,37 @@ USB_IN_SOCKET = np.array([[0., -1., 0.], [1., 0., 0.], [0., 0., 1.]])
 HOLE = np.array([0., .0175, .0686])
 DEPTH = .011
 SHOULDER = .0059
+# Metal stem thickness/width mapped into socket Y/Z, in metres.
+STEM_CROSS_SECTION_M = np.array([.00445, .012])
+DEFAULT_CLEARANCE_YZ_M = (.0004, .0004)
+
+
+def hole_half_extents(clearance=DEFAULT_CLEARANCE_YZ_M):
+    """Socket Y/Z half aperture: metal half size plus per-side clearance (m)."""
+    return STEM_CROSS_SECTION_M / 2 + np.asarray(clearance)
+
+
+def adjust_hole_vertices(vertices, clearance=DEFAULT_CLEARANCE_YZ_M, hole=HOLE):
+    """Copy CAD vertices, moving only the upper hole walls in socket axes.
+
+    Accept any (..., 3) array. The selection bounds include the original STL's
+    rounding tolerance. Classify each wall against the ORIGINAL hole centre,
+    even when the configured centre moves. Leave X and other apertures intact.
+    Both the MoveIt triangle mesh and PhysX prisms use this calculation.
+    """
+    adjusted = np.array(vertices, dtype=float, copy=True)
+    flat = adjusted.reshape(-1, 3)
+    selected = ((.0624599 <= flat[:, 2]) & (flat[:, 2] <= .0746601) &
+                (.0149999 <= flat[:, 1]) & (flat[:, 1] <= .0199001))
+    half = hole_half_extents(clearance)
+    for axis, extent in ((1, half[0]), (2, half[1])):
+        flat[selected, axis] = hole[axis] + np.where(
+            flat[selected, axis] < HOLE[axis], -extent, extent)
+    return adjusted
 
 
 def matrix(pose):
+    """Homogeneous local-to-parent transform from a pose with p and wxyz q."""
     t = np.eye(4)
     t[:3, :3], t[:3, 3] = quat2mat(pose.q), pose.p
     return t
@@ -35,14 +63,15 @@ def measure(base, usb, hole=HOLE):
 
 
 def tcp_goal(base, tcp, usb, depth, hole=HOLE):
+    """World TCP goal using measured grasp; positive depth enters socket -X."""
     target = np.eye(4)
     target[:3, :3] = USB_IN_SOCKET
-    target[:3, 3] = hole + [-depth, 0, 0] - USB_IN_SOCKET @ TIP
+    target[:3, 3] = np.asarray(hole) + [-depth, 0, 0] - USB_IN_SOCKET @ TIP
     # Use observed grasp, including the rotation acquired after support release.
     return base @ target @ np.linalg.inv(np.linalg.inv(tcp) @ usb)
 
 
-def socket_parts(mesh_path, clearance=(.0004, .0004), hole=HOLE):
+def socket_parts(mesh_path, clearance=DEFAULT_CLEARANCE_YZ_M, hole=HOLE):
     """Extrude CAD front triangulation into separate convex prisms; solid back.
 
     Only vertices bounding the upper USB hole move. All other apertures and
@@ -50,13 +79,8 @@ def socket_parts(mesh_path, clearance=(.0004, .0004), hole=HOLE):
     """
     import trimesh
     mesh = trimesh.load(mesh_path, process=False)
-    triangles = mesh.triangles[np.all(abs(mesh.triangles[:, :, 0]) < 1e-7, axis=1)].copy()
-    half = np.array([.00445, .012])/2 + np.asarray(clearance)
-    for vertices in triangles:
-        for v in vertices:
-            if .0624599 <= v[2] <= .0746601 and .0149999 <= v[1] <= .0199001:
-                v[1] = hole[1] + (-half[0] if v[1] < HOLE[1] else half[0])
-                v[2] = hole[2] + (-half[1] if v[2] < HOLE[2] else half[1])
+    front = mesh.triangles[np.all(abs(mesh.triangles[:, :, 0]) < 1e-7, axis=1)]
+    triangles = adjust_hole_vertices(front, clearance, hole)
     parts = []
     for face in triangles:
         back = face.copy()
@@ -76,7 +100,7 @@ def usb_parts(mesh_path):
                 (abs(v[:, 0]) <= .0022251) & (abs(v[:, 2]) <= .0060001)])]
 
 
-def geometry_report(mesh_dir, clearance=(.0004, .0004), end_clearance=.001):
+def geometry_report(mesh_dir, clearance=DEFAULT_CLEARANCE_YZ_M, end_clearance=.001):
     import trimesh
     root = Path(mesh_dir)
     plug = trimesh.load(root/'USB1.stl')
@@ -87,9 +111,9 @@ def geometry_report(mesh_dir, clearance=(.0004, .0004), end_clearance=.001):
         usb_bounds=plug.bounds.tolist(), socket_origin='CAD bottom plane z=0; front x=0',
         hole_center_given_m=HOLE.tolist(), cad_hole_center_m=[0., .01745, .06856],
         outward_normal=[1, 0, 0], insertion_axis=[-1, 0, 0],
-        original_aperture_m=[.0049, .0122], stem_cross_section_m=[.00445, .012],
+        original_aperture_m=[.0049, .0122], stem_cross_section_m=STEM_CROSS_SECTION_M.tolist(),
         original_clearance_at_given_center_m=[[.000275, .000175], [.00014, .00006]],
-        adjusted_aperture_m=(np.array([.00445, .012])+2*np.array(clearance)).tolist(),
+        adjusted_aperture_m=(2*hole_half_extents(clearance)).tolist(),
         adjusted_per_side_clearance_m=list(clearance), cavity_depth_m=DEPTH,
         metal_length_m=float(TIP[1]-SHOULDER), end_clearance_m=end_clearance,
         target_depth_m=DEPTH-end_clearance, shoulder_to_mouth_at_target_m=float(TIP[1]-SHOULDER-DEPTH+end_clearance),

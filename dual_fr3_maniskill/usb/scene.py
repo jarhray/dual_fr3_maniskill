@@ -3,12 +3,27 @@ from pathlib import Path
 import tempfile
 import numpy as np
 from transforms3d.quaternions import mat2quat, quat2mat
-from .sapien_compat import sapien
-from .insertion import InsertionPolicy
-from .insertion_geometry import SOCKET_NAME, SOCKET_INSTALLATION_FIXTURES, HOLE, matrix, measure, tcp_goal, pose_dict, socket_parts
+from dual_fr3_maniskill.engine.sapien_compat import sapien
+from dual_fr3_maniskill.usb.insertion import InsertionPolicy
+from dual_fr3_maniskill.usb.geometry import (
+    DEFAULT_CLEARANCE_YZ_M,
+    SOCKET_NAME,
+    SOCKET_INSTALLATION_FIXTURES,
+    HOLE,
+    matrix,
+    measure,
+    tcp_goal,
+    pose_dict,
+    socket_parts,
+)
 
 
 class SocketInsertion:
+    """Own the socket actor, reaction window, retention drive and their cleanup.
+
+    No motion planning or ROS services here. Success is recorded by the policy
+    before retain() is allowed to create a drive at the measured relative pose.
+    """
     def __init__(self, env):
         self.env = env
         self.config = env.cable_config.get('insertion', {})
@@ -31,14 +46,14 @@ class SocketInsertion:
 
     def create(self):
         from ament_index_python.packages import get_package_share_directory
-        from .assets import convert_stl_to_glb
+        from dual_fr3_maniskill.robot.assets import convert_stl_to_glb
         root = Path(get_package_share_directory('dual_fr3_maniskill'))
         c, env = self.config, self.env
         self.cache = tempfile.TemporaryDirectory(prefix='usb_socket_')
         builder = env._scene.create_actor_builder()
         material = env._scene.create_physical_material(.5, .5, 0.)
         parts = socket_parts(root/c.get('collision_mesh', 'meshes/usb_base_collision.stl'),
-                             c.get('clearance_yz_m', [.0004, .0004]), self.hole)
+                             c.get('clearance_yz_m', DEFAULT_CLEARANCE_YZ_M), self.hole)
         for index, mesh in enumerate(parts):
             path = Path(self.cache.name)/f'part_{index}.stl'
             mesh.export(path)
@@ -50,7 +65,7 @@ class SocketInsertion:
         self.base = builder.build(SOCKET_NAME)
         # A visible, instrumented base-to-world support. No USB attachment here.
         self.base.set_pose(self.resolve_pose())
-        from ._rope_physx import disable_gravity
+        from dual_fr3_maniskill._rope_physx import disable_gravity
         disable_gravity(self.base._ptr)
         for shape in self.base.get_collision_shapes():
             shape.contact_offset = c.get('contact_offset_m', .0001)
@@ -62,17 +77,23 @@ class SocketInsertion:
         env.fixtures[SOCKET_NAME] = self.base
         self.exclude_installation_contacts()
         # Import fails explicitly at startup rather than substituting finger loads.
-        from ._rope_physx import read_world_constraint
+        from dual_fr3_maniskill._rope_physx import read_world_constraint
         self.read_support = read_world_constraint
 
     def resolve_pose(self):
-        c, env = self.config, self.env
-        frame = env.agent.links[c.get('xy_frame', 'left_fr3_link0')].pose
-        xy = c.get('xy_m', [.37, -.07])
-        p = frame.p+quat2mat(frame.q)@np.array([*xy, 0.])
-        trunking = env.fixtures[c.get('height_frame', 'trunking')].pose
-        p[2] = (trunking.p+quat2mat(trunking.q)@np.array([0., 0., c.get('height_m', .010)]))[2]
-        return sapien.Pose(p, c.get('quaternion_wxyz', [1., 0., 0., 0.]))
+        """World pose: XY from robot frame, world Z from fixture-frame height.
+
+        The configured quaternion is already world-relative; it is not composed
+        with either reference frame. Height refers to the CAD origin, not its top.
+        """
+        config, env = self.config, self.env
+        xy_frame = env.agent.links[config.get('xy_frame', 'left_fr3_link0')].pose
+        xy = config.get('xy_m', [.37, -.07])
+        position = xy_frame.p + quat2mat(xy_frame.q) @ np.array([*xy, 0.])
+        height_frame = env.fixtures[config.get('height_frame', 'trunking')].pose
+        height_offset = np.array([0., 0., config.get('height_m', .010)])
+        position[2] = (height_frame.p + quat2mat(height_frame.q) @ height_offset)[2]
+        return sapien.Pose(position, config.get('quaternion_wxyz', [1., 0., 0., 0.]))
 
     def exclude_installation_contacts(self):
         # One unused ignore bit per fixed installation pair. Never suppress
@@ -173,7 +194,7 @@ class SocketInsertion:
         self.policy.measurement = self.observe()
 
     def observe(self):
-        env, p = self.env, self.policy.limits
+        env = self.env
         if env.plug is None:
             return dict(feedback_available=False, reason='usb_missing')
         obs = measure(matrix(self.base.pose), matrix(env.plug.pose), self.hole)

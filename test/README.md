@@ -4,6 +4,11 @@
 `test_*.py` 是 pytest 检查；`check_*.py` 是显式运行的物理/数值脚本，不会自动启动真实机器人。
 GPU 检查期间应停止其他仿真。新报告目录须尚不存在。
 
+插入重构的源码基线、几何/参数等价性、服务与完整场景结果见
+[本轮验证记录](../docs/insertion_refactor_validation.md)，调参后选测路径见
+[插入参数](../docs/insertion_parameters.md#验证入口)。涉及真实 rclcpp/MTC 的测试需可用的本机 DDS 环境；
+受限沙箱中的网络/日志权限错误或原生崩溃应单独记录，不修改断言来规避。
+
 ## 离线回归
 
 ```bash

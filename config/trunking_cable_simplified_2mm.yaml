@@ -169,7 +169,7 @@ insertion:
   approach_lift_m: 0.0  # optional staged approach; direct OMPL retries by default
   planning_attempts: 10
   planning_timeout_s: 15.0
-  max_path_length_ratio: 2.0  # TCP path / actual start-to-goal distance; use 2.0 to allow more detour
+  max_path_length_ratio: 3.0  # TCP path / actual start-to-goal distance (code fallback: 1.5)
   rigid_frequency_hz: 1000
   release_width_m: {left: 0.08, right: 0.03}
   release_min_half_width_m: {left: 0.035, right: 0.014}

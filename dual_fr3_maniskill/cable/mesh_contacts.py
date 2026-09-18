@@ -3,7 +3,7 @@ import xml.etree.ElementTree as ET
 import numpy as np
 import trimesh
 
-from ..assets import origin_matrix
+from dual_fr3_maniskill.robot.assets import origin_matrix
 
 
 def closed_oriented_shells(mesh):

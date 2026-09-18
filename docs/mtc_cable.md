@@ -1,8 +1,8 @@
 # MTC 的 USB 接触夹持与可选线缆
 
-当前范围是 USB 端头接触夹持、接触载荷采集，以及稳定、滑移和脱落监测。没有连续闭环力调节、自动增力、自动恢复、插接基座或插入动作。基座载荷保持 `unavailable`。
+本页说明 USB 端头接触夹持、接触载荷采集，以及稳定、滑移和脱落监测。当前 MTC 入口还默认开启已知孔位的终末插入，包含阻力反馈、固定和释放回位，见 [USB 插入](usb_insertion.md)。插座安装反力在满足可辨识条件时可用；未加载插座的场景仍为 unavailable。接触夹持不自动增力或重新抓取。
 
-本次验收范围为 **Rope-Actor + USB-only**，MPM 后续完善。全局默认仍保留 `mpm`；下面的推荐命令显式选择 `rope_actor`。
+历史接触夹持记录采用 **Rope-Actor + USB-only**。当前 MTC 入口默认 `rope_actor` 并加载线缆；其他独立物理入口保留 `mpm` 默认，历史结果不等同于本轮带线缆验证。
 
 ## 启动
 
@@ -14,7 +14,7 @@ source install/setup.bash
 # 正常模式：USB + Rope-Actor 线缆。
 ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
   simulation_backend:=maniskill load_cable:=true cable_solver:=rope_actor \
-  execute:=true preparation_interactive:=false \
+  execute:=true \
   maniskill_python:="$PWD/.venv/bin/python"
 
 # 快速调试：仅 USB；夹持验证后继续原双臂下降和后续 MTC 轨迹。
@@ -36,7 +36,7 @@ ros2 launch dual_fr3_moveit_config usb_cable.launch.py load_cable:=false cable_s
 
 ## 准备和执行顺序
 
-正常模式完整预检后：两侧张开 → 按关键点准备目标 `spawn` 并固定 → 张开接近准备位姿 → 左夹爪接触闭合 → 右孔闭合 → `release` → `verify` → 更新规划附着体 → 下降/布线。USB-only 保留同一套双臂准备、下降和后续 MTC 轨迹，只禁用线缆创建/求解；日志明确标记为 USB 轨迹调试，不声称完成真实线缆布线。
+正常模式完整预检后：两侧张开 → 按关键点准备目标 `spawn` 并固定 → 张开接近准备位姿 → 左夹爪接触闭合 → 右孔闭合 → `release` → `verify` → 更新实测规划附着体 → 重规划剩余运输及孔前接近 → 只等待一次 Enter → 下降/布线。USB-only 保留同一套双臂准备、下降和后续 MTC 轨迹，只禁用线缆创建/求解；日志明确标记为 USB 轨迹调试，不声称完成真实线缆布线。
 
 左夹爪闭合目标为每指 0 m，使用用户夹爪 profile 的有限驱动力上限；真实物体阻挡手指。`stalled` 或 `reached_goal` 仅表示动作终止，不能证明抓持成功。`release` 等待两侧实际接触持续满足门限，移除世界约束和所有局部临时线缆支撑；`verify` 再等待无外部支撑的稳定观察窗口。失败、超时、缺少服务时停止后续搬运。ManiSkill 夹爪结果按 profile 的仿真秒数等待，另有 `max(120, 30 × profile.timeout)` 墙钟秒上限，避免慢速 Rope-Actor 被原 10 秒墙钟等待提前取消，也防止仿真停钟后无限等待。每个下降或正式搬运阶段前还会检查 `/maniskill/usb/status`，非 `stable` 不继续。
 

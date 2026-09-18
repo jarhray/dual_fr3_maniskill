@@ -6,7 +6,7 @@ from pathlib import Path
 from geometry_msgs.msg import WrenchStamped
 from std_msgs.msg import Float64, String
 
-from .forces import ForceCollector
+from dual_fr3_maniskill.sensing.forces import ForceCollector
 
 
 class ForceOutput:

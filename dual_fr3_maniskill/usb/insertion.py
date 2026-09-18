@@ -1,10 +1,27 @@
 """Simulation-time insertion policy, independent of motion/physics adapters."""
 from dataclasses import dataclass, asdict, fields
 import numpy as np
+from dual_fr3_maniskill.usb.geometry import DEPTH
+
+
+# Wire names shared by the ROS bridge and MTC client; no ROS imports here.
+SERVICE_PREFIX = '/maniskill/usb/insertion/'
+SERVICE_OPERATIONS = (
+    'target', 'start', 'status', 'heartbeat', 'cancel', 'retained', 'released',
+    'returned', 'returning', 'fail_release', 'fail_return', 'right_release',
+    'right_released', 'right_returned', 'fail_right_release', 'fail_right_return',
+)
+ACTIVE_STATES = ('feedback_advance', 'success_verification')
+CANCELLABLE_PREPARATION_STATES = ('approach', 'right_releasing', 'right_returning', 'right_ready')
 
 
 @dataclass(frozen=True)
 class InsertionLimits:
+    """SI policy defaults; selected cable YAML overrides individual fields.
+
+    Depth/forces use socket axes and the hole centre. Timing is simulation
+    time except wall_watchdog_s, which guards the client's monotonic lease.
+    """
     preinsert_m: float = .008
     end_clearance_m: float = .001
     target_depth_m: float = .010
@@ -34,7 +51,7 @@ class InsertionLimits:
         result = cls(**{f.name: config[f.name] for f in fields(cls) if f.name in config})
         if any(not np.isfinite(x) or x <= 0 for x in asdict(result).values()):
             raise ValueError('Insertion limits must be positive finite SI values')
-        if abs(result.target_depth_m-(.011-result.end_clearance_m)) > 1e-8:
+        if abs(result.target_depth_m-(DEPTH-result.end_clearance_m)) > 1e-8:
             raise ValueError('target_depth_m must equal CAD cavity depth 0.011 minus end_clearance_m')
         if result.max_advance_m < result.preinsert_m+result.target_depth_m:
             raise ValueError('Maximum advance shorter than preinsert plus target depth')
@@ -42,7 +59,7 @@ class InsertionLimits:
 
 
 class InsertionPolicy:
-    ACTIVE = ('feedback_advance', 'success_verification')
+    ACTIVE = ACTIVE_STATES
 
     def __init__(self, config):
         self.limits = InsertionLimits.read(config)
