@@ -58,6 +58,23 @@ def test_invalid_rope_settings(tmp_path, key, value):
         load_config(path, solver="rope_actor")
 
 
+@pytest.mark.parametrize('key,value', [
+    ('tail_weight_mass', -.001), ('tail_weight_mass', True),
+    ('tail_weight_mass', float('nan')), ('tail_weight_mass', float('inf')),
+    ('tail_weight_radius', 0.), ('tail_weight_radius', -.001),
+    ('tail_weight_radius', True), ('tail_weight_radius', float('nan')),
+    ('tail_weight_radius', .0005),
+])
+def test_invalid_tail_weight_settings(tmp_path, key, value):
+    c = config()
+    c['rope_actor'].update(tail_weight_mass=.005, tail_weight_radius=.004)
+    c['rope_actor'][key] = value
+    path = tmp_path/'weight.yaml'
+    path.write_text(yaml.safe_dump(c))
+    with pytest.raises(ValueError, match='tail_weight'):
+        load_config(path, solver='rope_actor')
+
+
 def test_rope_factory_does_not_import_mpm_or_warp():
     subprocess.run([sys.executable, "-c", '''
 import sys
@@ -181,6 +198,109 @@ def advance(cable, scene, steps):
         cable.step(.002)
         scene.step()
         cable.follow_plug()
+
+
+@pytest.mark.parametrize('geometry', ['capsule', 'convex_capsule'])
+@pytest.mark.parametrize('mass', [0., .005])
+def test_tail_weight_is_local_mass_and_geometry_with_matching_inertia(native_scene, geometry, mass):
+    from dual_fr3_maniskill.cable.rope_actor import capsule_inertia
+    from dual_fr3_maniskill.cable.capsule_mesh import validate_cooked_capsule
+    sapien, scene, plug, env = native_scene
+    c = config()
+    c['cable'].update(length=.15, diameter=.002)
+    # Diameter edits normally go through load_config's kg/m conversion.
+    c['cable']['density'] = .015/(np.pi*.001**2)
+    c['rope_actor'].update(links=16, tail_weight_mass=mass, tail_weight_radius=.004,
+                           collision_geometry=geometry)
+    count = len(scene.get_all_actors())
+    cable = create_cable(env, c, solver='rope_actor')
+    try:
+        nominal = .015*cable.lengths
+        np.testing.assert_allclose([a.mass for a in cable.links[:-1]], nominal[:-1], rtol=1.e-5)
+        assert cable.links[-1].mass == pytest.approx(nominal[-1]+mass)
+        assert cable.total_mass == pytest.approx(.015*.15+mass)
+        assert len(cable.links) == 16 and len(cable.joints) == 15
+        radius = .004 if mass else .001
+        assert cable.radii[-1] == radius
+        np.testing.assert_array_equal(cable.radii[:-1], [.001]*15)
+        shape, = cable.links[-1].get_collision_shapes()
+        if geometry == 'capsule':
+            assert shape.geometry.radius == pytest.approx(radius)
+        else:
+            validate_cooked_capsule(shape, cable.lengths[-1], radius)
+        length = cable.lengths[-1]
+        original = nominal[-1]*np.array([.001**2/2, (3*.001**2+length**2)/12,
+                                         (3*.001**2+length**2)/12])
+        np.testing.assert_allclose(cable.links[-1].inertia,
+            np.maximum(original+capsule_inertia(mass, length, radius), c['rope_actor']['inertia_floor']), rtol=1.e-5)
+        diagnostics = cable.diagnostics()
+        assert diagnostics['cable_mass_kg'] == pytest.approx(.00225)
+        assert diagnostics['tail_weight_mass_kg'] == mass
+        plug.set_pose(sapien.Pose([.1, 0., .4]))
+        cable.reset()
+        assert cable.links[-1].mass == pytest.approx(nominal[-1]+mass)
+        assert cable.attachment_error() < 1.e-6
+        cable._check_constraints()
+    finally:
+        cable.close()
+    scene.step()
+    assert len(scene.get_all_actors()) == count
+
+
+@pytest.mark.parametrize('native_scene', [True], indirect=True)
+def test_default_five_gram_weight_sags_without_stretch_or_joint_failure(native_scene):
+    sapien, scene, plug, env = native_scene
+    c = load_config(ROOT/'config/trunking_cable_simplified_2mm.yaml', solver='rope_actor')
+    plug.set_pose(sapien.Pose([0., 0., 2.]))
+
+    def horizontal(cfg, s, rotation, translation):
+        return translation+np.asarray(s)[:, None]*np.array([1., 0., 0.])
+
+    cable = create_cable(env, c, solver='rope_actor', layout=horizontal)
+    try:
+        initial_z = float(cable.links[-1].pose.p[2])
+        dt = 1/c['rope_actor']['frequency']
+        scene.set_timestep(dt)
+        for _ in range(1000):
+            cable.step(dt)
+            scene.step()
+            cable.follow_plug()
+        cable._check_constraints()
+        result = cable.diagnostics()
+        assert initial_z-cable.links[-1].pose.p[2] > .02
+        assert result['tail_weight_mass_kg'] == .005
+        assert result['mass_kg'] == pytest.approx(.0275)
+        assert result['max_joint_gap_m'] < c['rope_actor']['constraint_tolerance']
+        assert result['cumulative_stretch_ratio'] < c['rope_actor']['max_stretch_ratio']
+        assert np.isfinite(result['kinetic_energy_J'])
+    finally:
+        cable.close()
+
+
+def test_tail_weight_radius_is_used_by_spawn_and_penetration_checks(native_scene):
+    sapien, scene, _, env = native_scene
+    c = config()
+    c['cable']['length'] = .15
+    c['rope_actor'].update(links=16, tail_weight_mass=.005, tail_weight_radius=.004)
+    builder = scene.create_actor_builder()
+    builder.add_box_collision(half_size=[.01, 2., .01])
+    floor = builder.build_static('weight_test_floor')
+    floor.set_pose(sapien.Pose([0., -.75, -.1]))
+    env.fixtures['floor'] = floor
+    cable = create_cable(env, c, solver='rope_actor')
+    try:
+        tail = cable.links[-1]
+        floor.set_pose(sapien.Pose([tail.pose.p[0], tail.pose.p[1], tail.pose.p[2]-.004+.0005-.01]))
+        # The cable itself clears the floor; only the larger weight intersects.
+        cable._contact_candidates = {(floor, floor.get_collision_shapes()[0]): {tail}}
+        cable._audit_contacts()
+        assert cable.max_depth == pytest.approx(.0005, abs=1.e-6)
+        assert cable.max_penetration_contact['segment_index'] == len(cable.links)-1
+        c['cable']['penetration_tolerance'] = .0002
+        with pytest.raises(ValueError, match='Initial rope intersects'):
+            cable.reset()
+    finally:
+        cable.close()
 
 
 def test_cumulative_stretch_catches_many_small_joint_errors_without_repairing_state(native_scene):

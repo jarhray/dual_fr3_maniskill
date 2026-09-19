@@ -175,6 +175,8 @@
 | `rope_actor.max_contact_travel` | m/子步 | 自适应步长允许的接触点移动量；不得大于直径四分之一。 |
 | `rope_actor.contact_offset` | m | 线缆形状接触壳；与手指孔几何及 USB offset 分开设置。 |
 | `rope_actor.inertia_floor` | kg·m² | 细段主惯量下限，须严格大于 SAPIEN 1e-8；影响旋转动态。 |
+| `rope_actor.tail_weight_mass` | kg | 自由尾端额外配重；0 关闭。缺省 0，MTC 默认的 simplified_2mm YAML 为 0.005。配重与末段为同一刚体，不改变 cable.linear_density。 |
+| `rope_actor.tail_weight_radius` | m | 配重套外半径；缺省 0.004（外径 8 mm）。启用时不得小于线缆半径；参与显示、碰撞、惯量与几何检查。 |
 | `rope_actor.twist_limit_deg` | degree | 球关节扭转限位，小于 180°。 |
 | `rope_actor.bend_limit_deg` | degree | 球关节摆动限位，影响可弯曲程度。 |
 | `rope_actor.joint_stiffness` | N·m/rad | 关节角驱动刚度；0 不额外弹性拉直。 |

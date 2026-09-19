@@ -448,6 +448,8 @@
 | `rope_actor.frequency` | `rope_actor.frequency` | [config/usb_cable.yaml:55](../config/usb_cable.yaml#L55) | `1000` |
 | `rope_actor.frequency` | `rope_actor.frequency` | [dual_fr3_maniskill/cable/model.py:172](../dual_fr3_maniskill/cable/model.py#L172) | `1000` |
 | `rope_actor.inertia_floor` | `rope_actor.inertia_floor` | [config/trunking_cable.yaml:104](../config/trunking_cable.yaml#L104) | `1.1e-08` |
+| `rope_actor.tail_weight_mass` | `rope_actor.tail_weight_mass` | [config/trunking_cable_simplified_2mm.yaml](../config/trunking_cable_simplified_2mm.yaml) | `0.005` kg；其他配置省略时为 `0.0` |
+| `rope_actor.tail_weight_radius` | `rope_actor.tail_weight_radius` | [config/trunking_cable_simplified_2mm.yaml](../config/trunking_cable_simplified_2mm.yaml)、[cable/model.py](../dual_fr3_maniskill/cable/model.py) | `0.004` m |
 | `rope_actor.inertia_floor` | `rope_actor.inertia_floor` | [config/trunking_cable_simplified_2mm.yaml:112](../config/trunking_cable_simplified_2mm.yaml#L112) | `1.1e-08` |
 | `rope_actor.inertia_floor` | `rope_actor.inertia_floor` | [config/trunking_cable_simplified_2mm_precise.yaml:107](../config/trunking_cable_simplified_2mm_precise.yaml#L107) | `1.1e-08` |
 | `rope_actor.inertia_floor` | `rope_actor.inertia_floor` | [config/usb_cable.yaml:58](../config/usb_cable.yaml#L58) | `1.1e-08` |

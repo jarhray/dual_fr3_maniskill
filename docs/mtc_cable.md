@@ -25,6 +25,12 @@ ros2 launch dual_fr3_trunking_mtc mtc_prototype.launch.py \
 
 `load_cable:=false` 从 launch 传到 ROS 节点和仿真构造，不创建线缆后端、粒子、胶囊链、连接关节、代理、guide，也不初始化线缆 Warp/CUDA 内核或逐帧求解。机器人自身渲染初始化仍保留。USB、实际姿态 TF、世界临时定位、手指碰撞、载荷和监测全部保留，独立创建 USB 不依赖右臂；MTC 入口仍执行原双臂准备，以保持后续轨迹一致。`maniskill_cable:=false` 是旧的**关闭整个 USB/线缆场景**开关，与 USB-only 不同；USB-only 要保留 `maniskill_cable:=true`。
 
+默认 Rope-Actor 线缆的自由尾端带 5 g 灰色配重套，用于自然下垂、轻微张紧。
+在 `config/trunking_cable_simplified_2mm.yaml` 中修改 `rope_actor.tail_weight_mass`（kg）即可调重，
+设为 `0` 关闭；`tail_weight_radius` 默认 `0.004 m`（外径 8 mm）。修改后重启仿真，
+并使用上面的 `load_cable:=true` 命令；USB-only 不创建配重。
+质量估算、物理表示和验证范围见 [线缆后端说明](cable_backends.md)。
+
 也可只启动物理和 MoveIt，手动调试：
 
 ```bash
@@ -36,7 +42,7 @@ ros2 launch dual_fr3_moveit_config usb_cable.launch.py load_cable:=false cable_s
 
 ## 准备和执行顺序
 
-正常模式完整预检后：两侧张开 → 按关键点准备目标 `spawn` 并固定 → 张开接近准备位姿 → 左夹爪接触闭合 → 右孔闭合 → `release` → `verify` → 更新实测规划附着体 → 重规划剩余运输及孔前接近 → 只等待一次 Enter → 下降/布线。USB-only 保留同一套双臂准备、下降和后续 MTC 轨迹，只禁用线缆创建/求解；日志明确标记为 USB 轨迹调试，不声称完成真实线缆布线。
+正常模式完整预检后：两侧张开 → 按关键点准备目标 `spawn` 并固定 → 张开接近准备位姿 → 左夹爪接触闭合 → 右孔闭合 → `release` → `verify` → 更新实测规划附着体 → 验证剩余运输及孔前接近的原缓存轨迹 → 通过后只等待一次 Enter → 下降/布线。验证失败默认停止；只有显式设置 `replan_after_grasp:=true` 才重规划剩余阶段，通过验证时始终复用缓存。USB-only 保留同一套双臂准备、下降和后续 MTC 轨迹，只禁用线缆创建/求解；日志明确标记为 USB 轨迹调试，不声称完成真实线缆布线。
 
 左夹爪闭合目标为每指 0 m，使用用户夹爪 profile 的有限驱动力上限；真实物体阻挡手指。`stalled` 或 `reached_goal` 仅表示动作终止，不能证明抓持成功。`release` 等待两侧实际接触持续满足门限，移除世界约束和所有局部临时线缆支撑；`verify` 再等待无外部支撑的稳定观察窗口。失败、超时、缺少服务时停止后续搬运。ManiSkill 夹爪结果按 profile 的仿真秒数等待，另有 `max(120, 30 × profile.timeout)` 墙钟秒上限，避免慢速 Rope-Actor 被原 10 秒墙钟等待提前取消，也防止仿真停钟后无限等待。每个下降或正式搬运阶段前还会检查 `/maniskill/usb/status`，非 `stable` 不继续。
 

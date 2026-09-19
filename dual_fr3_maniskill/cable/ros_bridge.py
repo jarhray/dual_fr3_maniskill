@@ -372,7 +372,30 @@ class UsbCableBridge(ManiSkillBridge):
         line.scale.x = self.cable_config["cable"]["diameter"]
         line.color.r, line.color.g, line.color.b, line.color.a = 1., .32, .03, 1.
         line.points = [Point(x=float(x), y=float(y), z=float(z)) for x, y, z in center[indices]]
-        self.marker_pub.publish(MarkerArray(markers=[line]))
+        markers = [line]
+        cable = self.sim.cable
+        if getattr(cable, "tail_weight_mass", 0.) > 0:
+            from transforms3d.quaternions import qmult
+            pose = cable.links[-1].pose
+            axis = pose.to_transformation_matrix()[:3, 0]
+            length, diameter = float(cable.lengths[-1]), float(2*cable.radii[-1])
+            # RViz cylinders use +Z; PhysX capsules use +X. Two round caps
+            # complete the same capsule surface at the measured last-link pose.
+            rotation = qmult(pose.q, [np.sqrt(.5), 0., np.sqrt(.5), 0.])
+            for index, offset in enumerate((None, -length/2, length/2)):
+                weight = Marker()
+                weight.header = line.header
+                weight.ns, weight.id = "rope_actor_tail_weight", index
+                weight.type = Marker.CYLINDER if offset is None else Marker.SPHERE
+                weight.action = Marker.ADD
+                position = pose.p if offset is None else pose.p+offset*axis
+                weight.pose.position.x, weight.pose.position.y, weight.pose.position.z = map(float, position)
+                weight.pose.orientation.w, weight.pose.orientation.x, weight.pose.orientation.y, weight.pose.orientation.z = map(float, rotation)
+                weight.scale.x = weight.scale.y = diameter
+                weight.scale.z = length if offset is None else diameter
+                weight.color.r, weight.color.g, weight.color.b, weight.color.a = .4, .45, .5, 1.
+                markers.append(weight)
+        self.marker_pub.publish(MarkerArray(markers=markers))
         wall = time.monotonic()
         if wall - self.last_diagnostic >= 1.:
             values = self.sim.cable.diagnostics()

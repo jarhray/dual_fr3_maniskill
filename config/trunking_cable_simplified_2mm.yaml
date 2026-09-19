@@ -88,12 +88,17 @@ mpm:
 # Selected by cable_solver:=rope_actor; MPM settings above are then unused.
 # Capsule chain with spherical D6 joints, PGS and fixed preview substeps.
 rope_actor:
+  # Optional rigid sleeve on the free tail's last ~10 mm segment (opposite USB).
+  # Extra 5 g, 8 mm diameter; mass=0 restores the unweighted cable geometry.
+  # Requires load_cable=true. Only a suspended weight provides gravity tension.
+  tail_weight_mass: 0.005  # kg, added to the cable mass, not taken from it
+  tail_weight_radius: 0.004  # m; total capsule length is segment length + 2*radius
   # Direct flexible cable at the USB exit; the first 5 mm is a simulated
   # segment, not a rigid strain-relief sleeve fixed in the USB direction.
   root_joint: spherical
   # Use convex/triangle contacts: analytic capsule/triangle PCM missed the
-  # recorded hole and trunking edges. Inscribed surface deficit < 0.028 mm;
-  # geometric guards still measure the original 2 mm ideal capsule.
+  # recorded hole and trunking edges. Inscribed surface deficit < 0.028*radius;
+  # geometric guards measure each ideal capsule, including the wider tail weight.
   collision_geometry: convex_capsule
   solver_type: pgs      # preserves joint damping without the reproduced TGS energy burst
   engine_tolerance_length: 0.1

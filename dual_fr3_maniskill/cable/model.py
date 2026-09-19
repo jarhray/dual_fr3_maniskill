@@ -176,10 +176,18 @@ def load_config(path, *, solver="mpm"):
                         twist_limit_deg=85., bend_limit_deg=85.,
                         joint_stiffness=0., joint_damping=.001,
                         linear_damping=1., angular_damping=1.,
+                        tail_weight_mass=0., tail_weight_radius=.004,
                         solver_iterations=40, solver_velocity_iterations=10,
                         constraint_tolerance=0.001, max_speed=10.0)
         for key, value in defaults.items():
             r.setdefault(key, value)
+        positive("rope_actor", ("tail_weight_radius",))
+        weight = r["tail_weight_mass"]
+        if (not isinstance(weight, (int, float)) or isinstance(weight, bool)
+                or not np.isfinite(weight) or weight < 0):
+            raise ValueError("rope_actor.tail_weight_mass must be nonnegative and finite")
+        if weight > 0 and r["tail_weight_radius"] < c["diameter"]/2:
+            raise ValueError("rope_actor.tail_weight_radius must cover the cable radius")
         if not isinstance(r["adaptive_timestep"], bool):
             raise ValueError("rope_actor.adaptive_timestep must be boolean")
         if r["solver_type"] not in ("pgs", "tgs"):

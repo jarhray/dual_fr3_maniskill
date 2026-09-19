@@ -108,7 +108,7 @@ SAPIEN 2 在同一进程共享 PhysX 内部对象，
 后续 Engine 包装对象输出“constructor arguments ignored”是此共享机制的提示。
 
 首段长为 `cable.pin_length`，其余段均分剩余长度。胶囊覆盖整个段及端部；初态按实际段长重采样，
-弯曲布局不会因弦长缩短而预加载关节。总质量等于 `density * pi * radius² * length`。
+弯曲布局不会因弦长缩短而预加载关节。线缆本体质量等于 `density * pi * radius² * length`，尾端配重另行累加。
 MTC 使用 `root_joint: spherical`：首段起点连接 USB 出线口，首段可以弯转，
 沿用线段关节的角限位、角弹簧和阻尼；7 mm 仅是首段离散长度，不是刚性胶套。
 USB 与左夹爪仍为固定连接，线缆与槽壁仍有真实碰撞。
@@ -124,6 +124,26 @@ USB 与左夹爪仍为固定连接，线缆与槽壁仍有真实碰撞。
 `inertia_floor` 对旋转惯量作数值正则化，避免毫米级细杆的病态惯量以及 SAPIEN 2 的极小显式惯量替换行为；
 它会影响转动响应，不能将此模型当成经过标定的电缆材料。
 
+默认的 `trunking_cable_simplified_2mm.yaml` 在与 USB 相反的自由尾端增加 **5 g 配重**，
+用于自然下垂和轻微张紧。配重是末段上的灰色刚性套，与最后一段共用刚体，
+外径 8 mm、含圆头总长约 18 mm；具有额外质量、惯量与碰撞体，不新增连接关节。
+ManiSkill 和 RViz 均按实测末段位姿显示灰色配重套；RViz 复用 `/usb_cable_demo/markers`。
+线缆本体仍为 22.5 g，加配重为 27.5 g，再加 USB 为 42.5 g。
+
+```yaml
+rope_actor:
+  tail_weight_mass: 0.005    # kg；设为 0 关闭并恢复原线径
+  tail_weight_radius: 0.004  # m；外径 8 mm
+```
+
+5 g 是试验起点，不是实物标定结果。悬空静止时，配重的重力约为 `0.005 × 9.81 = 0.049 N`；
+落在台面上时不能据此认为线缆已有该张力，孔壁摩擦也会改变传递到 USB 的拉力。
+使用 `load_cable:=true cable_solver:=rope_actor` 才生成配重；修改 YAML 后重启仿真。
+其他 YAML 未配置此项时保持无配重，MPM 不使用这两个参数。
+诊断中的 `mass_kg` 包含配重，`cable_mass_kg` 和 `tail_weight_mass_kg` 分别报告本体与额外质量。
+原生 PhysX 回归覆盖质量、惯量、碰撞尺寸、重置、初态/运行穿透检查，以及默认 5 g 下的一秒自由下垂、
+连接误差和累计拉伸检查；该局部测试不等同完整双臂走线验证。
+
 `rope_actor` 配置段提供：
 
 | 设置 | 含义 |
@@ -138,6 +158,7 @@ USB 与左夹爪仍为固定连接，线缆与槽壁仍有真实碰撞。
 | `joint_stiffness` / `joint_damping` | 关节角弹簧和阻尼，SI 单位 |
 | `twist_limit_deg` / `bend_limit_deg` | 扭转、弯曲关节角限位 |
 | `inertia_floor` | 转动惯量下限，kg m²，须大于 `1e-8` |
+| `tail_weight_mass` / `tail_weight_radius` | 自由尾端额外质量（kg）与套的外半径（m）；缺省 0 kg / 0.004 m，默认 simplified 配置启用 0.005 kg |
 | `solver_type` | `pgs` 或 `tgs`；MTC 选 PGS，独立 USB 与缺失该字段的旧配置保留 TGS |
 | `solver_iterations` / `solver_velocity_iterations` | PhysX 求解迭代次数，均为 1–255；日常简化配置为 200/10，精细配置为 40/10 |
 | `contact_offset` | 用于胶囊、手指网格代理和线缆专用静态三角网格副本的 PhysX 接触提前检测距离，MTC 为 0.0001 m / 形状；两形状相加。独立于 MPM `cable.contact_margin`、步长预算和穿透容差；生产配置的静止偏移为零 |

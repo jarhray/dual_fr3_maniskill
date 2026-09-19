@@ -53,6 +53,16 @@ def rigid_resample(curve, lengths):
     return np.asarray(nodes)
 
 
+def capsule_inertia(mass, length, radius):
+    """Principal moments of a uniform capsule (+X axis, cylindrical length)."""
+    cylinder_mass = mass * length / (length + 4*radius/3)
+    cap_mass = mass - cylinder_mass
+    axial = cylinder_mass*radius**2/2 + cap_mass*2*radius**2/5
+    transverse = (cylinder_mass*(3*radius**2+length**2)/12
+                  + cap_mass*(2*radius**2/5 + length**2/4 + 3*length*radius/8))
+    return np.array([axial, transverse, transverse])
+
+
 class RopeActorCable:
     solver = "rope_actor"
 
@@ -65,6 +75,14 @@ class RopeActorCable:
         self.radius = c["diameter"]/2
         self.lengths = np.r_[c["pin_length"], np.full(r["links"]-1,
                             (c["length"]-c["pin_length"])/(r["links"]-1))]
+        # The weight is a rigid sleeve on the last segment. Keep its COM at the
+        # segment centre so the existing endpoint/velocity model remains exact.
+        # No extra joint or artificial external pulling force is introduced.
+        self.tail_weight_mass = r.get("tail_weight_mass", 0.)
+        self.radii = np.full(len(self.lengths), self.radius)
+        if self.tail_weight_mass:
+            self.radii[-1] = r.get("tail_weight_radius", .004)
+        self.max_radius = float(self.radii.max())
         self.material_s = np.r_[0., np.cumsum(self.lengths)]
         self.sections = len(self.material_s)
         self.max_section_gap = float(self.lengths.max()+r["constraint_tolerance"])
@@ -209,20 +227,26 @@ class RopeActorCable:
             from dual_fr3_maniskill.cable.capsule_mesh import write_capsule, validate_cooked_capsule
             self._collision_files = tempfile.TemporaryDirectory(prefix="rope_convex_")
         for i, length in enumerate(self.lengths):
+            radius = self.radii[i]
+            weight = self.tail_weight_mass if i == len(self.lengths)-1 else 0.
             builder = self.scene.create_actor_builder()
             if convex:
-                if length not in meshes:
+                key = (length, radius)
+                if key not in meshes:
                     path = Path(self._collision_files.name)/f"capsule_{len(meshes)}.obj"
-                    write_capsule(path, length, self.radius)
-                    meshes[length] = path
-                builder.add_collision_from_file(str(meshes[length]), scale=[self.radius]*3, material=self.material)
+                    write_capsule(path, length, radius)
+                    meshes[key] = path
+                builder.add_collision_from_file(str(meshes[key]), scale=[radius]*3, material=self.material)
             else:
-                builder.add_capsule_collision(radius=self.radius, half_length=length/2, material=self.material)
-            builder.add_capsule_visual(radius=self.radius, half_length=length/2, color=[1., .32, .03])
+                builder.add_capsule_collision(radius=radius, half_length=length/2, material=self.material)
+            builder.add_capsule_visual(radius=radius, half_length=length/2,
+                                       color=[.4, .45, .5] if weight else [1., .32, .03])
             mass = c["density"]*np.pi*self.radius**2*length
             inertia = np.array([mass*self.radius**2/2, mass*(3*self.radius**2+length**2)/12,
                                 mass*(3*self.radius**2+length**2)/12])
-            builder.set_mass_and_inertia(mass, sapien.Pose(), np.maximum(inertia, r["inertia_floor"]))
+            if weight:
+                inertia += capsule_inertia(weight, length, radius)
+            builder.set_mass_and_inertia(mass+weight, sapien.Pose(), np.maximum(inertia, r["inertia_floor"]))
             builder.set_collision_groups(0, 4 if i == 0 else 2, 0, 0)
             actor = builder.build(f"rope_actor_{i}")
             self.links.append(actor)
@@ -232,7 +256,7 @@ class RopeActorCable:
             for shape in actor.get_collision_shapes():
                 shape.contact_offset = r["contact_offset"]
                 if convex:
-                    validate_cooked_capsule(shape, length, self.radius)
+                    validate_cooked_capsule(shape, length, radius)
         if self._collision_files is not None:
             self._collision_files.cleanup()
             self._collision_files = None
@@ -249,9 +273,10 @@ class RopeActorCable:
         self.link_ids = {link.id for link in self.links}
         self.link_indices = {link.id: i for i, link in enumerate(self.links)}
         self.total_mass = sum(link.mass for link in self.links)
+        self.cable_mass = c["density"]*np.pi*self.radius**2*c["length"]
         self._masses = np.array([link.mass for link in self.links])
         self._inertias = np.array([link.inertia for link in self.links])
-        if not np.isclose(self.total_mass, c["density"]*np.pi*self.radius**2*c["length"], rtol=1.e-5):
+        if not np.isclose(self.total_mass, self.cable_mass+self.tail_weight_mass, rtol=1.e-5):
             raise RuntimeError("PhysX did not preserve the configured rope mass")
         self._create_anchor()
         self._set_velocities()
@@ -445,7 +470,8 @@ class RopeActorCable:
         # regression. At gaps <= 2*travel the original contact budget applies.
         bounds = self._world_obstacle_bounds()
         if len(bounds):
-            low, high = np.minimum(starts, ends)-self.radius, np.maximum(starts, ends)+self.radius
+            low = np.minimum(starts, ends)-self.radii[:, None]
+            high = np.maximum(starts, ends)+self.radii[:, None]
             separation = np.maximum(np.maximum(bounds[None, :, 0, :]-high[:, None, :],
                 low[:, None, :]-bounds[None, :, 1, :]), 0.)
             gap = np.linalg.norm(separation, axis=2).min(axis=1)
@@ -571,8 +597,8 @@ class RopeActorCable:
                 pose = actor.pose*local_pose
                 local_start = (starts-pose.p) @ quat2mat(pose.q)
                 local_end = (ends-pose.p) @ quat2mat(pose.q)
-                near = np.all((np.minimum(local_start, local_end)-self.radius <= mesh.bounds[1]) &
-                              (np.maximum(local_start, local_end)+self.radius >= mesh.bounds[0]), axis=1)
+                near = np.all((np.minimum(local_start, local_end)-self.radii[:, None] <= mesh.bounds[1]) &
+                              (np.maximum(local_start, local_end)+self.radii[:, None] >= mesh.bounds[0]), axis=1)
                 if np.any(near):
                     candidates.setdefault((actor, shape), set()).update(
                         self.links[i] for i in np.flatnonzero(near))
@@ -586,7 +612,7 @@ class RopeActorCable:
                 indices.extend([index]*len(along))
             pose = proxy_links.get(other.id, other).pose*shape.get_local_pose()
             local = (np.asarray(points)-pose.p) @ quat2mat(pose.q)
-            depth = self._shape_signed_distance(shape, local)+self.radius
+            depth = self._shape_signed_distance(shape, local)+self.radii[indices]
             sample = int(np.argmax(depth))
             if depth[sample] > self.max_depth:
                 self.max_depth = float(depth[sample])
@@ -623,6 +649,7 @@ class RopeActorCable:
         surface = pose.p+quat2mat(pose.q) @ closest
         return dict(object=body.name, segment_index=int(index), segment_name=f"rope_actor_{index}",
                     segment_index_base=0, segment_length_m=float(self.lengths[index]),
+                    segment_radius_m=float(self.radii[index]),
                     frame_id="world", depth_m=float(depth),
                     centerline_world_m=np.asarray(point, dtype=float).tolist(),
                     obstacle_surface_world_m=np.asarray(surface, dtype=float).tolist(),
@@ -658,8 +685,8 @@ class RopeActorCable:
         mesh = self._contact_meshes[shape]
         # Whole capsules may extend well past a finger. Those points cannot
         # penetrate it, and need no expensive mesh containment ray casts.
-        near = np.all((local >= mesh.bounds[0]-self.radius) &
-                      (local <= mesh.bounds[1]+self.radius), axis=1)
+        near = np.all((local >= mesh.bounds[0]-self.max_radius) &
+                      (local <= mesh.bounds[1]+self.max_radius), axis=1)
         distance = np.full(len(local), -np.inf)
         if np.any(near):
             distance[near] = trimesh.proximity.signed_distance(mesh, local[near])
@@ -725,7 +752,7 @@ class RopeActorCable:
             samples.extend(row)
             ids.extend([i]*len(row))
         samples, ids = np.asarray(samples), np.asarray(ids)
-        radius = np.sqrt(self.radius**2+(spacing/2)**2)
+        radius = np.sqrt(self.radii[ids]**2+(spacing/2)**2)
         from dual_fr3_maniskill.cable.threading import TOUCH_LINKS
         excluded = {USB_LINK, *TOUCH_LINKS, "rope_contact_left_fr3_leftfinger", "rope_contact_left_fr3_rightfinger"}
         for actor in self.obstacles:
@@ -756,11 +783,12 @@ class RopeActorCable:
                                           faces=np.asarray(geometry.indices).reshape(-1, 3), process=False)
                 else:
                     raise ValueError(f"Unsupported rope contact geometry: {type(geometry).__name__}")
-                nearby = np.all((local >= mesh.bounds[0]-radius) & (local <= mesh.bounds[1]+radius), axis=1)
+                nearby = np.all((local >= mesh.bounds[0]-radius[:, None]) &
+                                (local <= mesh.bounds[1]+radius[:, None]), axis=1)
                 if actor.name in excluded:
                     nearby &= ids != 0
                 if np.any(nearby):
-                    depth = trimesh.proximity.signed_distance(mesh, local[nearby])+radius
+                    depth = trimesh.proximity.signed_distance(mesh, local[nearby])+radius[nearby]
                     if depth.max() > self.config["cable"]["penetration_tolerance"]:
                         j = int(np.argmax(depth))
                         sample = np.flatnonzero(nearby)[j]
@@ -805,11 +833,14 @@ class RopeActorCable:
                     adaptive_timestep=self.config["rope_actor"].get("adaptive_timestep", True),
                     root_joint=self.root_joint,
                     collision_geometry=self.config["rope_actor"].get("collision_geometry", "capsule"),
-                    collision_surface_deficit_bound_m=(.028*self.radius if
+                    collision_surface_deficit_bound_m=(.028*self.max_radius if
                         self.config["rope_actor"].get("collision_geometry") == "convex_capsule" else 0.),
                     segments=len(self.links), rest_length_m=float(self.material_s[-1]),
                     min_segment_length_m=float(self.lengths.min()), max_segment_length_m=float(self.lengths.max()),
                     mass_kg=float(self.total_mass),
+                    cable_mass_kg=float(self.cable_mass),
+                    tail_weight_mass_kg=float(self.tail_weight_mass),
+                    tail_weight_radius_m=float(self.radii[-1]) if self.tail_weight_mass else None,
                     inertia_floor_kg_m2=self.config["rope_actor"]["inertia_floor"],
                     max_contact_travel_m=self.config["rope_actor"]["max_contact_travel"],
                     penetration_tolerance_m=self.config["cable"]["penetration_tolerance"],
