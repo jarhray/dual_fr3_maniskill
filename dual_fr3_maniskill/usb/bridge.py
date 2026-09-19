@@ -4,10 +4,12 @@ import time
 import numpy as np
 from std_msgs.msg import String
 from std_srvs.srv import Trigger
-from transforms3d.quaternions import quat2mat
+from transforms3d.quaternions import mat2quat, quat2mat
 from dual_fr3_maniskill.engine.sapien_compat import sapien
 from dual_fr3_maniskill.usb.geometry import matrix, pose_dict
+from dual_fr3_maniskill.usb.alignment import correction_goal, rotation_distance
 from dual_fr3_maniskill.usb.insertion import (
+    ALIGNMENT_STATES,
     CANCELLABLE_PREPARATION_STATES,
     InsertionPolicy,
     SERVICE_OPERATIONS,
@@ -22,6 +24,10 @@ class InsertionBridge:
         self.last_heartbeat = time.monotonic()
         self.goal = None
         self.model = None
+        self.collision_guard = None
+        self.pending_step = None
+        self.alignment_checked = False
+        self.entry_waiting = False
         self.empty = InsertionPolicy(bridge.cable_config.get("insertion", {}))
         self.publisher = bridge.create_publisher(String, '/maniskill/usb/insertion_state', 10)
         self.services = [
@@ -37,6 +43,11 @@ class InsertionBridge:
 
     def relinquish(self):
         b = self.bridge
+        guard = getattr(self, 'collision_guard', None)
+        if guard is not None:
+            guard.cancel()
+        self.pending_step = None
+        self.entry_waiting = False
         if self.owner:
             indices = b.arm_indices['left']
             b.sim.target[indices] = b.sim.positions[indices]
@@ -75,7 +86,7 @@ class InsertionBridge:
     def command(self, operation, response):
         """Trigger wire boundary; scene mutations run on the serialized bridge."""
         scene = self.scene
-        if operation in ('start', 'heartbeat'):
+        if operation in ('align', 'start', 'heartbeat'):
             self.last_heartbeat = time.monotonic()
         if scene is None:
             response.success = False
@@ -91,7 +102,8 @@ class InsertionBridge:
             response.success = True
             response.message = json.dumps(payload, allow_nan=False)
         except (ValueError, RuntimeError) as exc:
-            if operation == 'start' and policy.state in policy.ACTIVE:
+            if ((operation == 'start' and policy.state in policy.ACTIVE) or
+                    (operation == 'align' and policy.state in ALIGNMENT_STATES)):
                 policy.stop('blocked', 'controller_initialization_failed: ' + str(exc))
                 self.relinquish()
             response.success = False
@@ -157,6 +169,8 @@ class InsertionBridge:
     def handle_start(self):
         b, scene = self.bridge, self.scene
         policy = scene.policy
+        if policy.state in ALIGNMENT_STATES:
+            raise RuntimeError('Wait for measured local alignment to finish')
         if self.owner or policy.insertion_success:
             return  # Idempotent: never recreate the model or replay insertion.
         if self.actions_busy():
@@ -167,11 +181,56 @@ class InsertionBridge:
             raise RuntimeError('Right arm must return before insertion')
         self.require_open('right')
         self.require_ready('right')
+        check_entry = (policy.local_collision_check == 'entry' and
+                       not (policy.state == 'aligned' and getattr(self, 'alignment_checked', False)))
         if policy.begin(b.sim.time, scene.observe()):
+            if check_entry:
+                self.prepare_collision_check()
+                self.entry_waiting = True
             self.goal = b.sim.env.agent.links['left_fr3_hand_tcp'].pose
             self.model = b.sim.env.agent.robot.create_pinocchio_model()
             self.owner = True
             b.reserved.add(('left', 'insertion'))
+
+    def handle_align(self):
+        b, scene = self.bridge, self.scene
+        policy = scene.policy
+        if policy.state in ALIGNMENT_STATES or policy.state == 'aligned' or policy.insertion_success:
+            return
+        if self.actions_busy() or self.owner:
+            raise RuntimeError('MTC/gripper action still owns a drive')
+        if b.failure:
+            raise RuntimeError(b.failure)
+        if not policy.right_return_complete:
+            raise RuntimeError('Right arm must return before alignment')
+        self.require_open('right')
+        self.require_ready('right')
+        if policy.begin_alignment(b.sim.time, scene.observe()):
+            self.prepare_collision_check()
+            self.goal = b.sim.env.agent.links['left_fr3_hand_tcp'].pose
+            self.model = b.sim.env.agent.robot.create_pinocchio_model()
+            self.owner = True
+            b.reserved.add(('left', 'insertion'))
+
+    def prepare_collision_check(self):
+        from dual_fr3_maniskill.usb.collision_guard import LocalCollisionGuard
+        if getattr(self, 'collision_guard', None) is None:
+            self.collision_guard = LocalCollisionGuard(self.bridge, self.scene.policy.alignment_limits)
+        self.collision_guard.prepare()
+        self.pending_step = None
+        self.alignment_checked = False
+
+    def check_local_entry(self):
+        """Hold the arm until MoveIt has validated the measured entry state."""
+        if not self.collision_guard.ready():
+            return False
+        if not self.alignment_checked:
+            if self.pending_step is None:
+                self.submit_checked_step(self.bridge.sim.positions.copy(),
+                    self.bridge.sim.env.agent.links['left_fr3_hand_tcp'].pose, alignment=True)
+            else:
+                self.finish_checked_step(alignment=True)
+        return self.alignment_checked
 
     def handle_cancel(self):
         policy = self.scene.policy
@@ -225,8 +284,28 @@ class InsertionBridge:
             if b.failure:
                 policy.stop('feedback_unavailable', b.failure)
             obs = scene.observe()
+            if policy.state in ALIGNMENT_STATES:
+                self.alignment_tick(obs)
+                return
+            if getattr(self, 'entry_waiting', False) and policy.state in policy.ACTIVE:
+                # Direct start also needs an entry check. No insertion command
+                # has been issued yet, so its motion timers start on approval.
+                failure = policy.observation_failure(obs)
+                if failure:
+                    policy.stop(*failure)
+                    self.relinquish()
+                elif b.sim.time - policy.started > policy.alignment_limits.timeout_s:
+                    policy.stop('timeout', 'entry_simulation_time_limit')
+                    self.relinquish()
+                elif self.check_local_entry():
+                    policy.started = policy.previous = policy.progress_time = b.sim.time
+                    policy.progress_depth = obs['depth_m']
+                    self.entry_waiting = False
+                return
             # Measurements from the just completed sim interval affect next command.
-            speed = policy.update(b.sim.time, obs)
+            guarded = (policy.local_collision_check == 'per_step' and
+                       getattr(self, 'collision_guard', None) is not None)
+            speed = policy.update(b.sim.time, obs, command_dt=0. if guarded else None)
             if policy.state == 'inserted_unretained':
                 self.relinquish()
                 if scene.config.get('retain_after_success', True):
@@ -235,29 +314,152 @@ class InsertionBridge:
             if policy.state not in policy.ACTIVE:
                 self.relinquish()
                 return
+            if speed == 0.:
+                if guarded:
+                    self.collision_guard.cancel()
+                    self.pending_step = None
+                return
+            if getattr(self, 'pending_step', None) is not None:
+                self.finish_checked_step(alignment=False)
+                if self.pending_step is not None:
+                    return
+                # Prepare the next checked step in this same tick. Waiting an
+                # extra tick here would halve the original insertion speed.
             axis = -quat2mat(scene.base.pose.q)[:, 0]
             current = b.sim.env.agent.links['left_fr3_hand_tcp'].pose
             if np.linalg.norm(self.goal.p-current.p) > policy.limits.tracking_limit_m:
                 raise RuntimeError('joint_drive_tracking_error')
-            self.goal = sapien.Pose(self.goal.p+axis*speed*b.dt, self.goal.q)
+            goal = sapien.Pose(self.goal.p+axis*speed*b.dt, self.goal.q)
             robot = b.sim.env.agent.robot
             link = b.sim.env.agent.links['left_fr3_hand_tcp']
             mask = np.zeros(len(b.sim.names), dtype=int)
             indices = b.arm_indices['left']
             mask[indices] = 1
             q, success, error = self.model.compute_inverse_kinematics(robot.get_links().index(link),
-                self.goal, initial_qpos=b.sim.target, active_qmask=mask, eps=1e-6, max_iterations=100)
+                goal, initial_qpos=b.sim.target, active_qmask=mask, eps=1e-6, max_iterations=100)
             if not success:
                 raise RuntimeError('insertion_IK_failed:'+str(error))
             if max(abs(q[indices]-b.sim.target[indices])) > policy.limits.joint_speed_rad_s*b.dt:
                 raise RuntimeError('insertion_joint_command_rate_limit')
             if any(not b.assets.limits[n][0] <= q[i] <= b.assets.limits[n][1] for n, i in zip(b.arm_names['left'], indices)):
                 raise RuntimeError('insertion_joint_limit')
-            b.sim.target[indices] = q[indices]
-            b.desired['left'] = (q[indices].copy(), np.zeros(7), np.zeros(7))
+            if not guarded:
+                self.apply_step(q, goal)
+            else:
+                self.submit_checked_step(q, goal, alignment=False)
         except Exception as exc:
             policy.stop('blocked', str(exc))
             self.relinquish()
+
+    def apply_step(self, q, goal):
+        b = self.bridge
+        indices = b.arm_indices['left']
+        self.goal = goal
+        b.sim.target[indices] = q[indices]
+        b.desired['left'] = (q[indices].copy(), np.zeros(7), np.zeros(7))
+
+    def measured_mount(self):
+        env = self.bridge.sim.env
+        return matrix(env.agent.links['left_fr3_hand_tcp'].pose.inv() * env.plug.pose)
+
+    def submit_checked_step(self, q, goal, *, alignment):
+        start = self.bridge.sim.positions.copy()
+        target = start.copy()
+        indices = self.bridge.arm_indices['left']
+        target[indices] = q[indices]
+        mount = self.measured_mount()
+        self.collision_guard.submit(start, target, mount, allow_socket=not alignment)
+        self.pending_step = (target, goal, start, mount)
+
+    def finish_checked_step(self, *, alignment):
+        if not self.collision_guard.poll():
+            return
+        q, goal, start, mount = self.pending_step
+        self.pending_step = None
+        b, policy = self.bridge, self.scene.policy
+        current_mount = self.measured_mount()
+        # A result for a stale grasp or start cannot authorize a new movement.
+        if (np.max(np.abs(b.sim.positions-start)) > policy.alignment_limits.collision_joint_step_rad/2 or
+                np.linalg.norm(current_mount[:3, 3]-mount[:3, 3]) > .00005 or
+                rotation_distance(current_mount[:3, :3], mount[:3, :3]) > .002):
+            return
+        if alignment:
+            policy.record_alignment_step(float(np.linalg.norm(goal.p-self.goal.p)),
+                rotation_distance(quat2mat(self.goal.q), quat2mat(goal.q)))
+            self.alignment_checked = True
+        else:
+            distance = float(np.linalg.norm(goal.p-self.goal.p))
+            if policy.travel + distance > policy.limits.max_advance_m:
+                raise RuntimeError('maximum_advance')
+            policy.travel += distance
+        self.apply_step(q, goal)
+
+    def alignment_tick(self, observation):
+        b, scene = self.bridge, self.scene
+        policy = scene.policy
+        failure = policy.observation_failure(observation)
+        if failure:
+            policy.stop(*failure)
+            self.relinquish()
+            return
+        if b.sim.time - policy.alignment_started > policy.alignment_limits.timeout_s:
+            policy.stop('timeout', 'alignment_simulation_time_limit')
+            self.relinquish()
+            return
+        if not self.check_local_entry():
+            return
+        correction_needed = policy.update_alignment(b.sim.time, observation)
+        if policy.state not in ALIGNMENT_STATES:
+            self.relinquish()
+            return
+        if not correction_needed:
+            # Never execute an in-flight correction once measured convergence
+            # starts its dwell; a fresh measurement will decide the next step.
+            self.collision_guard.cancel()
+            self.pending_step = None
+            return
+        if self.pending_step is not None:
+            self.finish_checked_step(alignment=True)
+            return
+        env = b.sim.env
+        current = env.agent.links['left_fr3_hand_tcp'].pose
+        if (np.linalg.norm(self.goal.p-current.p) > policy.limits.tracking_limit_m or
+                rotation_distance(quat2mat(self.goal.q), quat2mat(current.q)) > policy.alignment_limits.capture_angle_rad):
+            raise RuntimeError('alignment_joint_drive_tracking_error')
+        indices = b.arm_indices['left']
+        robot = env.agent.robot
+        link_index = robot.get_links().index(env.agent.links['left_fr3_hand_tcp'])
+        seed = b.sim.positions.copy()
+        mask = np.zeros(len(b.sim.names), dtype=int)
+        mask[indices] = 1
+        # Stay on the current IK branch. Reduce the local step if its required
+        # joint motion is too large; never invoke a random/global IK restart.
+        for scale in (1., .5, .25, .125):
+            target = correction_goal(matrix(scene.base.pose), matrix(current), matrix(env.plug.pose),
+                scene.hole, policy.limits.preinsert_m, policy.alignment_limits, b.dt*scale)
+            # Integrate the measured correction on the held drive target so a
+            # small steady PD/load offset cannot swallow every micro-step.
+            # The tracking and cumulative-motion guards bound this integration.
+            target = target @ np.linalg.inv(matrix(current)) @ matrix(self.goal)
+            goal = sapien.Pose(target[:3, 3], mat2quat(target[:3, :3]))
+            q, success, error = self.model.compute_inverse_kinematics(link_index,
+                robot.pose.inv()*goal, initial_qpos=seed, active_qmask=mask,
+                eps=1e-7, max_iterations=100, damp=1e-6)
+            if not success or not np.isfinite(q).all():
+                continue
+            if max(abs(q[indices]-b.sim.target[indices])) > policy.limits.joint_speed_rad_s*b.dt:
+                continue
+            if any(not b.assets.limits[n][0] <= q[i] <= b.assets.limits[n][1]
+                   for n, i in zip(b.arm_names['left'], indices)):
+                continue
+            if policy.local_collision_check == 'entry':
+                policy.record_alignment_step(float(np.linalg.norm(goal.p-self.goal.p)),
+                    rotation_distance(quat2mat(self.goal.q), quat2mat(goal.q)))
+                self.apply_step(q, goal)
+            else:
+                self.submit_checked_step(q, goal, alignment=True)
+            return
+        raise RuntimeError('alignment_local_IK_or_joint_limit: ' + str(error))
 
     def publish(self):
         snapshot = self.scene.policy.snapshot() if self.scene is not None else self.empty.snapshot()

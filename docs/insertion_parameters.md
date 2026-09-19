@@ -2,7 +2,7 @@
 
 以运行代码和所选配置的数值为准。本页对应 `mtc_prototype.launch.py` 的 ManiSkill
 `trunking_cable` 场景，默认配置为 `trunking_cable_simplified_2mm.yaml`。
-按用户要求，MTC 入口默认 ManiSkill/Rope-Actor/带线缆，并只在释放世界固定后等待一次确认；物理参数、控制阈值和历史实验配置不改。当前 YAML 的路径比例 3.0 为用户已有修改。
+MTC 入口默认 ManiSkill/Rope-Actor/带线缆，并只在释放世界固定后等待一次确认。推荐 YAML 启用局部快速模式；线缆物理参数和历史实验配置保留。当前 YAML 的路径比例为 3.0。
 
 ## 先确定修改位置
 
@@ -13,6 +13,7 @@
 | 接近/退出规划、规划重试、TCP 路程限制 | MTC `insertion_task/planning.py`（插入前整段），`insertion_task/motion.py`（插入后），`mtc/path_length.py` | 编排及路径测试，再看每段规划日志 |
 | MoveIt 插座、USB 解除附着、临时 ACM | MTC `insertion_task/planning_scene.py` | 原碰撞许可保留、世界 USB 唯一、退出/失败后 ACM 恢复 |
 | 孔尺寸、CAD 关键点、实测抓姿到目标位姿 | `usb/geometry.py` | 顶点/变换对照、几何报告和原生 PhysX 探针 |
+| 孔前微调、捕获范围、短步碰撞 | `usb/alignment.py`、`usb/collision_guard.py`、`usb/bridge.py:alignment_tick` | `test_alignment.py`、`test_alignment_collision.py`，再真实局部仿真 |
 | 阻力反馈、停滞/过载、成功保持 | `usb/insertion.py:InsertionLimits/InsertionPolicy` | 策略测试、局部插入及真实孔内障碍测试 |
 | 服务拒绝、控制权、heartbeat、IK 指令保护 | `usb/bridge.py:handle_* / before_tick` | `test_insertion_services.py`、`test_insertion.py` |
 | 插座实体、支撑反力、保持约束、清理 | `usb/scene.py:SocketInsertion` | 原生探针、固定后开爪、reset |
@@ -114,12 +115,13 @@ USB-only 仍使用插入刚体子步，但不创建线缆。这不是把所有�
 
 ## 运动、反馈、成功与异常保护
 
-以下均为 `insertion` 字段，除路程比例外，表中数值同时来自推荐 YAML 和 `InsertionLimits` / 消费函数缺省。
+以下均为 `insertion` 字段，表中数值来自推荐 YAML；与代码缺省不同的值单独标注。
 反馈 wrench 为**作用在 USB 上**的力，插座轴向，力矩参考孔中心；+X 阻力抵抗 -X 插入。
 
 | 参数 / 实际值 | 单位 / 作用模块 | 影响、关联与验证 |
 | --- | --- | --- |
-| `speed_m_s=.001`, `acceleration_m_s2=.002` | m/s、m/s²；policy | 连续推进及速度斜率；检查力变化下的速度曲线 |
+| `local_collision_check=entry`（代码缺省 `per_step`） | bridge 局部碰撞检查方式 | entry 只在局部入口检查，之后本地 IK；per_step 恢复逐步远程校验 |
+| `speed_m_s=.002`（代码缺省 .001）, `acceleration_m_s2=.002` | m/s、m/s²；policy | 连续推进及速度斜率；检查力变化下的速度曲线 |
 | `resistance_gain_m_N_s=.0004`, `filter_tau_s=.04` | m/(N·s)、仿真 s；policy | `max(0,speed-gain*filtered_force)`；真实障碍测试检验减速/停滞 |
 | `max_advance_m=.022` | m，沿插入轴的指令累计路程；policy | ≥preinsert+target，独立于实际深度；超程测试 |
 | `axial_limit_N=5`, `lateral_limit_N=2`, `torque_limit_Nm=.04` | N、N、N·m；policy + 场景采样 | 控制周期均值和子步峰值保护，滤波不能掩盖尖峰；载荷探针/过载测试 |
@@ -173,3 +175,42 @@ ROS_LOG_DIR=/tmp/insertion_tests PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 .venv/bin/pyth
 默认启动和独立入口调整的本轮结果见 [工作流验证记录](insertion_workflow_validation.md)。
 
 包含全部线缆、夹持、控制、相机和 launch 参数的逐项说明见 [参数索引](parameters.md)，声明值与文件见 [默认值来源](parameter_defaults.md)。
+
+## 孔前局部闭环微调（2026-09-19）
+
+默认流程现在是缓存孔前接近 → `align` → heartbeat 等待 `aligned` → 原 `start`。
+不调用 OMPL，不受接近路径的比例长度预算限制；原搬运、接近轨迹和插入门限保留。
+微调参数放在 `insertion.alignment`，省略时使用 `AlignmentLimits` 缺省。
+下表列推荐 YAML 的值；代码缺省位置容差仍为 .0001 m、对齐保持仍为 .3 s。
+
+| 参数 | 推荐 YAML | 含义 |
+| --- | --- | --- |
+| `capture_translation_m`, `capture_angle_rad` | .002、.05235987756 | 尖端距孔前目标的三维距离 ≤2 mm，完整朝向误差 ≤3°；全过程保留孔外距离 |
+| `position_tolerance_m`, `angle_tolerance_rad` | .0002、.00872664626 | 对齐完成 ≤0.2 mm / 0.5°；不可大于原插入门限 |
+| `speed_m_s`, `angular_speed_rad_s`, `gain_per_s` | .001、.03、2 | 仿真控制周期内的尖端线速度/角速度上限及比例增益 |
+| `max_travel_m`, `max_rotation_rad` | .006、.10471975512 | 累计 TCP 指令路程 6 mm、转角 6°；包括尖端旋转引起的 TCP 补偿 |
+| `hold_s`, `timeout_s`, `blocked_s` | .1、20、3 | 仿真时间：实测位置/朝向及低速持续达标、总超时、无进展停止 |
+| `collision_timeout_s`, `collision_joint_step_rad` | 3、.001 | 查询墙钟超时；per_step 模式运动段关节插值间隔，至少检查起点/中点/终点 |
+
+每步用最新实测 TCP—USB 变换，围绕尖端修正旋转，再计算 TCP 目标。
+局部 IK 只从当前关节姿态求解；超出关节速率时先缩小步长，仍不可行就停止。
+`insertion.local_collision_check: entry` 为推荐配置的快速仿真模式。入口先读取 MoveIt
+`/get_planning_scene`，确认插座和唯一 USB 附着，再向 `/check_state_validity` 发送一次
+实测状态检查，包含两臂、两侧手指和实测 USB 抓姿。无运动的入口仅查一个状态；
+检查未完成时保持指令，关节/抓姿已变化则丢弃重测，碰撞或服务错误则停止。
+入口通过后，微调和随后轴向插入每个控制周期直接下发有界本地 IK，不再逐步等待
+MoveIt。保留 PhysX 接触、力/力矩、抓持、实测位姿、关节限位/速率、跟踪误差、
+累计位移、停滞和超时保护。此模式减少局部碰撞预判，主要依赖物理接触反馈；
+不修改原 MTC 运输/接近/整条插入直线预检，也不修改碰撞组和孔尺寸。
+
+设 `local_collision_check: per_step` 可恢复原来的异步短步校验（配置省略此字段也使用
+per_step）。该模式轴向插入仅放行 USB—插座预期接触，其他规划碰撞仍拒绝，
+查询等待不计入已下发位移。柔性线缆不在这些刚体查询中，仍由 PhysX 和线缆后端检查。
+原 `start` 仍按实测尖端检查 0.25 mm 横向、0.025 rad 朝向及 1 mm 深度误差，
+直接调用 `start` 不会隐式开启微调；entry 模式下未经过 align 时，先完成入口检查再
+推进，推进计时从入口批准时开始。正常 align → start 交接复用已完成的入口检查。
+直接 start 的入口等待也受 `alignment.timeout_s` 总时限约束，避免连续丢弃过期结果时无限等待。
+失败保持夹爪、不添加 USB—TCP 固定、不自动加大夹持力；`cancel` 和墙钟失联
+释放控制权并取消尚未批准的候选步骤。状态输出包含 `local_collision_check` 模式、
+`alignment` 参数/累计量和初始观测，
+孔前失败信息包括深度、横向和角度误差。

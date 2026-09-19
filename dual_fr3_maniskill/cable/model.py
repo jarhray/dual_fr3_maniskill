@@ -33,8 +33,10 @@ def load_config(path, *, solver="mpm"):
             raise ValueError(f"Missing {section} configuration")
     insertion = config.get("insertion", {})
     if insertion:
-        from dual_fr3_maniskill.usb.insertion import InsertionLimits
-        InsertionLimits.read(insertion)
+        from dual_fr3_maniskill.usb.insertion import InsertionLimits, read_local_collision_check
+        from dual_fr3_maniskill.usb.alignment import AlignmentLimits
+        AlignmentLimits.read(insertion.get('alignment', {}), InsertionLimits.read(insertion))
+        read_local_collision_check(insertion)
         for name in ("enabled", "retain_after_success", "release_after_retention", "return_after_release"):
             if name in insertion and not isinstance(insertion[name], bool):
                 raise ValueError("insertion."+name+" must be boolean")

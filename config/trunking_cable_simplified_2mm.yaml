@@ -147,7 +147,10 @@ insertion:
   end_clearance_m: 0.001
   target_depth_m: 0.010  # 11 mm CAD depth minus 1 mm back-wall clearance
   max_advance_m: 0.022
-  speed_m_s: 0.001
+  # Simulation fast mode: check MoveIt at local entry, then use bounded local IK
+  # and PhysX feedback. Set per_step to restore remote checks for every step.
+  local_collision_check: entry
+  speed_m_s: 0.002
   acceleration_m_s2: 0.002
   resistance_gain_m_N_s: 0.0004
   filter_tau_s: 0.04
@@ -166,6 +169,22 @@ insertion:
   wall_watchdog_s: 10.0
   joint_speed_rad_s: 0.10
   tracking_limit_m: 0.001
+  # Local measured-tip servo after cached approach; original insertion gates stay unchanged.
+  alignment:
+    capture_translation_m: 0.002  # 3D tip error about the 8 mm preinsert point
+    capture_angle_rad: 0.05235987756  # 3 deg
+    position_tolerance_m: 0.0002
+    angle_tolerance_rad: 0.00872664626  # 0.5 deg
+    speed_m_s: 0.001
+    angular_speed_rad_s: 0.03
+    gain_per_s: 2.0
+    max_travel_m: 0.006  # cumulative TCP command translation, including lever-arm compensation
+    max_rotation_rad: 0.10471975512
+    hold_s: 0.1
+    timeout_s: 20.0  # simulation time
+    blocked_s: 3.0
+    collision_timeout_s: 3.0  # wall time; timeout stops with fingers closed
+    collision_joint_step_rad: 0.001  # per_step mode: sampled start/midpoint/end checks
   retain_after_success: true
   # Right arm always opens/returns before insertion; these switches govern the left arm.
   release_after_retention: true

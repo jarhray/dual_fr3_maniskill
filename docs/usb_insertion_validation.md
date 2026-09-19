@@ -103,3 +103,79 @@ ROS_LOG_DIR=/tmp/usb_insertion_tests PYTEST_DISABLE_PLUGIN_AUTOLOAD=1 \
 ```
 
 完整 MTC 两种启动命令、接口和参数表见 [使用说明](usb_insertion.md)。
+
+
+## 孔前闭环微调局部验证（2026-09-19）
+
+本轮实现孔前 `align` 状态和异步短步碰撞检查；原插入阈值、孔尺寸、夹持力和摩擦不变。
+相关回归（整个 MTC 测试目录及 ManiSkill 插入/夹持接口/模型/力接口等）**480 项通过**。
+两个包的 symlink 构建通过。记录：`artifacts/usb_alignment_20260919/regression.log`、`regression.xml`。
+
+新增 `test/check_usb_alignment_simulation.py` 使用实际双臂 CAD、动态 USB、真实双指闭合、
+解除世界支撑及实际 PhysX 步进，并使用原生 MoveIt/FCL 检查生产代码提交的状态消息。
+测试适配器在下一周期完成查询 Future；未启动 ROS 服务传输，也没有运行完整 MTC 运输。
+初始关节位置仅在 USB 创建前设置；之后仅下发关节驱动目标，不写 USB 位姿。
+
+最终记录 `artifacts/usb_alignment_20260919/local_physics_pipelined.json`：
+
+| 指标 | 初始 | 微调完成 | 插入完成 |
+| --- | --- | --- | --- |
+| 前端深度 | -7.9978 mm | -7.9942 mm | 9.8926 mm |
+| 横向误差 | 0.8022 mm | 0.0947 mm | 0.0970 mm |
+| 朝向误差 | 1.1476° | 0.1196° | 0.1189° |
+| 仿真时间 | 3.00 s | 5.54 s | 24.00 s |
+
+完成 2,883 个短步碰撞状态检查；最终 `insertion_success=true`、`retention_active=true`。
+USB—TCP 和 USB—世界支撑均未创建；插座保持只在实际插入验收后建立。
+初版校验时序使插入速度减半，随后将批准上一短步和提交下一短步放在同一控制周期，
+最终插入段约 18.46 s，满足原 45 s 超时；等待碰撞查询不消耗已下发位移预算。
+
+这是 **USB-only 局部微调/插入物理验证**，不代表完整带线缆 MTC、ROS 查询时序、
+插入后开爪回位已在本轮通过。带线缆时仍依赖真实抓持、线缆物理保护和捕获范围。
+复现：
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ROS_LOG_DIR=/tmp/usb_alignment_physics .venv/bin/python \
+  src/dual_fr3_maniskill/test/check_usb_alignment_simulation.py \
+  --output /tmp/usb_alignment_new.json
+```
+
+## 局部快速模式（2026-09-19）
+
+推荐 YAML 改为 `insertion.local_collision_check: entry`，入口通过 MoveIt 状态检查后，
+微调和轴向插入直接执行受限本地 IK。微调位置容差从 0.1 mm 改为 0.2 mm，
+对齐保持从 0.3 s 改为 0.1 s，推进速度从 1 mm/s 改为 2 mm/s。
+朝向容差、插入成功保持、力/抓持/关节保护和线缆物理参数保留。
+`per_step` 保留原逐步异步校验，可在 YAML 中切换；状态快照显示当前模式。
+
+相关回归 **497 项通过**（2 个依赖弃用警告），包含入口未批准不运动、入口碰撞拒绝、
+入口一次检查后连续微调/插入、per_step 仍等待每步结果、过载/抓持丢失/反馈失效停止，
+以及直接 start 的入口等待超过 1.5 s 时不误计为运动停滞、超过入口总时限时停止。
+记录：`artifacts/usb_fast_local_20260919/regression.log`、`regression.xml`。
+
+原生 PhysX + MoveIt/FCL USB-only 测试故意让每次查询延迟 15 个控制周期返回：
+
+| 指标 | 初始 | 微调完成 | 插入完成 |
+| --- | --- | --- | --- |
+| 前端深度 | -7.9978 mm | -7.9942 mm | 9.9465 mm |
+| 横向误差 | 0.8022 mm | 0.1824 mm | 0.1851 mm |
+| 朝向误差 | 1.1476° | 0.2302° | 0.2305° |
+| 仿真时间 | 3.00 s | 4.46 s | 14.32 s |
+
+全过程只做 **1 个入口碰撞状态检查**（另有入口规划场景读取），
+轴向插入耗时约 9.86 仿真秒，`insertion_success`、`retention_active` 均为 true。
+插入前没有 USB—TCP/世界固定约束。结果：
+`artifacts/usb_fast_local_20260919/local_physics.json`。
+
+```bash
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ROS_LOG_DIR=/tmp/usb_fast_physics .venv/bin/python \
+  src/dual_fr3_maniskill/test/check_usb_alignment_simulation.py \
+  --validation-delay-ticks 15 --output /tmp/usb_fast_new.json
+```
+
+延迟由测试适配器注入，未经过 ROS 服务传输；未运行完整带线缆 MTC 或插入后开爪回位。
+此结果验证局部快速模式及新参数，不代表整体墙钟提速倍数或完整任务成功率。

@@ -39,9 +39,14 @@ USB 启用插入时拆为塑料壳凸体和金属段凸体，保留视觉网格�
 
 ## 控制、载荷和保持
 
-规划分两次检查：准备候选必须连同运输末态到孔前的连续路径可解；实际闭爪、解除固定和稳定验证后，再以实测抓姿重规划整个剩余路径，保留已选锚点关节末态与笛卡尔终点，通过后只等待一次 Enter。完整插入直线的碰撞预检也提前完成。
+规划分两次检查：准备候选必须连同运输末态到孔前的连续路径可解；实际闭爪、解除固定和稳定验证后，再以实测抓姿验证缓存的剩余路径；孔前端点须处于局部微调捕获范围，通过后只等待一次 Enter。完整插入直线的碰撞预检也提前完成。
 
-执行顺序：原 MTC 运输完成 → 检查左臂真实抓持 → 右爪打开并验证两指开度 → 右臂沿 TCP -Z 退出 50 mm → 右臂回 `ready` 并验证停稳 → 重新检查左臂抓持 → 左臂按缓存 MoveIt 轨迹接近 → start 根据实际 USB 位姿检查原对齐阈值 → 交接给局部控制器。末尾不再临时重规划微小对齐；实际漂移超限仍停止，不能把计划到达当作真实到达。预检只在任务自己的规划场景中允许 USB—插座这一对预期接触；不放开手指—插座等碰撞；该预检本身不修改 PhysX 碰撞组。
+执行顺序：原 MTC 运输完成 → 检查左臂真实抓持 → 右爪打开并验证两指开度 → 右臂沿 TCP -Z 退出 50 mm → 右臂回 `ready` 并验证停稳 → 重新检查左臂抓持 → 左臂按缓存 MoveIt 轨迹接近 → align 孔前微调并停稳 → start 根据实际 USB 位姿检查原对齐阈值 → 交接给局部控制器。缓存接近完成后进入局部闭环微调：实时读取 USB 尖端和 TCP—USB 抓姿，以当前关节姿态为 IK 种子逐步修正，连续达标后才调用 start；超过局部捕获范围仍停止。预检只在任务自己的规划场景中允许 USB—插座这一对预期接触；不放开手指—插座等碰撞；该预检本身不修改 PhysX 碰撞组。
+
+默认 YAML 使用快速仿真模式 `local_collision_check: entry`：局部入口做一次实测 MoveIt
+状态检查，通过后微调/插入直接运行有界本地 IK；PhysX 接触、力限、抓持和关节保护仍启用。
+微调目标为 0.2 mm / 0.5°，稳定 0.1 s，轴向速度 2 mm/s；插入成功确认仍为 0.3 s。
+该模式减少逐步碰撞预判；改为 `per_step` 可恢复逐步异步 MoveIt 校验，详见[参数说明](insertion_parameters.md#孔前局部闭环微调2026-09-19)。
 
 孔前规划、回位使用最多 10 次独立任务重建/求解，以处理 MoveIt 随机采样失败；只有有效解才执行。执行失败不会盲目重放一段已经部分执行的轨迹。
 
@@ -71,7 +76,7 @@ USB 启用插入时拆为塑料壳凸体和金属段凸体，保留视觉网格�
 
 ## 状态与参数
 
-状态依次为 `not_started`、`right_releasing`、`right_returning`、`right_ready`、`approach`、`aligned`、`feedback_advance`、`success_verification`、`inserted_unretained`、`retained`、`grippers_released`、`returning`、`complete`。失败为 `right_release_failed`、`right_return_failed`、`blocked`、`overload`、`slip_or_drop`、`timeout`、`feedback_unavailable`、`cancelled`、`retention_failed`、`release_failed`、`return_failed`，详因在 `reason`。
+状态依次为 `not_started`、`right_releasing`、`right_returning`、`right_ready`、`approach`、`aligning`、`alignment_verification`、`aligned`、`feedback_advance`、`success_verification`、`inserted_unretained`、`retained`、`grippers_released`、`returning`、`complete`。失败为 `right_release_failed`、`right_return_failed`、`blocked`、`overload`、`slip_or_drop`、`timeout`、`feedback_unavailable`、`cancelled`、`retention_failed`、`release_failed`、`return_failed`，详因在 `reason`。
 
 以下字段均位于默认 YAML 的 `insertion` 段，表中数值以当前文件为准；ROS 开关 `insertion_enabled` 控制是否启用。孔中心与 CAD 孔口 X=0 一致，配置只允许有限局部间隙，不接受非零 rest offset。
 
@@ -86,7 +91,8 @@ USB 启用插入时拆为塑料壳凸体和金属段凸体，保留视觉网格�
 | `contact_offset_m`, `rest_offset_m` | `.0001`, `0` | 接触检测/静止偏移 m |
 | `preinsert_m`, `target_depth_m` | `.008`, `.010` | 孔前距离/前端目标深度 m |
 | `end_clearance_m`, `max_advance_m` | `.001`, `.022` | 孔底余量/最大推进 m |
-| `speed_m_s`, `acceleration_m_s2` | `.001`, `.002` | 速度/变化限制 |
+| `local_collision_check` | `entry` | 局部入口检查；`per_step` 恢复逐步检查 |
+| `speed_m_s`, `acceleration_m_s2` | `.002`, `.002` | 速度/变化限制 |
 | `resistance_gain_m_N_s`, `filter_tau_s` | `.0004`, `.04` | 阻力减速增益/滤波秒 |
 | `axial_limit_N`, `lateral_limit_N`, `torque_limit_Nm` | `5`, `2`, `.04` | 子步峰值硬停止 |
 | `lateral_tolerance_m`, `angle_tolerance_rad` | `.00025`, `.025` | 位姿门限 |
@@ -144,7 +150,7 @@ ros2 service call /maniskill/usb/insertion/status std_srvs/srv/Trigger '{}'
 ros2 service call /maniskill/usb/insertion/cancel std_srvs/srv/Trigger '{}'
 ```
 
-`/maniskill/usb/insertion/{right_release,right_released,right_returned,target,start,status,heartbeat,cancel,retained,released,returning,returned,fail_right_release,fail_right_return,fail_release,fail_return}` 使用 Trigger；通常由 MTC 终末执行器调用，不要在有轨迹运行时手动 start。独立状态流不依赖 `force_enabled`；力/JSONL 仍使用既有输出体系。
+`/maniskill/usb/insertion/{right_release,right_released,right_returned,target,align,start,status,heartbeat,cancel,retained,released,returning,returned,fail_right_release,fail_right_return,fail_release,fail_return}` 使用 Trigger；通常由 MTC 终末执行器调用，不要在有轨迹运行时手动 start。独立状态流不依赖 `force_enabled`；力/JSONL 仍使用既有输出体系。
 
 ## 独立调用
 
